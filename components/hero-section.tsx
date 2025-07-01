@@ -136,8 +136,8 @@ function LandingHero() {
         </p>
 
         <div className="flex flex-row justify-center space-x-4 items-center mt-10 sm:mt-16 md:mt-20 lg:mt-8">
-          <ButtonMain href="/miss" name="Cutie" />
-          <ButtonMain href="/mister" name="Cuta" />
+          <ButtonMain href="/cutie" name="Cutie" />
+          <ButtonMain href="/cuta" name="Cuta" />
         </div>
       </div>
     </section>

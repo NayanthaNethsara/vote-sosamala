@@ -7,8 +7,13 @@ export default async function ContestantListSync({
 }: {
   params: Promise<{ category: string }>;
 }) {
-  const resolvedParams = await params;
-  const category = resolvedParams.category;
+  const category = (await params).category;
+
+  // Validate category
+  const validCategories = ["cuta", "cutie"];
+  if (!validCategories.includes(category)) {
+    notFound();
+  }
 
   return (
     <section className="w-full min-h-screen overflow-hidden  flex flex-col items-center  relative">
