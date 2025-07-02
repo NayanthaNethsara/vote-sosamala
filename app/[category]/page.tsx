@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import ContestantList from "@/components/contestant-list";
+import { getActiveContestants } from "@/lib/db/contestants";
 import { Spotlight } from "@/components/ui/spotlight-new";
 
 export default async function ContestantListSync({
@@ -7,18 +8,19 @@ export default async function ContestantListSync({
 }: {
   params: Promise<{ category: string }>;
 }) {
-  const category = (await params).category;
+  const { category } = await params;
 
-  // Validate category
   const validCategories = ["cuta", "cutie"];
   if (!validCategories.includes(category)) {
     notFound();
   }
 
+  const contestants = await getActiveContestants(category);
+
   return (
-    <section className="w-full min-h-screen overflow-hidden  flex flex-col items-center  relative">
+    <section className="w-full min-h-screen overflow-hidden flex flex-col items-center relative">
       <Spotlight />
-      <ContestantList category={category} />
+      <ContestantList contestants={contestants} category={category} />
     </section>
   );
 }

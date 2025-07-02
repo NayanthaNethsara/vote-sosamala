@@ -1,8 +1,9 @@
 export type Contestant = {
-  rank: number;
+  rank?: number;
   id: string;
+  bio?: string;
   name: string;
-  faculty: string;
+  faculty?: string;
   image: string;
-  votes: number;
+  vote_count: number;
 };
