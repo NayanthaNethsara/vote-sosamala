@@ -22,6 +22,13 @@ export async function POST(req: Request) {
     const category = form.get("category");
     const image = form.get("image");
 
+    console.log("Received form data:", {
+      name,
+      bio,
+      category,
+      image,
+    });
+
     const { valid, error } = validateContestantForm({
       name,
       bio,
@@ -46,10 +53,8 @@ export async function POST(req: Request) {
       });
 
     if (uploadError) {
-      return NextResponse.json(
-        { error: "Image upload failed" },
-        { status: 500 }
-      );
+      console.error("Upload failed:", uploadError);
+      return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
     const { data: urlData } = supabase.storage
@@ -66,6 +71,8 @@ export async function POST(req: Request) {
     });
 
     if (insertError) {
+      console.error("Database insert failed:", insertError);
+
       return NextResponse.json(
         { error: "Database insert failed" },
         { status: 500 }
