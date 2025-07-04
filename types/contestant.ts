@@ -4,6 +4,8 @@ export type Contestant = {
   bio?: string;
   name: string;
   faculty?: string;
-  image: string;
+  image_url: string;
   vote_count: number;
+  category: string;
+  active: boolean;
 };

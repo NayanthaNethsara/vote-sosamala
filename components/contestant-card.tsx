@@ -19,7 +19,9 @@ export function ContestantCard({ contestant, category }: ContestantCardProps) {
         {/* Aspect ratio container */}
         <div className="relative aspect-[3/4] w-full">
           <Image
-            src={`${contestant.image}`}
+            src={
+              contestant.image_url ? contestant.image_url : "/placeholder.png"
+            }
             alt={contestant.name}
             fill
             sizes="(max-width: 768px) 100vw, 300px"
