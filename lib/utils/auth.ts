@@ -32,3 +32,38 @@ export async function getAdminUserOrRedirect() {
 
   return user;
 }
+
+export async function getUserOrRedirect() {
+  const supabase = await createClient(cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return user;
+}
+
+export async function getUserOrThrow() {
+  const supabase = await createClient(cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  return user;
+}
+
+export async function getUserOrNull() {
+  const supabase = await createClient(cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return user?.email || null;
+}
