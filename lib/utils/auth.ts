@@ -58,3 +58,12 @@ export async function getUserOrThrow() {
 
   return user;
 }
+
+export async function getUserOrNull() {
+  const supabase = await createClient(cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return user?.email || null;
+}

@@ -11,9 +11,26 @@ export async function POST(req: Request) {
 
   try {
     const user = await getUserOrThrow();
-
     const body = await req.json();
     const { contestant_id, category } = body;
+
+    if (
+      !contestant_id ||
+      typeof contestant_id !== "string" ||
+      contestant_id.length !== 36
+    ) {
+      return NextResponse.json(
+        { error: "Invalid contestant ID" },
+        { status: 400 }
+      );
+    }
+    if (
+      !category ||
+      typeof category !== "string" ||
+      !/^[a-zA-Z0-9_-]+$/.test(category)
+    ) {
+      return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+    }
 
     if (!contestant_id || !category) {
       return NextResponse.json({ error: "Missing vote data" }, { status: 400 });
@@ -23,6 +40,21 @@ export async function POST(req: Request) {
 
     if (!user || !user.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: contestant } = await supabase
+      .from("contestants")
+      .select("id")
+      .eq("id", contestant_id)
+      .eq("category", category)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (!contestant) {
+      return NextResponse.json(
+        { error: "Invalid or inactive contestant" },
+        { status: 400 }
+      );
     }
 
     const voter_hash = hashVoterEmail(user.email);
