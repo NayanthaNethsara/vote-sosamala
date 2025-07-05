@@ -9,8 +9,7 @@ import {
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  // 🛡️ Arcjet protection per request
-  const arcjetResult = await applyArcjetProtection(req, 2); // Cost: 2 tokens
+  const arcjetResult = await applyArcjetProtection(req, 2);
   if (arcjetResult) return arcjetResult;
 
   try {

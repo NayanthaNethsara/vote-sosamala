@@ -43,7 +43,7 @@ A secure, privacy-first, self-hostable voting app for beauty contests and other 
 1. **Clone and install**
 
    ```bash
-   git clone https://github.com/yourorg/sosamala-voting.git
+   git clone https://github.com/NayanthaNethsara/vote-sosamala.git
    cd sosamala-voting
    npm install
    ```
