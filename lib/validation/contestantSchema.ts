@@ -5,11 +5,10 @@ export const contestantSchema = z.object({
   bio: z.string().min(1).max(500),
   category: z.enum(["cuta", "cutie"]),
   faculty: z.enum(["herbivores", "carnivores", "omnivores"]),
-  active: z.boolean(),
-  image: z
+  image_url: z
     .instanceof(File)
-    .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: "Image must be 5MB or less",
+    .refine((file) => file.size <= 4 * 1024 * 1024, {
+      message: "Image must be 4MB or less",
     })
     .refine(
       (file) => ["image/png", "image/jpeg", "image/webp"].includes(file.type),
