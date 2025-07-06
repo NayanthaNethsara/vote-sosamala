@@ -56,7 +56,7 @@ export function ContestantCard({ contestant, category }: ContestantCardProps) {
           </motion.div>
 
           {/* Enhanced gradient overlay for better text readability */}
-          <div className="absolute -inset-5 bg-gradient-to-t from-gray-900/95 via-gray-900/60 to-transparent" />
+          <div className="absolute -inset-5 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent" />
 
           {/* Hover overlay */}
           <motion.div

@@ -1,50 +1,79 @@
 -- Table: contestants
-create table contestants (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
+CREATE TABLE IF NOT EXISTS public.contestants (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
   bio text,
-  category text not null,
+  category text NOT NULL,
   faculty text,
   image_url text,
-  active boolean default true,
-  vote_count integer default 0,
-  created_at timestamp with time zone default timezone('utc', now())
+  active boolean DEFAULT true,
+  vote_count integer NOT NULL DEFAULT 0,
+  created_at timestamptz DEFAULT timezone('utc', now()),
+  rank integer
 );
 
 -- Table: votes
-create table votes (
-  id uuid primary key default gen_random_uuid(),
-  contestant_id uuid references contestants(id) on delete cascade,
-  voter_hash text not null,
-  category text not null,
-  created_at timestamp with time zone default timezone('utc', now()),
-  unique (voter_hash, category)
+CREATE TABLE IF NOT EXISTS public.votes (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  contestant_id uuid NOT NULL REFERENCES public.contestants(id) ON DELETE CASCADE,
+  voter_hash text NOT NULL,
+  category text NOT NULL,
+  created_at timestamptz DEFAULT timezone('utc', now()),
+  UNIQUE (voter_hash, category) -- one vote per voter per category
 );
 
--- Enable Row Level Security
-alter table contestants enable row level security;
-alter table votes enable row level security;
+-- Function: update_all_ranks (competition ranking: ties get same rank, next is skipped)
+CREATE OR REPLACE FUNCTION public.update_all_ranks()
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  WITH ranked AS (
+    SELECT
+      id,
+      category,
+      RANK() OVER (
+        PARTITION BY category
+        ORDER BY vote_count DESC
+      ) AS rnk
+    FROM public.contestants
+  )
+  UPDATE public.contestants c
+  SET rank = ranked.rnk
+  FROM ranked
+  WHERE c.id = ranked.id AND c.category = ranked.category;
+END;
+$$;
 
--- Policy: Anyone can read contestants
-create policy "Allow public read" on contestants
-for select using (true);
+-- Function: increment vote count & update ranks
+CREATE OR REPLACE FUNCTION public.increment_vote_count_and_update_ranks()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE public.contestants
+  SET vote_count = vote_count + 1
+  WHERE id = NEW.contestant_id;
 
--- Policy: Only admin can write contestants
-create policy "Admin write" on contestants
-for all to authenticated
-using (auth.email() = 'your-admin@email.com')
-with check (auth.email() = 'your-admin@email.com');
+  PERFORM public.update_all_ranks();
 
--- Policy: Anyone logged in can insert vote
-create policy "Allow vote insert" on votes
-for insert to authenticated
-with check (true);
+  RETURN NEW;
+END;
+$$;
 
--- Policy: (Optional) Anyone can read votes
-create policy "Allow public read votes" on votes
-for select using (true);
+-- Trigger to increment vote count and update ranks on new vote
+CREATE TRIGGER trg_increment_vote_count
+AFTER INSERT ON public.votes
+FOR EACH ROW
+EXECUTE FUNCTION public.increment_vote_count_and_update_ranks();
 
--- (Optional) Only admin can read all votes
--- create policy "Admin read votes" on votes
--- for select to authenticated
--- using (auth.email() = 'your-admin@email.com');
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_contestants_category ON public.contestants(category);
+CREATE INDEX IF NOT EXISTS idx_votes_voter_hash ON public.votes(voter_hash);
+CREATE INDEX IF NOT EXISTS idx_votes_category ON public.votes(category);
+
+-- (Optional) Initialize ranks after seeding contestants:
+-- SELECT public.update_all_ranks();
+
+

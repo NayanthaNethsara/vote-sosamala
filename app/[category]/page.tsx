@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import ContestantList from "@/components/contestant-list";
 import { getActiveContestants } from "@/lib/db/contestants";
 import { Spotlight } from "@/components/ui/spotlight-new";
+import { getUserOrNull } from "@/lib/utils/auth";
+
+export const revalidate = 86400;
 
 export default async function ContestantListSync({
   params,
@@ -18,9 +21,9 @@ export default async function ContestantListSync({
   const contestants = await getActiveContestants(category);
 
   return (
-    <section className="w-full min-h-screen overflow-hidden flex flex-col items-center relative">
-      <Spotlight />
+    <section className="w-full min-h-screen overflow-hidden flex flex-col items-center pt-16 relative">
       <ContestantList contestants={contestants} category={category} />
+      <Spotlight />
     </section>
   );
 }

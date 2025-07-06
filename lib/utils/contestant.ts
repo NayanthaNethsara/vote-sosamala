@@ -13,16 +13,19 @@ export function validateContestantForm({
   bio,
   category,
   image,
+  faculty,
 }: {
   name: unknown;
   bio: unknown;
   category: unknown;
   image: unknown;
+  faculty: unknown;
 }): { valid: boolean; error?: string } {
   if (
     typeof name !== "string" ||
     typeof bio !== "string" ||
     typeof category !== "string" ||
+    typeof faculty !== "string" ||
     !(image instanceof File)
   ) {
     return { valid: false, error: "Missing or invalid fields." };

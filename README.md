@@ -1,10 +1,24 @@
-# Sosamala Voting Platform
+# Sosamala Voting
 
-A secure, privacy-first, self-hostable voting app for beauty contests and other events.
+A self-hostable, open source, secure voting system for small public beauty contests and similar events. Designed for easy deployment, privacy, and fairness, with per-category leaderboards, a user-friendly admin dashboard, and real-time updates.
+
+[**Live Demo →**](https://vote-sosamala.vercel.app/)
+
+## Screenshots
+
+<div align="center">
+  <img src="./public/ss1.png" alt="Home page and leaderboard" width="600"/><br>
+  <em>Home page and real-time leaderboard view</em>
+</div>
+
+<div align="center">
+  <img src="./public/ss2.png" alt="Voting page and contestant profile" width="600"/><br>
+  <em>Voting page and contestant profile</em>
+</div>
 
 ---
 
-## 🚀 Features
+## Features
 
 - One vote per email per category (privacy: voter email hashed)
 - Google login (OAuth, no passwords)
@@ -16,7 +30,7 @@ A secure, privacy-first, self-hostable voting app for beauty contests and other 
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 - **Frontend:** Next.js App Router, Tailwind CSS
 - **Backend:** Next.js API routes (Edge/serverless-ready)
@@ -27,7 +41,7 @@ A secure, privacy-first, self-hostable voting app for beauty contests and other 
 
 ---
 
-## 🛡️ Security Model
+## Security Model
 
 - Voter emails **never stored as plain text** (SHA256 + salt)
 - One vote per hashed user per category (enforced by DB unique constraint)
@@ -38,63 +52,42 @@ A secure, privacy-first, self-hostable voting app for beauty contests and other 
 
 ---
 
-## 🧑‍💻 How To Run / Deploy
+## Self-Hosting & Deployment
 
-1. **Clone and install**
+**You need:** [Supabase](https://supabase.com/) (free tier is enough), [Vercel](https://vercel.com/) or any Next.js host.
 
-   ```bash
-   git clone https://github.com/yourorg/sosamala-voting.git
-   cd sosamala-voting
-   npm install
-   ```
+1. **Create your Supabase project**
+2. Run [`schema.sql`](./schema.sql) and [`rls.sql`](./rls.sql) in the Supabase SQL editor
+3. Set up Supabase Storage bucket (for contestant images)
+4. Clone this repo and configure your `.env` (see `.env.example`)
+5. Deploy to Vercel (or run locally with `npm run dev`)
 
-2. **Setup .env.local**
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-ADMIN_EMAIL=youremail@domain.com
-VOTE_SALT=sosamala-vote-salt-2024
-ARCJET_KEY=...
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
-
-3. **Setup Supabase**
-
-   - Create a new project at [Supabase](https://supabase.com/), copy your project URL and anon key.
-   - Enable Google Auth in Supabase Auth settings. Add `http://localhost:3000/auth/callback` as a redirect URL.
-   - Run the SQL in `sql/schema.sql` to create tables and policies.
-
-4. **(Optional) Setup Arcjet**
-
-   - Sign up at [arcjet.com](https://arcjet.com/), get your API key, and add it to `.env.local` as `ARCJET_KEY`.
-
-5. **Run Locally or Deploy**
-
-   - To start the app locally:
-     ```bash
-     npm run dev
-     ```
-   - Or deploy to [Vercel](https://vercel.com/) for production.
+For detailed instructions, see [docs/SETUP.md](docs/SETUP.md) (coming soon!)
 
 ---
 
-## 📄 SQL Schema (`sql/schema.sql`)
+## Customization
 
-See the full schema in [`/sql/schema.sql`](./sql/schema.sql).
-
----
-
-## ⚡️ Edge Function / Middleware
-
-- API routes are protected with Arcjet (see `middleware.ts`)
-- Rate limiting and bot protection at the edge
-- Admin APIs double-check user session and email
+- **Categories:** Add/remove categories in the database or admin dashboard
+- **Logo/branding:** Replace `/public/logo/logo.png`
+- **Admin email:** Edit the email in `rls.sql` and your environment variables
+- **Styling:** Tweak Tailwind styles in `/components`
 
 ---
 
-## 👨‍🔬 How To Contribute
+## License
 
-- Please open issues for bugs or feature ideas.
-- PRs should include updates to this README if they change APIs or tables.
-- For new DB features: always add or modify RLS policies!
+MIT
+
+---
+
+## Author
+
+Made by [NayanthaNethsara](https://github.com/NayanthaNethsara)
+
+---
+
+## Credits
+
+- Built with Next.js, Supabase, Arcjet, and Tailwind CSS
+- Open source, feedback welcome!
