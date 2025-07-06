@@ -3,6 +3,11 @@ import ContestantList from "@/components/contestant-list";
 import { getActiveContestants } from "@/lib/db/contestants";
 import { Spotlight } from "@/components/ui/spotlight-new";
 
+// Revalidate every 86400 seconds (1 day)
+export const revalidate = 86400;
+
+const validCategories = ["cuta", "cutie"];
+
 export default async function ContestantListSync({
   params,
 }: {
