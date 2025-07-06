@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { VotePage } from "@/components/vote-page";
-import { VotingHeader } from "@/components/vote-header";
 import { getUserOrNull } from "@/lib/utils/auth";
 
 export const revalidate = 86400;
@@ -83,7 +82,6 @@ export default async function ContestantVotePage({
 
   return (
     <>
-      <VotingHeader contestant={contestant} user={user} />
       <VotePage contestant={contestant} user={user} />
     </>
   );
