@@ -24,13 +24,13 @@ export function ButtonMain({ href, name }: { href: string; name: string }) {
 
 const heroImages = [
   {
-    url: "/landing-page/f-1.jpg",
+    url: "/landing-page/f-2.png",
     title: "Hero 1",
     width: 128,
     height: 96,
   },
   {
-    url: "/landing-page/f-2.jpg",
+    url: "/landing-page/f-1.png",
     title: "Hero 2",
     width: 240,
     height: 168,

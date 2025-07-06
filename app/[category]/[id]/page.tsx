@@ -18,20 +18,20 @@ export async function generateMetadata({
   const supabase = await createClient(); // No cookies needed for public data
   const { data: contestant } = await supabase
     .from("contestants")
-    .select("name, image_url, description")
+    .select("name, image_url, bio")
     .eq("id", id)
     .eq("category", category)
     .maybeSingle();
 
   if (!contestant) return {};
 
-  const siteUrl = "nayantha.me"; // Replace with your real domain
+  const siteUrl = "https://vote-sosamala.vercel.app"; // Replace with your real domain
   const pageUrl = `${siteUrl}/vote/${category}/${id}`;
   const imageUrl = contestant.image_url || `${siteUrl}/default-og.png`;
 
   const title = `${contestant.name} – Vote Now!`;
   const description =
-    contestant.description || `Support ${contestant.name} in ${category}`;
+    contestant.bio || `Support ${contestant.name} in ${category}`;
 
   return {
     title,
