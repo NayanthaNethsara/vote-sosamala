@@ -19,7 +19,6 @@ export default async function ContestantListSync({
   }
 
   const contestants = await getActiveContestants(category);
-  const user = await getUserOrNull();
 
   return (
     <section className="w-full min-h-screen overflow-hidden flex flex-col items-center pt-16 relative">
