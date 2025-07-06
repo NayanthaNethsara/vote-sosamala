@@ -27,7 +27,7 @@ export async function getAdminUserOrRedirect() {
   } = await supabase.auth.getUser();
 
   if (!isAdmin(user)) {
-    redirect("/unauthorized");
+    redirect("/");
   }
 
   return user;
