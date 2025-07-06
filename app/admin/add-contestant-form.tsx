@@ -31,25 +31,32 @@ export function AddContestantForm() {
     const image = formData.get("image") as File;
 
     try {
-      // ✅ Validate with Zod
+      //  Validate with Zod
       const parsed = contestantSchema.parse({
         name: formData.get("name"),
         bio: formData.get("bio"),
         category: formData.get("category"),
         faculty: formData.get("faculty"),
-        image,
-        active: formData.get("active") === "on",
+        image_url: image,
       });
+
+      // Prepare FormData for file upload
+      const uploadData = new FormData();
+      uploadData.append("name", parsed.name);
+      uploadData.append("bio", parsed.bio);
+      uploadData.append("category", parsed.category);
+      uploadData.append("faculty", parsed.faculty);
+      uploadData.append("image", parsed.image_url);
 
       const response = await fetch("/api/admin/add-contestant", {
         method: "POST",
-        body: formData,
+        body: uploadData,
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        toast.success("✅ Contestant added!");
+        toast.success("Contestant added!");
         form.reset();
       } else {
         toast.error(result.error || "Upload failed");
@@ -118,11 +125,6 @@ export function AddContestantForm() {
           className="min-h-[100px]"
           maxLength={500}
         />
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Switch id="active" name="active" defaultChecked />
-        <Label htmlFor="active">Active</Label>
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>

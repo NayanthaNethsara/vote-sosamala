@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Floating, { FloatingElement } from "@/components/ui/parallex-floting";
 import { Spotlight } from "./ui/spotlight-new";
@@ -26,22 +26,32 @@ const heroImages = [
   {
     url: "/landing-page/f-1.jpg",
     title: "Hero 1",
+    width: 128,
+    height: 96,
   },
   {
     url: "/landing-page/f-2.jpg",
-    title: "Hero 1",
+    title: "Hero 2",
+    width: 240,
+    height: 168,
   },
   {
     url: "/landing-page/f-3.png",
-    title: "Hero 1",
+    title: "Hero 3",
+    width: 256,
+    height: 256,
   },
   {
     url: "/landing-page/m-1.jpg",
-    title: "Hero 1",
+    title: "Hero 4",
+    width: 256,
+    height: 208,
   },
   {
     url: "/landing-page/m-2.jpg",
-    title: "Hero 1",
+    title: "Hero 5",
+    width: 320,
+    height: 320,
   },
 ];
 
@@ -52,62 +62,102 @@ function LandingHero() {
       <Floating sensitivity={-0.5} className="h-full w-full overflow-hidden">
         {/* Top Left */}
         <FloatingElement depth={0.5} className="top-[15%] left-[4%]">
-          <motion.img
-            src={heroImages[0].url}
-            alt={heroImages[0].title}
-            className="select-none w-16 h-12 sm:w-24 sm:h-16 md:w-28 md:h-20 lg:w-32 lg:h-24 object-cover hover:scale-105 duration-200 cursor-pointer transition-transform -rotate-[3deg] shadow-2xl rounded-xl"
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-          />
+            className="select-none"
+          >
+            <Image
+              src={heroImages[0].url}
+              alt={heroImages[0].title}
+              width={heroImages[0].width}
+              height={heroImages[0].height}
+              className="w-16 h-12 sm:w-24 sm:h-16 md:w-28 md:h-20 lg:w-32 lg:h-24 object-cover hover:scale-105 duration-200 cursor-none transition-transform -rotate-[3deg] shadow-2xl rounded-xl"
+              sizes="(max-width: 768px) 100vw, 33vw"
+              priority
+            />
+          </motion.div>
         </FloatingElement>
 
         {/* Top Center-Left */}
         <FloatingElement depth={1} className="top-[6%] left-[12%]">
-          <motion.img
-            src={heroImages[1].url}
-            alt={heroImages[1].title}
-            className="select-none w-40 h-28 sm:w-48 sm:h-36 md:w-56 md:h-44 lg:w-60 lg:h-48 object-cover hover:scale-105 duration-200 cursor-pointer transition-transform -rotate-12 shadow-2xl rounded-xl"
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
-          />
+            className="select-none"
+          >
+            <Image
+              src={heroImages[1].url}
+              alt={heroImages[1].title}
+              width={heroImages[1].width}
+              height={heroImages[1].height}
+              className="w-40 h-28 sm:w-48 sm:h-36 md:w-56 md:h-44 lg:w-60 lg:h-48 object-cover hover:scale-105 duration-200 cursor-none transition-transform -rotate-12 shadow-2xl rounded-xl"
+              sizes="(max-width: 768px) 100vw, 33vw"
+              priority
+            />
+          </motion.div>
         </FloatingElement>
 
         {/* Bottom Left */}
         <FloatingElement depth={4} className="bottom-[5%] left-[8%]">
-          <motion.img
-            src={heroImages[2].url}
-            alt={heroImages[2].title}
-            className="select-none w-40 h-40 sm:w-48 sm:h-48 md:w-60 md:h-60 lg:w-64 lg:h-64 object-cover -rotate-[4deg] hover:scale-105 duration-200 cursor-pointer transition-transform shadow-2xl rounded-xl"
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9 }}
-          />
+            className="select-none"
+          >
+            <Image
+              src={heroImages[2].url}
+              alt={heroImages[2].title}
+              width={heroImages[2].width}
+              height={heroImages[2].height}
+              className="w-40 h-40 sm:w-48 sm:h-48 md:w-60 md:h-60 lg:w-64 lg:h-64 object-cover -rotate-[4deg] hover:scale-105 duration-200 cursor-none transition-transform shadow-2xl rounded-xl"
+              sizes="(max-width: 768px) 100vw, 33vw"
+              priority
+            />
+          </motion.div>
         </FloatingElement>
 
         {/* Top Right */}
         <FloatingElement depth={2} className="top-[2%] right-[5%]">
-          <motion.img
-            src={heroImages[3].url}
-            alt={heroImages[3].title}
-            className="select-none w-40 h-36 sm:w-48 sm:h-44 md:w-60 md:h-52 lg:w-64 lg:h-56 object-cover hover:scale-105 duration-200 cursor-pointer transition-transform shadow-2xl rotate-[6deg] rounded-xl"
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.1 }}
-          />
+            className="select-none"
+          >
+            <Image
+              src={heroImages[3].url}
+              alt={heroImages[3].title}
+              width={heroImages[3].width}
+              height={heroImages[3].height}
+              className="w-40 h-36 sm:w-48 sm:h-44 md:w-60 md:h-52 lg:w-64 lg:h-56 object-cover hover:scale-105 duration-200 cursor-none transition-transform shadow-2xl rotate-[6deg] rounded-xl"
+              sizes="(max-width: 768px) 100vw, 33vw"
+              priority
+            />
+          </motion.div>
         </FloatingElement>
 
         {/* Bottom Right */}
         <FloatingElement depth={1} className="bottom-[6%] right-[4%]">
-          <motion.img
-            src={heroImages[4].url}
-            alt={heroImages[4].title}
-            className="select-none w-44 h-44 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 object-cover hover:scale-105 duration-200 cursor-pointer transition-transform shadow-2xl rotate-[19deg] rounded-xl"
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.3 }}
-          />
+            className="select-none"
+          >
+            <Image
+              src={heroImages[4].url}
+              alt={heroImages[4].title}
+              width={heroImages[4].width}
+              height={heroImages[4].height}
+              className="w-44 h-44 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 object-cover hover:scale-105 duration-200 cursor-none transition-transform shadow-2xl rotate-[19deg] rounded-xl"
+              sizes="(max-width: 768px) 100vw, 33vw"
+              priority
+            />
+          </motion.div>
         </FloatingElement>
       </Floating>
 

@@ -20,19 +20,14 @@ export async function POST(req: Request) {
     const bio = form.get("bio");
     const category = form.get("category");
     const image = form.get("image");
-
-    console.log("Received form data:", {
-      name,
-      bio,
-      category,
-      image,
-    });
+    const faculty = form.get("faculty");
 
     const { valid, error } = validateContestantForm({
       name,
       bio,
       category,
       image,
+      faculty,
     });
     if (!valid) {
       return NextResponse.json({ error }, { status: 400 });
@@ -67,6 +62,7 @@ export async function POST(req: Request) {
       category,
       image_url,
       active: true,
+      faculty,
     });
 
     if (insertError) {

@@ -3,18 +3,22 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { X, Chrome } from "lucide-react";
+import { signInWithGoogle } from "@/lib/auth/actions";
+import { useRouter, usePathname } from "next/navigation";
 
 interface LoginDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onGoogleLogin: () => void;
 }
 
-export function LoginDialog({
-  isOpen,
-  onClose,
-  onGoogleLogin,
-}: LoginDialogProps) {
+export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
+  const router = useRouter();
+  const currentPath = usePathname();
+
+  const handleGoogleLogin = async () => {
+    const url = await signInWithGoogle(currentPath);
+    if (url) router.push(url);
+  };
   return (
     <AnimatePresence>
       {isOpen && (
@@ -88,7 +92,7 @@ export function LoginDialog({
                 >
                   {/* Google Login Button */}
                   <Button
-                    onClick={onGoogleLogin}
+                    onClick={handleGoogleLogin}
                     className="w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-3 rounded-xl transition-all duration-300 "
                   >
                     <Chrome className="w-5 h-5 mr-3" />
