@@ -16,6 +16,11 @@
 .env.*.local
 ! .env.example
 
+# Firebase service account keys
+/secrets/
+*.json
+
+
 # Build outputs
 /dist/
 

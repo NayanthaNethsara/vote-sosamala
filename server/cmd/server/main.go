@@ -14,9 +14,12 @@ import (
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/handlers"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/config"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/infrastructure"
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/middleware"
 )
 
 func main() {
+	ctx := context.Background()
+
 	// Initialize configuration
 	cfg := config.LoadConfig()
 
@@ -45,15 +48,28 @@ func main() {
 		log.Printf("PostgreSQL connected at %s", cfg.DBURL)
 	}
 
+	firebaseAuth, err := infrastructure.InitFirebase(ctx)
+	if err != nil {
+		log.Printf("Warning: Firebase initialization error: %v", err)
+	} else {
+		log.Println("Firebase Admin SDK initialized")
+	}
+
 	// Set up Gin
 	gin.SetMode(cfg.GinMode)
 	router := gin.Default()
 
-	// Initialize handlers
+	// Public routes
 	healthHandler := handlers.NewHealthHandler(redisClient, natsConn, dbPool)
-
-	// Routes
 	router.GET("/health", healthHandler.HealthCheck)
+
+	// Protected API routes
+	userHandler := handlers.NewUserHandler()
+	api := router.Group("/api")
+	if firebaseAuth != nil {
+		api.Use(middleware.AuthMiddleware(firebaseAuth))
+	}
+	api.GET("/me", userHandler.Me)
 
 	// Server configuration
 	srv := &http.Server{
@@ -75,9 +91,9 @@ func main() {
 	<-quit
 	log.Println("Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Fatal("Server forced to shutdown:", err)
 	}
 

@@ -8,11 +8,12 @@ import (
 )
 
 type Config struct {
-	Port      string
-	RedisAddr string
-	NatsURL   string
-	DBURL     string
-	GinMode   string
+	Port              string
+	RedisAddr         string
+	NatsURL           string
+	DBURL             string
+	GinMode           string
+	FirebaseProjectID string
 }
 
 // LoadConfig loads the configuration from the environment variables.
