@@ -1,0 +1,23 @@
+# Dependencies
+/vendor/
+
+# Binaries
+/bin/
+/server
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Environment variables (Sensitive)
+.env
+.env.local
+.env.*.local
+! .env.example
+
+# Build outputs
+/dist/
+
+# Logs
+*.log
