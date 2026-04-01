@@ -13,16 +13,19 @@ import (
 
 // Dependencies holds all infrastructure clients required to build the router.
 type Dependencies struct {
-	RedisClient  *redis.Client
-	NatsConn     *nats.Conn
-	DBPool       *pgxpool.Pool
-	FirebaseAuth *auth.Client
+	RedisClient    *redis.Client
+	NatsConn       *nats.Conn
+	DBPool         *pgxpool.Pool
+	FirebaseAuth   *auth.Client
+	AllowedOrigins []string
 }
 
 // NewRouter creates and configures the Gin engine with all application routes.
 func NewRouter(ginMode string, deps Dependencies) *gin.Engine {
 	gin.SetMode(ginMode)
 	router := gin.Default()
+
+	router.Use(middleware.CORSMiddleware(deps.AllowedOrigins))
 
 	registerPublicRoutes(router, deps)
 	registerProtectedRoutes(router, deps)

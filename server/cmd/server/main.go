@@ -43,7 +43,7 @@ func main() {
 	// Firebase Admin SDK — uses ADC automatically.
 	// Local dev: set GOOGLE_APPLICATION_CREDENTIALS to your service account JSON path.
 	// GCP (Cloud Run / GKE): attach a service account with the Firebase Authentication Admin role.
-	firebaseAuth, err := infrastructure.InitFirebase(ctx)
+	firebaseAuth, err := infrastructure.InitFirebase(ctx, cfg.FirebaseProjectID)
 	if err != nil {
 		log.Printf("Firebase init warning: %v", err)
 	} else {
@@ -53,10 +53,11 @@ func main() {
 	// -- Router --
 
 	router := api.NewRouter(cfg.GinMode, api.Dependencies{
-		RedisClient:  redisClient,
-		NatsConn:     natsConn,
-		DBPool:       dbPool,
-		FirebaseAuth: firebaseAuth,
+		RedisClient:    redisClient,
+		NatsConn:       natsConn,
+		DBPool:         dbPool,
+		FirebaseAuth:   firebaseAuth,
+		AllowedOrigins: cfg.AllowedOrigins,
 	})
 
 	// -- Start --
