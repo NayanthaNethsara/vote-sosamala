@@ -3,27 +3,20 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
-	"github.com/gin-gonic/gin"
-
-	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/handlers"
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/config"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/infrastructure"
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/server"
 )
 
 func main() {
-	// Initialize configuration
+	ctx := context.Background()
 	cfg := config.LoadConfig()
 
-	// Initialize infrastructure
 	redisClient, err := infrastructure.InitRedis(cfg.RedisAddr)
 	if err != nil {
-		log.Printf("Warning: Redis initialization error: %v", err)
+		log.Printf("Redis init warning: %v", err)
 	} else {
 		defer redisClient.Close()
 		log.Printf("Redis connected at %s", cfg.RedisAddr)
@@ -31,7 +24,7 @@ func main() {
 
 	natsConn, err := infrastructure.InitNATS(cfg.NatsURL)
 	if err != nil {
-		log.Printf("Warning: NATS initialization error: %v", err)
+		log.Printf("NATS init warning: %v", err)
 	} else {
 		defer natsConn.Close()
 		log.Printf("NATS connected at %s", cfg.NatsURL)
@@ -39,47 +32,26 @@ func main() {
 
 	dbPool, err := infrastructure.InitPostgres(cfg.DBURL)
 	if err != nil {
-		log.Printf("Warning: PostgreSQL initialization error: %v", err)
+		log.Printf("Postgres init warning: %v", err)
 	} else {
 		defer dbPool.Close()
-		log.Printf("PostgreSQL connected at %s", cfg.DBURL)
+		log.Printf("Postgres connected at %s", cfg.DBURL)
 	}
 
-	// Set up Gin
-	gin.SetMode(cfg.GinMode)
-	router := gin.Default()
-
-	// Initialize handlers
-	healthHandler := handlers.NewHealthHandler(redisClient, natsConn, dbPool)
-
-	// Routes
-	router.GET("/health", healthHandler.HealthCheck)
-
-	// Server configuration
-	srv := &http.Server{
-		Addr:    ":" + cfg.Port,
-		Handler: router,
+	firebaseAuth, err := infrastructure.InitFirebase(ctx, cfg.FirebaseProjectID)
+	if err != nil {
+		log.Printf("Firebase init warning: %v", err)
+	} else {
+		log.Println("Firebase Admin SDK ready")
 	}
 
-	// Start server
-	go func() {
-		log.Printf("Starting server on port %s", cfg.Port)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Listen: %v", err)
-		}
-	}()
+	router := api.NewRouter(cfg.GinMode, api.Dependencies{
+		RedisClient:    redisClient,
+		NatsConn:       natsConn,
+		DBPool:         dbPool,
+		FirebaseAuth:   firebaseAuth,
+		AllowedOrigins: cfg.AllowedOrigins,
+	})
 
-	// Graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("Shutting down server...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown:", err)
-	}
-
-	log.Println("Server exiting")
+	server.New(cfg.Port, router).Start()
 }
