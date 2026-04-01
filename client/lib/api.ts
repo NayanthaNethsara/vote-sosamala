@@ -5,7 +5,7 @@ import type { MeResponse } from "@/types/user";
 async function authFetch(
   user: AuthUser,
   path: string,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<Response> {
   const token = await user.getIdToken();
 
