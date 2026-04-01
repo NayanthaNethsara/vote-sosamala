@@ -1,12 +1,24 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import env from "@/config/env";
+import type { Auth } from "firebase/auth";
+import { getFirebaseConfig } from "@/app/actions/auth";
 
-// Prevent re-initialization in Next.js dev hot-reloads
-const app =
-  getApps().length === 0
-    ? initializeApp(env.firebase)
-    : getApps()[0];
+let resolvedAuth: Auth | null = null;
+let initPromise: Promise<Auth> | null = null;
 
-export const auth = getAuth(app);
+// Lazily initializes Firebase on first call using config from the server action.
+// Subsequent calls return the cached Auth instance — safe to call in parallel.
+export async function getFirebaseAuth(): Promise<Auth> {
+  if (resolvedAuth) return resolvedAuth;
+  if (initPromise) return initPromise;
+
+  initPromise = getFirebaseConfig().then((config) => {
+    const app = getApps()[0] ?? initializeApp(config);
+    resolvedAuth = getAuth(app);
+    return resolvedAuth;
+  });
+
+  return initPromise;
+}
+
 export const googleProvider = new GoogleAuthProvider();
