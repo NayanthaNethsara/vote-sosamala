@@ -2,7 +2,6 @@ import env from "@/config/env";
 import type { AuthUser } from "@/types/auth";
 import type { MeResponse } from "@/types/user";
 
-// Gets a fresh Firebase ID token from the authenticated user and attaches it as a Bearer header.
 async function authFetch(
   user: AuthUser,
   path: string,

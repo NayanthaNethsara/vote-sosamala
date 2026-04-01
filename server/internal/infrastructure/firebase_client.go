@@ -9,11 +9,7 @@ import (
 )
 
 // InitFirebase creates a Firebase Admin Auth client using Application Default Credentials.
-// ProjectID must be supplied so VerifyIDToken can validate the 'aud' claim in the JWT.
-//
-// Credential resolution order (handled automatically by the SDK):
-//  1. GOOGLE_APPLICATION_CREDENTIALS env var → service account JSON (local dev)
-//  2. GCP runtime service account via metadata server (Cloud Run, GKE)
+// ProjectID is required so VerifyIDToken can validate the JWT audience claim.
 func InitFirebase(ctx context.Context, projectID string) (*auth.Client, error) {
 	app, err := firebase.NewApp(ctx, &firebase.Config{
 		ProjectID: projectID,

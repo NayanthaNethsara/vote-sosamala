@@ -7,8 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CORSMiddleware configures Cross-Origin Resource Sharing for the API.
-// AllowedOrigins should be set via the CORS_ALLOWED_ORIGINS env var in production.
 func CORSMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	return cors.New(cors.Config{
 		AllowOrigins:     allowedOrigins,

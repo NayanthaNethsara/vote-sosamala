@@ -6,8 +6,6 @@ import { getFirebaseConfig } from "@/app/actions/auth";
 let resolvedAuth: Auth | null = null;
 let initPromise: Promise<Auth> | null = null;
 
-// Lazily initializes Firebase on first call using config from the server action.
-// Subsequent calls return the cached Auth instance — safe to call in parallel.
 export async function getFirebaseAuth(): Promise<Auth> {
   if (resolvedAuth) return resolvedAuth;
   if (initPromise) return initPromise;

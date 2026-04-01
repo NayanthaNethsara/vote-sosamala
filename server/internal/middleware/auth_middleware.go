@@ -13,9 +13,6 @@ const (
 	ContextKeyEmail = "email"
 )
 
-// AuthMiddleware verifies Firebase ID tokens on incoming requests.
-// It expects an "Authorization: Bearer <token>" header.
-// On success, it injects "uid" and "email" into the Gin context.
 func AuthMiddleware(authClient *auth.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")

@@ -14,8 +14,6 @@ func main() {
 	ctx := context.Background()
 	cfg := config.LoadConfig()
 
-	// -- Infrastructure --
-
 	redisClient, err := infrastructure.InitRedis(cfg.RedisAddr)
 	if err != nil {
 		log.Printf("Redis init warning: %v", err)
@@ -40,17 +38,12 @@ func main() {
 		log.Printf("Postgres connected at %s", cfg.DBURL)
 	}
 
-	// Firebase Admin SDK — uses ADC automatically.
-	// Local dev: set GOOGLE_APPLICATION_CREDENTIALS to your service account JSON path.
-	// GCP (Cloud Run / GKE): attach a service account with the Firebase Authentication Admin role.
 	firebaseAuth, err := infrastructure.InitFirebase(ctx, cfg.FirebaseProjectID)
 	if err != nil {
 		log.Printf("Firebase init warning: %v", err)
 	} else {
 		log.Println("Firebase Admin SDK ready")
 	}
-
-	// -- Router --
 
 	router := api.NewRouter(cfg.GinMode, api.Dependencies{
 		RedisClient:    redisClient,
@@ -59,8 +52,6 @@ func main() {
 		FirebaseAuth:   firebaseAuth,
 		AllowedOrigins: cfg.AllowedOrigins,
 	})
-
-	// -- Start --
 
 	server.New(cfg.Port, router).Start()
 }

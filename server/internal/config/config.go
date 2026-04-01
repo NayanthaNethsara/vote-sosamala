@@ -18,10 +18,7 @@ type Config struct {
 	AllowedOrigins    []string
 }
 
-// LoadConfig loads the configuration from the environment variables.
-// It also attempts to load a .env file if it exists, which is useful for local development.
 func LoadConfig() *Config {
-	// Only load .env if it exists (useful for local dev, not for GCP/Docker secrets)
 	if err := godotenv.Load(".env"); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}

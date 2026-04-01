@@ -11,7 +11,6 @@ import (
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/middleware"
 )
 
-// Dependencies holds all infrastructure clients required to build the router.
 type Dependencies struct {
 	RedisClient    *redis.Client
 	NatsConn       *nats.Conn
@@ -20,7 +19,6 @@ type Dependencies struct {
 	AllowedOrigins []string
 }
 
-// NewRouter creates and configures the Gin engine with all application routes.
 func NewRouter(ginMode string, deps Dependencies) *gin.Engine {
 	gin.SetMode(ginMode)
 	router := gin.Default()
