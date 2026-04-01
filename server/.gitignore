@@ -16,8 +16,6 @@
 .env.*.local
 ! .env.example
 
-# Firebase service account keys (local dev only — never commit these)
-/secrets/
 
 # Build outputs
 /dist/
