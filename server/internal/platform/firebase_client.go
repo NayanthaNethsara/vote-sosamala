@@ -1,4 +1,4 @@
-package infrastructure
+package platform
 
 import (
 	"context"

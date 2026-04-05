@@ -24,10 +24,17 @@ go run cmd/server/main.go
 ```
 
 ## Structure
-- `/cmd/server`: Main application entry point
-- `/internal/api/handlers`: Gin route handlers
+- `/cmd/server`: Main API entry point
+- `/cmd/setup`: Setup/bootstrap entry point
+- `/internal/api/handler`: Gin handlers (transport adapters)
+- `/internal/api/middleware`: Auth/Admin/CORS middleware
+- `/internal/service`: Business logic layer
+- `/internal/repository`: Data access layer
+- `/internal/model/domain`: Domain models
+- `/internal/model/dto`: Request/response DTOs
+- `/internal/platform`: Infrastructure clients (Firebase, Postgres, Redis, NATS, HTTP server)
 - `/internal/config`: Configuration management
-- `/internal/infrastructure`: Database and service clients
+- `/migrations`: SQL migrations
 
 ## Environment
 Copy the example environment file and update with your local values:

@@ -1,4 +1,4 @@
-.PHONY: help dev build fmt lint test server-run client-install
+.PHONY: help dev build fmt lint test server-run setup-run client-install
 
 # Default target
 all: help
@@ -16,6 +16,7 @@ help:
 	@echo "  server-lint    Run static analysis for Go"
 	@echo "  server-build   Build the Go binary"
 	@echo "  server-run     Run Go application locally"
+	@echo "  setup-run      Run setup/bootstrap script"
 	@echo ""
 	@echo "Frontend (pnpm):"
 	@echo "  client-install Install frontend dependencies"
@@ -45,6 +46,10 @@ server-build:
 ## server-run: Run the Go backend locally
 server-run:
 	@cd server && go run cmd/server/main.go
+
+## setup-run: Run the setup/bootstrap script
+setup-run:
+	@cd server && go run cmd/setup/main.go
 
 ## migrate-up: Run database migrations up
 migrate-up:
