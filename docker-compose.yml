@@ -11,11 +11,11 @@ services:
       - DB_URL=postgres://user:password@postgres:5432/votes?sslmode=disable
       - GIN_MODE=release
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
-      # Tells the ADC library where to find the mounted gcloud credentials.
-      # This is only needed locally — on GCP the metadata server handles auth.
+      # This points to LOCAL ADC metadata created by `gcloud auth application-default login`.
+      # It is not a long-lived service-account key JSON.
       - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
     volumes:
-      - ${HOME}/.config/gcloud:/root/.config/gcloud:ro
+      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
     depends_on:
       - redis
       - nats

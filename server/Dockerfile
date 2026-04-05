@@ -18,12 +18,16 @@ FROM alpine:latest
 
 WORKDIR /
 
+# Needed for outbound TLS (Firebase/Auth and other HTTPS calls)
+RUN apk add --no-cache ca-certificates
+
 # Copy the binary from the build stage
 COPY --from=builder /server /server
 
 # Set environment variables
 ENV GIN_MODE=release
 ENV PORT=8080
+ENV HOME=/root
 
 EXPOSE 8080
 
