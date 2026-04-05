@@ -9,8 +9,14 @@ import { ContestantDialog } from "@/components/admin/contestant-dialog";
 import { ContestantsTable } from "@/components/admin/contestants-table";
 
 export default function ContestantsAdminPage() {
-  const { contestants, loading, fetchContestants, deleteContestant } =
-    useContestants();
+  const {
+    contestants,
+    loading,
+    error,
+    createContestant,
+    updateContestant,
+    deleteContestant,
+  } = useContestants();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingContestant, setEditingContestant] = useState<
     Contestant | undefined
@@ -54,8 +60,15 @@ export default function ContestantsAdminPage() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         contestant={editingContestant}
-        onSaved={fetchContestants}
+        onCreate={createContestant}
+        onUpdate={updateContestant}
       />
+
+      {error && (
+        <p className="text-sm text-destructive" role="status">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

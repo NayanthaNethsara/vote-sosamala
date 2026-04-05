@@ -16,7 +16,7 @@ import type { Contestant } from "@/types/contestant";
 interface ContestantsTableProps {
   contestants: Contestant[];
   onEdit: (contestant: Contestant) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void> | void;
 }
 
 export function ContestantsTable({ contestants, onEdit, onDelete }: ContestantsTableProps) {
@@ -25,7 +25,7 @@ export function ContestantsTable({ contestants, onEdit, onDelete }: ContestantsT
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[80px]">Photo</TableHead>
+            <TableHead className="w-20">Photo</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>NIC / Student ID</TableHead>
             <TableHead>Gender</TableHead>

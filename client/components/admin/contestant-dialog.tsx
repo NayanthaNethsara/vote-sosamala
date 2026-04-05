@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { getFirebaseStorage } from "@/lib/firebase";
-import { createContestant, updateContestant } from "@/lib/api";
+import {
+  contestantAcademicYearValues,
+  contestantFormSchema,
+  contestantGenderValues,
+  type ContestantFormValues,
+} from "@/lib/validation/contestant";
+import type { ActionResult } from "@/types/action";
 import type { Contestant, ContestantInput } from "@/types/contestant";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -36,30 +40,24 @@ import {
 } from "@/components/ui/select";
 import { SpinnerIcon, CalendarBlankIcon } from "@phosphor-icons/react";
 
-const schema = z.object({
-  name: z.string().min(2, "Name is required"),
-  birthday: z.string().optional(),
-  nicOrStudentId: z.string().min(1, "NIC or Student ID is required"),
-  gender: z.string().optional(),
-  academicYear: z.string().optional(),
-});
-
-type FormData = z.infer<typeof schema>;
-
 interface Props {
   open: boolean;
   onOpenChange: (val: boolean) => void;
   contestant?: Contestant;
-  onSaved: () => void;
+  onCreate: (payload: ContestantInput) => Promise<ActionResult<Contestant>>;
+  onUpdate: (
+    id: string,
+    payload: ContestantInput,
+  ) => Promise<ActionResult<Contestant>>;
 }
 
 export function ContestantDialog({
   open,
   onOpenChange,
   contestant,
-  onSaved,
+  onCreate,
+  onUpdate,
 }: Props) {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -72,9 +70,8 @@ export function ContestantDialog({
     setValue,
     watch,
     formState: { errors },
-  } = useForm<FormData>({
-    // @ts-expect-error Zod version mismatch with hookform resolvers
-    resolver: zodResolver(schema),
+  } = useForm<ContestantFormValues>({
+    resolver: zodResolver(contestantFormSchema),
   });
 
   useEffect(() => {
@@ -83,19 +80,31 @@ export function ContestantDialog({
       if (contestant) {
         reset({
           name: contestant.name,
-          birthday: contestant.birthday || "",
+          birthday: contestant.birthday,
           nicOrStudentId: contestant.nicOrStudentId,
-          gender: contestant.gender || "",
-          academicYear: contestant.academicYear || "",
+          gender:
+            contestant.gender &&
+            contestantGenderValues.includes(
+              contestant.gender as (typeof contestantGenderValues)[number],
+            )
+              ? (contestant.gender as (typeof contestantGenderValues)[number])
+              : undefined,
+          academicYear:
+            contestant.academicYear &&
+            contestantAcademicYearValues.includes(
+              contestant.academicYear as (typeof contestantAcademicYearValues)[number],
+            )
+              ? (contestant.academicYear as (typeof contestantAcademicYearValues)[number])
+              : undefined,
         });
         setPreviewUrl(contestant.photoUrl || null);
       } else {
         reset({
           name: "",
-          birthday: "",
+          birthday: undefined,
           nicOrStudentId: "",
-          gender: "",
-          academicYear: "",
+          gender: undefined,
+          academicYear: undefined,
         });
         setPreviewUrl(null);
       }
@@ -125,8 +134,7 @@ export function ContestantDialog({
     }
   };
 
-  const onSubmit = async (data: FormData) => {
-    if (!user) return;
+  const onSubmit = async (data: ContestantFormValues) => {
     setLoading(true);
     let photoUrl = contestant?.photoUrl;
 
@@ -144,19 +152,21 @@ export function ContestantDialog({
       const input: ContestantInput = {
         name: data.name,
         nicOrStudentId: data.nicOrStudentId,
-        birthday: data.birthday || undefined,
-        gender: data.gender || undefined,
-        academicYear: data.academicYear || undefined,
+        birthday: data.birthday,
+        gender: data.gender,
+        academicYear: data.academicYear,
         photoUrl: photoUrl || undefined,
       };
 
-      if (contestant) {
-        await updateContestant(user, contestant.id, input);
-      } else {
-        await createContestant(user, input);
+      const result = contestant
+        ? await onUpdate(contestant.id, input)
+        : await onCreate(input);
+
+      if (!result.success) {
+        alert(result.error);
+        return;
       }
 
-      onSaved();
       onOpenChange(false);
     } catch (err) {
       console.error(err);
@@ -199,7 +209,7 @@ export function ContestantDialog({
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="max-w-[250px] text-xs"
+              className="max-w-62.5 text-xs"
             />
           </div>
 
@@ -280,7 +290,7 @@ export function ContestantDialog({
                   if (!isNaN(parsedDate.getTime())) {
                     setValue("birthday", format(parsedDate, "yyyy-MM-dd"));
                   } else {
-                    setValue("birthday", "");
+                    setValue("birthday", undefined);
                   }
                 }}
                 className="w-full pr-10"
@@ -307,7 +317,7 @@ export function ContestantDialog({
                     onSelect={(date) => {
                       setValue(
                         "birthday",
-                        date ? format(date, "yyyy-MM-dd") : "",
+                        date ? format(date, "yyyy-MM-dd") : undefined,
                       );
                     }}
                     disabled={(date) =>
