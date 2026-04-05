@@ -6,15 +6,14 @@ import (
 
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/config"
-	"github.com/NayanthaNethsara/vote-sosamala/server/internal/infrastructure"
-	"github.com/NayanthaNethsara/vote-sosamala/server/internal/server"
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/platform"
 )
 
 func main() {
 	ctx := context.Background()
 	cfg := config.LoadConfig()
 
-	redisClient, err := infrastructure.InitRedis(cfg.RedisAddr)
+	redisClient, err := platform.InitRedis(cfg.RedisAddr)
 	if err != nil {
 		log.Printf("Redis init warning: %v", err)
 	} else {
@@ -22,7 +21,7 @@ func main() {
 		log.Printf("Redis connected at %s", cfg.RedisAddr)
 	}
 
-	natsConn, err := infrastructure.InitNATS(cfg.NatsURL)
+	natsConn, err := platform.InitNATS(cfg.NatsURL)
 	if err != nil {
 		log.Printf("NATS init warning: %v", err)
 	} else {
@@ -30,7 +29,7 @@ func main() {
 		log.Printf("NATS connected at %s", cfg.NatsURL)
 	}
 
-	dbPool, err := infrastructure.InitPostgres(cfg.DBURL)
+	dbPool, err := platform.InitPostgres(cfg.DBURL)
 	if err != nil {
 		log.Printf("Postgres init warning: %v", err)
 	} else {
@@ -38,7 +37,7 @@ func main() {
 		log.Printf("Postgres connected at %s", cfg.DBURL)
 	}
 
-	firebaseAuth, err := infrastructure.InitFirebase(ctx, cfg.FirebaseProjectID)
+	firebaseAuth, err := platform.InitFirebase(ctx, cfg.FirebaseProjectID)
 	if err != nil {
 		log.Printf("Firebase init warning: %v", err)
 	} else {
@@ -51,7 +50,8 @@ func main() {
 		DBPool:         dbPool,
 		FirebaseAuth:   firebaseAuth,
 		AllowedOrigins: cfg.AllowedOrigins,
+		AdminEmails:    cfg.AdminEmails,
 	})
 
-	server.New(cfg.Port, router).Start()
+	platform.New(cfg.Port, router).Start()
 }

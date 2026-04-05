@@ -1,4 +1,4 @@
-.PHONY: help dev build fmt lint test server-run client-install
+.PHONY: help dev build fmt lint test server-run setup-run client-install
 
 # Default target
 all: help
@@ -16,6 +16,9 @@ help:
 	@echo "  server-lint    Run static analysis for Go"
 	@echo "  server-build   Build the Go binary"
 	@echo "  server-run     Run Go application locally"
+	@echo "  setup-run      Run setup/bootstrap script"
+	@echo "  sqlc-install   Install sqlc CLI"
+	@echo "  sqlc-generate  Generate typed Go from SQL"
 	@echo ""
 	@echo "Frontend (pnpm):"
 	@echo "  client-install Install frontend dependencies"
@@ -45,6 +48,26 @@ server-build:
 ## server-run: Run the Go backend locally
 server-run:
 	@cd server && go run cmd/server/main.go
+
+## setup-run: Run the setup/bootstrap script
+setup-run:
+	@cd server && go run cmd/setup/main.go
+
+## sqlc-install: Install sqlc CLI
+sqlc-install:
+	@cd server && go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+## sqlc-generate: Generate typed Go from SQL definitions
+sqlc-generate:
+	@cd server && ~/go/bin/sqlc generate
+
+## migrate-up: Run database migrations up
+migrate-up:
+	@cd server && ~/go/bin/migrate -path migrations -database "postgres://user:password@localhost:5432/votes?sslmode=disable" up
+
+## migrate-down: Run database migrations down
+migrate-down:
+	@cd server && ~/go/bin/migrate -path migrations -database "postgres://user:password@localhost:5432/votes?sslmode=disable" down
 
 ## client-install: Install frontend dependencies
 client-install:

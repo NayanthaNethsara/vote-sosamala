@@ -1,0 +1,28 @@
+package handler
+
+import (
+	"net/http"
+
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/middleware"
+	"github.com/gin-gonic/gin"
+)
+
+type UserHandler struct{}
+
+func NewUserHandler() *UserHandler {
+	return &UserHandler{}
+}
+
+func (h *UserHandler) Me(c *gin.Context) {
+	if !requireAuthenticated(c) {
+		return
+	}
+
+	uid, _ := c.Get(middleware.ContextKeyUID)
+	email, _ := c.Get(middleware.ContextKeyEmail)
+
+	c.JSON(http.StatusOK, gin.H{
+		"uid":   uid,
+		"email": email,
+	})
+}

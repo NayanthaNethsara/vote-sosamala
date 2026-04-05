@@ -2,13 +2,14 @@ package api
 
 import (
 	"firebase.google.com/go/v4/auth"
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/handler"
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/middleware"
+	contestantrepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/contestant"
+	contestantservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/contestant"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
-
-	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/handlers"
-	"github.com/NayanthaNethsara/vote-sosamala/server/internal/middleware"
 )
 
 type Dependencies struct {
@@ -17,6 +18,7 @@ type Dependencies struct {
 	DBPool         *pgxpool.Pool
 	FirebaseAuth   *auth.Client
 	AllowedOrigins []string
+	AdminEmails    []string
 }
 
 func NewRouter(ginMode string, deps Dependencies) *gin.Engine {
@@ -32,12 +34,15 @@ func NewRouter(ginMode string, deps Dependencies) *gin.Engine {
 }
 
 func registerPublicRoutes(router *gin.Engine, deps Dependencies) {
-	healthHandler := handlers.NewHealthHandler(deps.RedisClient, deps.NatsConn, deps.DBPool)
+	healthHandler := handler.NewHealthHandler(deps.RedisClient, deps.NatsConn, deps.DBPool)
 	router.GET("/health", healthHandler.HealthCheck)
 }
 
 func registerProtectedRoutes(router *gin.Engine, deps Dependencies) {
-	userHandler := handlers.NewUserHandler()
+	userHandler := handler.NewUserHandler()
+	contestantRepository := contestantrepo.NewSQLCRepository(deps.DBPool)
+	contestantService := contestantservice.NewService(contestantRepository)
+	contestantHandler := handler.NewContestantHandler(contestantService)
 
 	api := router.Group("/api")
 	if deps.FirebaseAuth != nil {
@@ -45,4 +50,14 @@ func registerProtectedRoutes(router *gin.Engine, deps Dependencies) {
 	}
 
 	api.GET("/me", userHandler.Me)
+
+	// Admin routes
+	admin := api.Group("/admin")
+	if len(deps.AdminEmails) > 0 {
+		admin.Use(middleware.AdminMiddleware(deps.AdminEmails))
+	}
+	admin.GET("/contestants", contestantHandler.ListContestants)
+	admin.POST("/contestants", contestantHandler.CreateContestant)
+	admin.PUT("/contestants/:id", contestantHandler.UpdateContestant)
+	admin.DELETE("/contestants/:id", contestantHandler.DeleteContestant)
 }
