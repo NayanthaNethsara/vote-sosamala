@@ -9,6 +9,13 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { getFirebaseStorage } from "@/lib/firebase";
 import { createContestant, updateContestant } from "@/lib/api";
 import type { Contestant, ContestantInput } from "@/types/contestant";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import {
   Dialog,
@@ -27,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Spinner } from "@phosphor-icons/react";
+import { SpinnerIcon, CalendarBlankIcon } from "@phosphor-icons/react";
 
 const schema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -56,12 +63,14 @@ export function ContestantDialog({
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [birthdayInput, setBirthdayInput] = useState("");
 
   const {
     register,
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     // @ts-expect-error Zod version mismatch with hookform resolvers
@@ -93,6 +102,21 @@ export function ContestantDialog({
     }
   }, [open, contestant, reset]);
 
+  const genderValue = watch("gender");
+  const academicYearValue = watch("academicYear");
+  const birthdayVal = watch("birthday");
+
+  useEffect(() => {
+    if (birthdayVal) {
+      const date = new Date(birthdayVal);
+      if (!isNaN(date.getTime())) {
+        setBirthdayInput(format(date, "MMMM dd, yyyy"));
+      }
+    } else {
+      setBirthdayInput("");
+    }
+  }, [birthdayVal]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -111,7 +135,7 @@ export function ContestantDialog({
         const storage = await getFirebaseStorage();
         const storageRef = ref(
           storage,
-          `contestants/${Date.now()}_${photoFile.name}`
+          `contestants/${Date.now()}_${photoFile.name}`,
         );
         const task = await uploadBytesResumable(storageRef, photoFile);
         photoUrl = await getDownloadURL(task.ref);
@@ -150,7 +174,9 @@ export function ContestantDialog({
             {contestant ? "Edit Contestant" : "Add Contestant"}
           </DialogTitle>
           <DialogDescription>
-            {contestant ? "Update the details below to reflect their latest information." : "Enter contestant details here. Make sure they have a great profile photo!"}
+            {contestant
+              ? "Update the details below to reflect their latest information."
+              : "Enter contestant details here. Make sure they have a great profile photo!"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -169,14 +195,21 @@ export function ContestantDialog({
                 No Photo
               </div>
             )}
-            <Input type="file" accept="image/*" onChange={handleFileChange} className="max-w-[250px] text-xs" />
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="max-w-[250px] text-xs"
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input id="name" {...register("name")} />
             {errors.name && (
-              <span className="text-sm text-red-500">{errors.name.message}</span>
+              <span className="text-sm text-red-500">
+                {errors.name.message}
+              </span>
             )}
           </div>
 
@@ -194,14 +227,12 @@ export function ContestantDialog({
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
               <Select
-                value={contestant?.gender || ""}
-                onValueChange={(val: string | null) => {
-                  setValue("gender", val || undefined);
-                  if (contestant) contestant.gender = val || undefined;
+                value={genderValue || ""}
+                onValueChange={(val: string) => {
+                  setValue("gender", val);
                 }}
-                defaultValue={contestant?.gender || ""}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
@@ -213,17 +244,80 @@ export function ContestantDialog({
 
             <div className="space-y-2">
               <Label htmlFor="acadYear">Academic Year</Label>
-              <Input
-                id="acadYear"
-                placeholder="e.g. 2nd Year"
-                {...register("academicYear")}
-              />
+              <Select
+                value={academicYearValue || ""}
+                onValueChange={(val: string) => {
+                  setValue("academicYear", val);
+                }}
+              >
+                <SelectTrigger id="acadYear" className="w-full">
+                  <SelectValue placeholder="Select Year & Sem" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1st Year - 1st Semester">1Y1S</SelectItem>
+                  <SelectItem value="1st Year - 2nd Semester">1Y2S</SelectItem>
+                  <SelectItem value="2nd Year - 1st Semester">2Y1S</SelectItem>
+                  <SelectItem value="2nd Year - 2nd Semester">2Y2S</SelectItem>
+                  <SelectItem value="3rd Year - 1st Semester">3Y1S</SelectItem>
+                  <SelectItem value="3rd Year - 2nd Semester">3Y2S</SelectItem>
+                  <SelectItem value="4th Year - 1st Semester">4Y1S</SelectItem>
+                  <SelectItem value="4th Year - 2nd Semester">4Y2S</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 flex flex-col">
             <Label htmlFor="birthday">Birthday</Label>
-            <Input id="birthday" type="date" {...register("birthday")} />
+            <div className="relative">
+              <Input
+                id="birthday"
+                value={birthdayInput}
+                placeholder="June 01, 2025"
+                onChange={(e) => {
+                  setBirthdayInput(e.target.value);
+                  const parsedDate = new Date(e.target.value);
+                  if (!isNaN(parsedDate.getTime())) {
+                    setValue("birthday", format(parsedDate, "yyyy-MM-dd"));
+                  } else {
+                    setValue("birthday", "");
+                  }
+                }}
+                className="w-full pr-10"
+              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full rounded-l-none text-muted-foreground hover:bg-transparent"
+                  >
+                    <CalendarBlankIcon className="h-4 w-4" />
+                    <span className="sr-only">Select date</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-auto p-0"
+                  align="end"
+                  sideOffset={4}
+                >
+                  <Calendar
+                    mode="single"
+                    selected={birthdayVal ? new Date(birthdayVal) : undefined}
+                    onSelect={(date) => {
+                      setValue(
+                        "birthday",
+                        date ? format(date, "yyyy-MM-dd") : "",
+                      );
+                    }}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
@@ -235,7 +329,7 @@ export function ContestantDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading && <Spinner className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <SpinnerIcon className="mr-2 h-4 w-4 animate-spin" />}
               {contestant ? "Save Changes" : "Create Contestant"}
             </Button>
           </div>
