@@ -3,14 +3,10 @@ import { z } from "zod";
 export const contestantGenderValues = ["male", "female"] as const;
 
 export const contestantAcademicYearValues = [
-  "1st Year - 1st Semester",
-  "1st Year - 2nd Semester",
-  "2nd Year - 1st Semester",
-  "2nd Year - 2nd Semester",
-  "3rd Year - 1st Semester",
-  "3rd Year - 2nd Semester",
-  "4th Year - 1st Semester",
-  "4th Year - 2nd Semester",
+  "1st Year",
+  "2nd Year",
+  "3rd Year",
+  "4th Year",
 ] as const;
 
 export const contestantSemesterValues = ["1st Semester", "2nd Semester"] as const;

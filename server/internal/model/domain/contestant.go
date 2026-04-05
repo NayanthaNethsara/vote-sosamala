@@ -10,6 +10,8 @@ type Contestant struct {
 	Gender       string    `json:"gender"`
 	AcademicYear string    `json:"academicYear"`
 	Semester     string    `json:"semester"`
+	NIC          *string   `json:"nic"`
+	StudentID    *string   `json:"studentId"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 }

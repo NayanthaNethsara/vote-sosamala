@@ -7,4 +7,6 @@ type ContestantUpsertRequest struct {
 	Gender       string  `json:"gender" binding:"required"`
 	AcademicYear string  `json:"academicYear" binding:"required"`
 	Semester     string  `json:"semester" binding:"required"`
+	NIC          *string `json:"nic"`
+	StudentID    *string `json:"studentId"`
 }

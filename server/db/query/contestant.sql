@@ -1,10 +1,10 @@
 -- name: CreateContestant :one
-INSERT INTO contestants (name, date_of_birth, photo_url, gender, academic_year, semester)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, created_at, updated_at;
+INSERT INTO contestants (name, date_of_birth, photo_url, gender, academic_year, semester, nic, student_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, nic, student_id, created_at, updated_at;
 
 -- name: ListContestants :many
-SELECT id, name, date_of_birth, photo_url, gender, academic_year, semester, created_at, updated_at
+SELECT id, name, date_of_birth, photo_url, gender, academic_year, semester, nic, student_id, created_at, updated_at
 FROM contestants
 ORDER BY created_at DESC;
 
@@ -17,9 +17,11 @@ SET
   gender = $5,
   academic_year = $6,
   semester = $7,
+  nic = $8,
+  student_id = $9,
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, created_at, updated_at;
+RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, nic, student_id, created_at, updated_at;
 
 -- name: DeleteContestant :execrows
 DELETE FROM contestants

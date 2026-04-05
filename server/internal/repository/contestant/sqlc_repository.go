@@ -35,6 +35,8 @@ func (r *SQLCRepository) Create(ctx context.Context, input UpsertInput) (domain.
 		Gender:       stringPtr(input.Gender),
 		AcademicYear: stringPtr(input.AcademicYear),
 		Semester:     stringPtr(input.Semester),
+		Nic:          input.NIC,
+		StudentID:    input.StudentID,
 	})
 	if isUniqueViolation(err) {
 		return domain.Contestant{}, ErrConflict
@@ -51,6 +53,8 @@ func (r *SQLCRepository) Create(ctx context.Context, input UpsertInput) (domain.
 		row.Gender,
 		row.AcademicYear,
 		row.Semester,
+		row.Nic,
+		row.StudentID,
 		row.CreatedAt,
 		row.UpdatedAt,
 	), nil
@@ -72,6 +76,8 @@ func (r *SQLCRepository) List(ctx context.Context) ([]domain.Contestant, error) 
 			row.Gender,
 			row.AcademicYear,
 			row.Semester,
+			row.Nic,
+			row.StudentID,
 			row.CreatedAt,
 			row.UpdatedAt,
 		))
@@ -99,6 +105,8 @@ func (r *SQLCRepository) Update(ctx context.Context, id string, input UpsertInpu
 		Gender:       stringPtr(input.Gender),
 		AcademicYear: stringPtr(input.AcademicYear),
 		Semester:     stringPtr(input.Semester),
+		Nic:          input.NIC,
+		StudentID:    input.StudentID,
 	})
 	if isUniqueViolation(err) {
 		return domain.Contestant{}, ErrConflict
@@ -118,6 +126,8 @@ func (r *SQLCRepository) Update(ctx context.Context, id string, input UpsertInpu
 		row.Gender,
 		row.AcademicYear,
 		row.Semester,
+		row.Nic,
+		row.StudentID,
 		row.CreatedAt,
 		row.UpdatedAt,
 	), nil
@@ -168,6 +178,8 @@ func toDomainContestant(
 	gender *string,
 	academicYear *string,
 	semester *string,
+	nic *string,
+	studentID *string,
 	createdAt pgtype.Timestamptz,
 	updatedAt pgtype.Timestamptz,
 ) domain.Contestant {
@@ -189,6 +201,8 @@ func toDomainContestant(
 		Gender:       genderValue,
 		AcademicYear: academicYearValue,
 		Semester:     semesterValue,
+		NIC:          nic,
+		StudentID:    studentID,
 		CreatedAt:    createdAt.Time,
 		UpdatedAt:    updatedAt.Time,
 	}

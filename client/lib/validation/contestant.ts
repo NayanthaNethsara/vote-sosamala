@@ -7,15 +7,45 @@ import {
   dateYyyyMmDdSchema,
 } from "@/lib/validation/shared";
 
-export const contestantFormSchema = z.object({
-  name: z.string().trim().min(2, "Name is required"),
-  dateOfBirth: dateYyyyMmDdSchema,
-  gender: z.enum(contestantGenderValues),
-  academicYear: z.enum(contestantAcademicYearValues),
-  semester: z.enum(contestantSemesterValues),
-});
+const contestantBaseSchema = z
+  .object({
+    name: z.string().trim().min(2, "Name is required"),
+    dateOfBirth: dateYyyyMmDdSchema,
+    gender: z.enum(contestantGenderValues),
+    academicYear: z.enum(contestantAcademicYearValues),
+    semester: z.enum(contestantSemesterValues),
+    nic: z
+      .string()
+      .trim()
+      .max(50, "NIC must be 50 characters or less")
+      .optional(),
+    studentId: z
+      .string()
+      .trim()
+      .max(50, "Student ID must be 50 characters or less")
+      .optional(),
+  })
+  .superRefine((value, ctx) => {
+    const hasNIC = Boolean(value.nic?.trim());
+    const hasStudentID = Boolean(value.studentId?.trim());
 
-export const contestantInputSchema = contestantFormSchema.extend({
+    if (!hasNIC && !hasStudentID) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["nic"],
+        message: "Provide either NIC or Student ID",
+      });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["studentId"],
+        message: "Provide either Student ID or NIC",
+      });
+    }
+  });
+
+export const contestantFormSchema = contestantBaseSchema;
+
+export const contestantInputSchema = contestantBaseSchema.extend({
   photoURL: z.string().url().optional(),
 });
 

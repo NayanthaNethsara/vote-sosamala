@@ -76,6 +76,8 @@ func normalizeAndValidateInput(input contestantrepo.UpsertInput) (contestantrepo
 		Gender:       strings.TrimSpace(input.Gender),
 		AcademicYear: strings.TrimSpace(input.AcademicYear),
 		Semester:     strings.TrimSpace(input.Semester),
+		NIC:          normalizeOptionalString(input.NIC),
+		StudentID:    normalizeOptionalString(input.StudentID),
 	}
 
 	if len(normalized.Name) < 2 {
@@ -105,6 +107,10 @@ func normalizeAndValidateInput(input contestantrepo.UpsertInput) (contestantrepo
 
 	if normalized.Semester == "" {
 		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: semester is required", ErrInvalidInput)
+	}
+
+	if normalized.NIC == nil && normalized.StudentID == nil {
+		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: provide either nic or studentId", ErrInvalidInput)
 	}
 
 	return normalized, nil

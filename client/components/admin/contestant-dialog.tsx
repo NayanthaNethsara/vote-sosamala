@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -35,7 +35,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SpinnerIcon } from "@phosphor-icons/react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarBlankIcon, SpinnerIcon } from "@phosphor-icons/react";
+
+function formatDateForForm(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateFromForm(value: string | undefined): Date | undefined {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return undefined;
+  }
+
+  const [year, month, day] = value.split("-").map(Number);
+  const parsed = new Date(year, month - 1, day);
+
+  if (
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day
+  ) {
+    return undefined;
+  }
+
+  return parsed;
+}
+
+function formatDateForDisplay(value: string | undefined): string {
+  const date = parseDateFromForm(value);
+  if (!date) {
+    return "";
+  }
+
+  return date.toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 interface Props {
   open: boolean;
@@ -58,6 +103,8 @@ export function ContestantDialog({
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [dobPickerOpen, setDobPickerOpen] = useState(false);
+  const [dobMonth, setDobMonth] = useState<Date | undefined>(undefined);
 
   const {
     register,
@@ -75,6 +122,8 @@ export function ContestantDialog({
       gender: undefined,
       academicYear: undefined,
       semester: undefined,
+      nic: "",
+      studentId: "",
     },
   });
 
@@ -104,6 +153,8 @@ export function ContestantDialog({
         )
           ? (contestant.semester as (typeof contestantSemesterValues)[number])
           : undefined,
+        nic: contestant.nic ?? "",
+        studentId: contestant.studentId ?? "",
       });
       setPreviewUrl(contestant.photoURL || null);
       return;
@@ -115,6 +166,8 @@ export function ContestantDialog({
       gender: undefined,
       academicYear: undefined,
       semester: undefined,
+      nic: "",
+      studentId: "",
     });
     setPreviewUrl(null);
   }, [open, contestant, reset]);
@@ -122,6 +175,19 @@ export function ContestantDialog({
   const genderValue = watch("gender");
   const academicYearValue = watch("academicYear");
   const semesterValue = watch("semester");
+  const dateOfBirthValue = watch("dateOfBirth");
+  const selectedDateOfBirth = useMemo(
+    () => parseDateFromForm(dateOfBirthValue),
+    [dateOfBirthValue],
+  );
+
+  useEffect(() => {
+    if (!dobPickerOpen) {
+      return;
+    }
+
+    setDobMonth(selectedDateOfBirth ?? new Date());
+  }, [dobPickerOpen, selectedDateOfBirth]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) {
@@ -154,6 +220,8 @@ export function ContestantDialog({
         gender: data.gender,
         academicYear: data.academicYear,
         semester: data.semester,
+        nic: data.nic?.trim() || undefined,
+        studentId: data.studentId?.trim() || undefined,
         photoURL: photoURL || undefined,
       };
 
@@ -226,7 +294,57 @@ export function ContestantDialog({
 
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth">Date of Birth</Label>
-            <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} />
+            <input type="hidden" {...register("dateOfBirth")} />
+            <div className="relative">
+              <Input
+                id="dateOfBirth"
+                value={formatDateForDisplay(dateOfBirthValue)}
+                placeholder="Select date of birth"
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setDobPickerOpen(true);
+                  }
+                }}
+                readOnly
+              />
+
+              <Popover open={dobPickerOpen} onOpenChange={setDobPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1 h-8 w-8"
+                    aria-label="Select date of birth"
+                  >
+                    <CalendarBlankIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-auto overflow-hidden p-0"
+                  align="end"
+                >
+                  <Calendar
+                    mode="single"
+                    selected={selectedDateOfBirth}
+                    month={dobMonth}
+                    onMonthChange={setDobMonth}
+                    onSelect={(date) => {
+                      if (!date) {
+                        return;
+                      }
+
+                      setValue("dateOfBirth", formatDateForForm(date), {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                      setDobPickerOpen(false);
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
             {errors.dateOfBirth && (
               <span className="text-sm text-red-500">
                 {errors.dateOfBirth.message}
@@ -333,6 +451,32 @@ export function ContestantDialog({
               {errors.semester && (
                 <span className="text-sm text-red-500">
                   {errors.semester.message}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="nic">NIC</Label>
+              <Input id="nic" {...register("nic")} placeholder="Optional" />
+              {errors.nic && (
+                <span className="text-sm text-red-500">
+                  {errors.nic.message}
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="studentId">Student ID</Label>
+              <Input
+                id="studentId"
+                {...register("studentId")}
+                placeholder="Optional"
+              />
+              {errors.studentId && (
+                <span className="text-sm text-red-500">
+                  {errors.studentId.message}
                 </span>
               )}
             </div>

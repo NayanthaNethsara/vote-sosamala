@@ -17,6 +17,8 @@ type UpsertInput struct {
 	Gender       string
 	AcademicYear string
 	Semester     string
+	NIC          *string
+	StudentID    *string
 }
 
 type Repository interface {

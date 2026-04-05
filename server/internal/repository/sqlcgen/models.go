@@ -18,4 +18,6 @@ type Contestant struct {
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 	Semester     *string            `json:"semester"`
+	Nic          *string            `json:"nic"`
+	StudentID    *string            `json:"student_id"`
 }

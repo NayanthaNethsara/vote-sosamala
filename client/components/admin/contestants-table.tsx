@@ -35,6 +35,8 @@ export function ContestantsTable({
             <TableHead>Gender</TableHead>
             <TableHead>Academic Year</TableHead>
             <TableHead>Semester</TableHead>
+            <TableHead>NIC</TableHead>
+            <TableHead>Student ID</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -42,7 +44,7 @@ export function ContestantsTable({
           {contestants.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={7}
+                colSpan={9}
                 className="h-48 text-center text-muted-foreground"
               >
                 <div className="flex flex-col items-center justify-center gap-2">
@@ -76,6 +78,8 @@ export function ContestantsTable({
                 <TableCell className="capitalize">{c.gender}</TableCell>
                 <TableCell>{c.academicYear}</TableCell>
                 <TableCell>{c.semester}</TableCell>
+                <TableCell>{c.nic || "-"}</TableCell>
+                <TableCell>{c.studentId || "-"}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="icon" onClick={() => onEdit(c)}>
                     <PencilSimple className="h-4 w-4" />

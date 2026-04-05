@@ -6,6 +6,8 @@ export interface Contestant {
   gender: string;
   academicYear: string;
   semester: string;
+  nic?: string;
+  studentId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,4 +19,6 @@ export interface ContestantInput {
   gender: string;
   academicYear: string;
   semester: string;
+  nic?: string;
+  studentId?: string;
 }

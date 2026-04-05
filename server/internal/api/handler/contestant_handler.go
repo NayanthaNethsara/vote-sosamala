@@ -35,6 +35,8 @@ func (h *ContestantHandler) CreateContestant(c *gin.Context) {
 		Gender:       input.Gender,
 		AcademicYear: input.AcademicYear,
 		Semester:     input.Semester,
+		NIC:          input.NIC,
+		StudentID:    input.StudentID,
 	})
 	if err != nil {
 		respondContestantError(c, err)
@@ -78,6 +80,8 @@ func (h *ContestantHandler) UpdateContestant(c *gin.Context) {
 		Gender:       input.Gender,
 		AcademicYear: input.AcademicYear,
 		Semester:     input.Semester,
+		NIC:          input.NIC,
+		StudentID:    input.StudentID,
 	})
 	if err != nil {
 		respondContestantError(c, err)

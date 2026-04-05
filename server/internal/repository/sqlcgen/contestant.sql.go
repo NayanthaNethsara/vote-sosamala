@@ -12,9 +12,9 @@ import (
 )
 
 const createContestant = `-- name: CreateContestant :one
-INSERT INTO contestants (name, date_of_birth, photo_url, gender, academic_year, semester)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, created_at, updated_at
+INSERT INTO contestants (name, date_of_birth, photo_url, gender, academic_year, semester, nic, student_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, nic, student_id, created_at, updated_at
 `
 
 type CreateContestantParams struct {
@@ -24,6 +24,8 @@ type CreateContestantParams struct {
 	Gender       *string     `json:"gender"`
 	AcademicYear *string     `json:"academic_year"`
 	Semester     *string     `json:"semester"`
+	Nic          *string     `json:"nic"`
+	StudentID    *string     `json:"student_id"`
 }
 
 type CreateContestantRow struct {
@@ -34,6 +36,8 @@ type CreateContestantRow struct {
 	Gender       *string            `json:"gender"`
 	AcademicYear *string            `json:"academic_year"`
 	Semester     *string            `json:"semester"`
+	Nic          *string            `json:"nic"`
+	StudentID    *string            `json:"student_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
@@ -46,6 +50,8 @@ func (q *Queries) CreateContestant(ctx context.Context, arg CreateContestantPara
 		arg.Gender,
 		arg.AcademicYear,
 		arg.Semester,
+		arg.Nic,
+		arg.StudentID,
 	)
 	var i CreateContestantRow
 	err := row.Scan(
@@ -56,6 +62,8 @@ func (q *Queries) CreateContestant(ctx context.Context, arg CreateContestantPara
 		&i.Gender,
 		&i.AcademicYear,
 		&i.Semester,
+		&i.Nic,
+		&i.StudentID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -76,7 +84,7 @@ func (q *Queries) DeleteContestant(ctx context.Context, id pgtype.UUID) (int64, 
 }
 
 const listContestants = `-- name: ListContestants :many
-SELECT id, name, date_of_birth, photo_url, gender, academic_year, semester, created_at, updated_at
+SELECT id, name, date_of_birth, photo_url, gender, academic_year, semester, nic, student_id, created_at, updated_at
 FROM contestants
 ORDER BY created_at DESC
 `
@@ -89,6 +97,8 @@ type ListContestantsRow struct {
 	Gender       *string            `json:"gender"`
 	AcademicYear *string            `json:"academic_year"`
 	Semester     *string            `json:"semester"`
+	Nic          *string            `json:"nic"`
+	StudentID    *string            `json:"student_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
@@ -110,6 +120,8 @@ func (q *Queries) ListContestants(ctx context.Context) ([]ListContestantsRow, er
 			&i.Gender,
 			&i.AcademicYear,
 			&i.Semester,
+			&i.Nic,
+			&i.StudentID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -132,9 +144,11 @@ SET
   gender = $5,
   academic_year = $6,
   semester = $7,
+  nic = $8,
+  student_id = $9,
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, created_at, updated_at
+RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, nic, student_id, created_at, updated_at
 `
 
 type UpdateContestantParams struct {
@@ -145,6 +159,8 @@ type UpdateContestantParams struct {
 	Gender       *string     `json:"gender"`
 	AcademicYear *string     `json:"academic_year"`
 	Semester     *string     `json:"semester"`
+	Nic          *string     `json:"nic"`
+	StudentID    *string     `json:"student_id"`
 }
 
 type UpdateContestantRow struct {
@@ -155,6 +171,8 @@ type UpdateContestantRow struct {
 	Gender       *string            `json:"gender"`
 	AcademicYear *string            `json:"academic_year"`
 	Semester     *string            `json:"semester"`
+	Nic          *string            `json:"nic"`
+	StudentID    *string            `json:"student_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
@@ -168,6 +186,8 @@ func (q *Queries) UpdateContestant(ctx context.Context, arg UpdateContestantPara
 		arg.Gender,
 		arg.AcademicYear,
 		arg.Semester,
+		arg.Nic,
+		arg.StudentID,
 	)
 	var i UpdateContestantRow
 	err := row.Scan(
@@ -178,6 +198,8 @@ func (q *Queries) UpdateContestant(ctx context.Context, arg UpdateContestantPara
 		&i.Gender,
 		&i.AcademicYear,
 		&i.Semester,
+		&i.Nic,
+		&i.StudentID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
