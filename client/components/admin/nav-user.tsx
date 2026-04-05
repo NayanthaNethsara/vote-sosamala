@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  User,
-  CaretUpDown,
-  SignOut,
-} from "@phosphor-icons/react";
+import { User, CaretUpDown, SignOut } from "@phosphor-icons/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -53,7 +49,9 @@ export function NavUser({
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-[10px] text-muted-foreground font-mono">{user.email}</span>
+                <span className="truncate text-[10px] text-muted-foreground font-mono">
+                  {user.email}
+                </span>
               </div>
               <CaretUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -74,7 +72,9 @@ export function NavUser({
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {user.email}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -86,7 +86,10 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+            <DropdownMenuItem
+              onClick={() => signOut()}
+              className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
+            >
               <SignOut className="size-4" />
               Log out
             </DropdownMenuItem>

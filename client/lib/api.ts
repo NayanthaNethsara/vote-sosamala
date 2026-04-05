@@ -37,7 +37,7 @@ export async function listContestants(user: AuthUser): Promise<Contestant[]> {
 
 export async function createContestant(
   user: AuthUser,
-  data: ContestantInput
+  data: ContestantInput,
 ): Promise<Contestant> {
   const res = await authFetch(user, "/api/admin/contestants", {
     method: "POST",
@@ -50,7 +50,7 @@ export async function createContestant(
 export async function updateContestant(
   user: AuthUser,
   id: string,
-  data: ContestantInput
+  data: ContestantInput,
 ): Promise<Contestant> {
   const res = await authFetch(user, `/api/admin/contestants/${id}`, {
     method: "PUT",
@@ -62,7 +62,7 @@ export async function updateContestant(
 
 export async function deleteContestant(
   user: AuthUser,
-  id: string
+  id: string,
 ): Promise<void> {
   const res = await authFetch(user, `/api/admin/contestants/${id}`, {
     method: "DELETE",

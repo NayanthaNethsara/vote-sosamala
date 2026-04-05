@@ -8,7 +8,10 @@ const env = {
     appId: process.env.FIREBASE_APP_ID ?? "",
   },
   apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080",
-  adminEmails: (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",").map(e => e.trim()).filter(Boolean),
+  adminEmails: (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim())
+    .filter(Boolean),
 } as const;
 
 export default env;

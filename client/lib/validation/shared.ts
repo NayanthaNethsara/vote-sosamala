@@ -9,7 +9,10 @@ export const contestantAcademicYearValues = [
   "4th Year",
 ] as const;
 
-export const contestantSemesterValues = ["1st Semester", "2nd Semester"] as const;
+export const contestantSemesterValues = [
+  "1st Semester",
+  "2nd Semester",
+] as const;
 
 export const dateYyyyMmDdSchema = z
   .string()
