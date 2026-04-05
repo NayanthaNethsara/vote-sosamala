@@ -8,7 +8,6 @@ import (
 )
 
 func AdminMiddleware(adminEmails []string) gin.HandlerFunc {
-	// Create a map for O(1) lookups
 	admins := make(map[string]bool)
 	for _, email := range adminEmails {
 		admins[strings.TrimSpace(email)] = true

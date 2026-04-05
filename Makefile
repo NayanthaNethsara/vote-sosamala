@@ -17,6 +17,8 @@ help:
 	@echo "  server-build   Build the Go binary"
 	@echo "  server-run     Run Go application locally"
 	@echo "  setup-run      Run setup/bootstrap script"
+	@echo "  sqlc-install   Install sqlc CLI"
+	@echo "  sqlc-generate  Generate typed Go from SQL"
 	@echo ""
 	@echo "Frontend (pnpm):"
 	@echo "  client-install Install frontend dependencies"
@@ -50,6 +52,14 @@ server-run:
 ## setup-run: Run the setup/bootstrap script
 setup-run:
 	@cd server && go run cmd/setup/main.go
+
+## sqlc-install: Install sqlc CLI
+sqlc-install:
+	@cd server && go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+## sqlc-generate: Generate typed Go from SQL definitions
+sqlc-generate:
+	@cd server && ~/go/bin/sqlc generate
 
 ## migrate-up: Run database migrations up
 migrate-up:

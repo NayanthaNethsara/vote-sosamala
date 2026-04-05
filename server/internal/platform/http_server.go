@@ -16,12 +16,10 @@ import (
 
 const shutdownTimeout = 5 * time.Second
 
-// Server wraps the HTTP server and manages its lifecycle.
 type Server struct {
 	httpServer *http.Server
 }
 
-// New creates a Server with the provided Gin router bound to the given port.
 func New(port string, router *gin.Engine) *Server {
 	return &Server{
 		httpServer: &http.Server{
@@ -31,8 +29,6 @@ func New(port string, router *gin.Engine) *Server {
 	}
 }
 
-// Start begins listening and blocks until an OS signal requests shutdown,
-// then performs a graceful drain.
 func (s *Server) Start() {
 	go func() {
 		log.Printf("Server listening on %s", s.httpServer.Addr)

@@ -13,7 +13,6 @@ func NewUserHandler() *UserHandler {
 	return &UserHandler{}
 }
 
-// Me returns the currently authenticated user's information from the token context.
 func (h *UserHandler) Me(c *gin.Context) {
 	if !requireAuthenticated(c) {
 		return

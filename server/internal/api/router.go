@@ -40,7 +40,7 @@ func registerPublicRoutes(router *gin.Engine, deps Dependencies) {
 
 func registerProtectedRoutes(router *gin.Engine, deps Dependencies) {
 	userHandler := handler.NewUserHandler()
-	contestantRepository := contestantrepo.NewPostgresRepository(deps.DBPool)
+	contestantRepository := contestantrepo.NewSQLCRepository(deps.DBPool)
 	contestantService := contestantservice.NewService(contestantRepository)
 	contestantHandler := handler.NewContestantHandler(contestantService)
 

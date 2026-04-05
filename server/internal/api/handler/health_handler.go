@@ -34,14 +34,12 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 		"time":   time.Now().Format(time.RFC3339),
 	}
 
-	// Check Redis
 	if err := h.redisClient.Ping(ctx).Err(); err != nil {
 		status["redis"] = "disconnected: " + err.Error()
 	} else {
 		status["redis"] = "connected"
 	}
 
-	// Check Postgres
 	if h.dbPool != nil {
 		if err := h.dbPool.Ping(ctx); err != nil {
 			status["database"] = "disconnected: " + err.Error()
@@ -52,7 +50,6 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 		status["database"] = "uninitialized"
 	}
 
-	// Check NATS
 	if h.natsConn != nil && h.natsConn.IsConnected() {
 		status["nats"] = "connected"
 	} else {
