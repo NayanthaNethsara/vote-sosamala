@@ -23,18 +23,18 @@ func NewSQLCRepository(db *pgxpool.Pool) *SQLCRepository {
 }
 
 func (r *SQLCRepository) Create(ctx context.Context, input UpsertInput) (domain.Contestant, error) {
-	birthday, err := toPgDate(input.Birthday)
+	dateOfBirth, err := toPgDate(input.DateOfBirth)
 	if err != nil {
 		return domain.Contestant{}, err
 	}
 
 	row, err := r.queries.CreateContestant(ctx, sqlcgen.CreateContestantParams{
-		Name:           input.Name,
-		Birthday:       birthday,
-		NicOrStudentID: input.NicOrStudentID,
-		PhotoUrl:       input.PhotoURL,
-		Gender:         input.Gender,
-		AcademicYear:   input.AcademicYear,
+		Name:         input.Name,
+		DateOfBirth:  dateOfBirth,
+		PhotoUrl:     input.PhotoURL,
+		Gender:       stringPtr(input.Gender),
+		AcademicYear: stringPtr(input.AcademicYear),
+		Semester:     stringPtr(input.Semester),
 	})
 	if isUniqueViolation(err) {
 		return domain.Contestant{}, ErrConflict
@@ -46,11 +46,11 @@ func (r *SQLCRepository) Create(ctx context.Context, input UpsertInput) (domain.
 	return toDomainContestant(
 		row.ID,
 		row.Name,
-		row.BirthdayText,
-		row.NicOrStudentID,
+		row.DateOfBirth,
 		row.PhotoUrl,
 		row.Gender,
 		row.AcademicYear,
+		row.Semester,
 		row.CreatedAt,
 		row.UpdatedAt,
 	), nil
@@ -67,11 +67,11 @@ func (r *SQLCRepository) List(ctx context.Context) ([]domain.Contestant, error) 
 		contestants = append(contestants, toDomainContestant(
 			row.ID,
 			row.Name,
-			row.BirthdayText,
-			row.NicOrStudentID,
+			row.DateOfBirth,
 			row.PhotoUrl,
 			row.Gender,
 			row.AcademicYear,
+			row.Semester,
 			row.CreatedAt,
 			row.UpdatedAt,
 		))
@@ -86,19 +86,19 @@ func (r *SQLCRepository) Update(ctx context.Context, id string, input UpsertInpu
 		return domain.Contestant{}, err
 	}
 
-	birthday, err := toPgDate(input.Birthday)
+	dateOfBirth, err := toPgDate(input.DateOfBirth)
 	if err != nil {
 		return domain.Contestant{}, err
 	}
 
 	row, err := r.queries.UpdateContestant(ctx, sqlcgen.UpdateContestantParams{
-		ID:             parsedID,
-		Name:           input.Name,
-		Birthday:       birthday,
-		NicOrStudentID: input.NicOrStudentID,
-		PhotoUrl:       input.PhotoURL,
-		Gender:         input.Gender,
-		AcademicYear:   input.AcademicYear,
+		ID:           parsedID,
+		Name:         input.Name,
+		DateOfBirth:  dateOfBirth,
+		PhotoUrl:     input.PhotoURL,
+		Gender:       stringPtr(input.Gender),
+		AcademicYear: stringPtr(input.AcademicYear),
+		Semester:     stringPtr(input.Semester),
 	})
 	if isUniqueViolation(err) {
 		return domain.Contestant{}, ErrConflict
@@ -113,11 +113,11 @@ func (r *SQLCRepository) Update(ctx context.Context, id string, input UpsertInpu
 	return toDomainContestant(
 		row.ID,
 		row.Name,
-		row.BirthdayText,
-		row.NicOrStudentID,
+		row.DateOfBirth,
 		row.PhotoUrl,
 		row.Gender,
 		row.AcademicYear,
+		row.Semester,
 		row.CreatedAt,
 		row.UpdatedAt,
 	), nil
@@ -151,12 +151,8 @@ func toPgUUID(id string) (pgtype.UUID, error) {
 	return pgtype.UUID{Bytes: bytes, Valid: true}, nil
 }
 
-func toPgDate(value *string) (pgtype.Date, error) {
-	if value == nil {
-		return pgtype.Date{}, nil
-	}
-
-	parsedDate, err := time.Parse("2006-01-02", *value)
+func toPgDate(value string) (pgtype.Date, error) {
+	parsedDate, err := time.Parse("2006-01-02", value)
 	if err != nil {
 		return pgtype.Date{}, err
 	}
@@ -167,11 +163,11 @@ func toPgDate(value *string) (pgtype.Date, error) {
 func toDomainContestant(
 	id pgtype.UUID,
 	name string,
-	birthdayValue interface{},
-	nicOrStudentID string,
+	dateOfBirth pgtype.Date,
 	photoURL *string,
 	gender *string,
 	academicYear *string,
+	semester *string,
 	createdAt pgtype.Timestamptz,
 	updatedAt pgtype.Timestamptz,
 ) domain.Contestant {
@@ -180,37 +176,42 @@ func toDomainContestant(
 		domainID = uuid.UUID(id.Bytes).String()
 	}
 
-	birthday := birthdayStringPtr(birthdayValue)
+	dateOfBirthValue := dateString(dateOfBirth)
+	genderValue := stringValue(gender)
+	academicYearValue := stringValue(academicYear)
+	semesterValue := stringValue(semester)
 
 	return domain.Contestant{
-		ID:             domainID,
-		Name:           name,
-		Birthday:       birthday,
-		NicOrStudentID: nicOrStudentID,
-		PhotoURL:       photoURL,
-		Gender:         gender,
-		AcademicYear:   academicYear,
-		CreatedAt:      createdAt.Time,
-		UpdatedAt:      updatedAt.Time,
+		ID:           domainID,
+		Name:         name,
+		DateOfBirth:  dateOfBirthValue,
+		PhotoURL:     photoURL,
+		Gender:       genderValue,
+		AcademicYear: academicYearValue,
+		Semester:     semesterValue,
+		CreatedAt:    createdAt.Time,
+		UpdatedAt:    updatedAt.Time,
 	}
 }
 
-func birthdayStringPtr(value interface{}) *string {
-	switch typed := value.(type) {
-	case string:
-		if typed == "" {
-			return nil
-		}
-		return &typed
-	case []byte:
-		text := string(typed)
-		if text == "" {
-			return nil
-		}
-		return &text
-	default:
-		return nil
+func dateString(value pgtype.Date) string {
+	if !value.Valid {
+		return ""
 	}
+
+	return value.Time.Format("2006-01-02")
+}
+
+func stringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+
+	return *value
+}
+
+func stringPtr(value string) *string {
+	return &value
 }
 
 func isUniqueViolation(err error) bool {

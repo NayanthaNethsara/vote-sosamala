@@ -1,10 +1,10 @@
 package dto
 
 type ContestantUpsertRequest struct {
-	Name           string  `json:"name" binding:"required"`
-	Birthday       *string `json:"birthday"`
-	NicOrStudentID string  `json:"nicOrStudentId" binding:"required"`
-	PhotoURL       *string `json:"photoUrl"`
-	Gender         *string `json:"gender"`
-	AcademicYear   *string `json:"academicYear"`
+	Name         string  `json:"name" binding:"required"`
+	DateOfBirth  string  `json:"dateOfBirth" binding:"required"`
+	PhotoURL     *string `json:"photoURL"`
+	Gender       string  `json:"gender" binding:"required"`
+	AcademicYear string  `json:"academicYear" binding:"required"`
+	Semester     string  `json:"semester" binding:"required"`
 }

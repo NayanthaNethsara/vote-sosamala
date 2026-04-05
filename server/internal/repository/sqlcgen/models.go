@@ -9,13 +9,13 @@ import (
 )
 
 type Contestant struct {
-	ID             pgtype.UUID        `json:"id"`
-	Name           string             `json:"name"`
-	Birthday       pgtype.Date        `json:"birthday"`
-	NicOrStudentID string             `json:"nic_or_student_id"`
-	PhotoUrl       *string            `json:"photo_url"`
-	Gender         *string            `json:"gender"`
-	AcademicYear   *string            `json:"academic_year"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	ID           pgtype.UUID        `json:"id"`
+	Name         string             `json:"name"`
+	DateOfBirth  pgtype.Date        `json:"date_of_birth"`
+	PhotoUrl     *string            `json:"photo_url"`
+	Gender       *string            `json:"gender"`
+	AcademicYear *string            `json:"academic_year"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	Semester     *string            `json:"semester"`
 }

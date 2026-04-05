@@ -12,50 +12,50 @@ import (
 )
 
 const createContestant = `-- name: CreateContestant :one
-INSERT INTO contestants (name, birthday, nic_or_student_id, photo_url, gender, academic_year)
+INSERT INTO contestants (name, date_of_birth, photo_url, gender, academic_year, semester)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, name, COALESCE(birthday::text, '') AS birthday_text, nic_or_student_id, photo_url, gender, academic_year, created_at, updated_at
+RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, created_at, updated_at
 `
 
 type CreateContestantParams struct {
-	Name           string      `json:"name"`
-	Birthday       pgtype.Date `json:"birthday"`
-	NicOrStudentID string      `json:"nic_or_student_id"`
-	PhotoUrl       *string     `json:"photo_url"`
-	Gender         *string     `json:"gender"`
-	AcademicYear   *string     `json:"academic_year"`
+	Name         string      `json:"name"`
+	DateOfBirth  pgtype.Date `json:"date_of_birth"`
+	PhotoUrl     *string     `json:"photo_url"`
+	Gender       *string     `json:"gender"`
+	AcademicYear *string     `json:"academic_year"`
+	Semester     *string     `json:"semester"`
 }
 
 type CreateContestantRow struct {
-	ID             pgtype.UUID        `json:"id"`
-	Name           string             `json:"name"`
-	BirthdayText   interface{}        `json:"birthday_text"`
-	NicOrStudentID string             `json:"nic_or_student_id"`
-	PhotoUrl       *string            `json:"photo_url"`
-	Gender         *string            `json:"gender"`
-	AcademicYear   *string            `json:"academic_year"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	ID           pgtype.UUID        `json:"id"`
+	Name         string             `json:"name"`
+	DateOfBirth  pgtype.Date        `json:"date_of_birth"`
+	PhotoUrl     *string            `json:"photo_url"`
+	Gender       *string            `json:"gender"`
+	AcademicYear *string            `json:"academic_year"`
+	Semester     *string            `json:"semester"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CreateContestant(ctx context.Context, arg CreateContestantParams) (CreateContestantRow, error) {
 	row := q.db.QueryRow(ctx, createContestant,
 		arg.Name,
-		arg.Birthday,
-		arg.NicOrStudentID,
+		arg.DateOfBirth,
 		arg.PhotoUrl,
 		arg.Gender,
 		arg.AcademicYear,
+		arg.Semester,
 	)
 	var i CreateContestantRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.BirthdayText,
-		&i.NicOrStudentID,
+		&i.DateOfBirth,
 		&i.PhotoUrl,
 		&i.Gender,
 		&i.AcademicYear,
+		&i.Semester,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -76,21 +76,21 @@ func (q *Queries) DeleteContestant(ctx context.Context, id pgtype.UUID) (int64, 
 }
 
 const listContestants = `-- name: ListContestants :many
-SELECT id, name, COALESCE(birthday::text, '') AS birthday_text, nic_or_student_id, photo_url, gender, academic_year, created_at, updated_at
+SELECT id, name, date_of_birth, photo_url, gender, academic_year, semester, created_at, updated_at
 FROM contestants
 ORDER BY created_at DESC
 `
 
 type ListContestantsRow struct {
-	ID             pgtype.UUID        `json:"id"`
-	Name           string             `json:"name"`
-	BirthdayText   interface{}        `json:"birthday_text"`
-	NicOrStudentID string             `json:"nic_or_student_id"`
-	PhotoUrl       *string            `json:"photo_url"`
-	Gender         *string            `json:"gender"`
-	AcademicYear   *string            `json:"academic_year"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	ID           pgtype.UUID        `json:"id"`
+	Name         string             `json:"name"`
+	DateOfBirth  pgtype.Date        `json:"date_of_birth"`
+	PhotoUrl     *string            `json:"photo_url"`
+	Gender       *string            `json:"gender"`
+	AcademicYear *string            `json:"academic_year"`
+	Semester     *string            `json:"semester"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) ListContestants(ctx context.Context) ([]ListContestantsRow, error) {
@@ -105,11 +105,11 @@ func (q *Queries) ListContestants(ctx context.Context) ([]ListContestantsRow, er
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.BirthdayText,
-			&i.NicOrStudentID,
+			&i.DateOfBirth,
 			&i.PhotoUrl,
 			&i.Gender,
 			&i.AcademicYear,
+			&i.Semester,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -127,57 +127,57 @@ const updateContestant = `-- name: UpdateContestant :one
 UPDATE contestants
 SET
   name = $2,
-  birthday = $3,
-  nic_or_student_id = $4,
-  photo_url = $5,
-  gender = $6,
-  academic_year = $7,
+  date_of_birth = $3,
+  photo_url = $4,
+  gender = $5,
+  academic_year = $6,
+  semester = $7,
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, name, COALESCE(birthday::text, '') AS birthday_text, nic_or_student_id, photo_url, gender, academic_year, created_at, updated_at
+RETURNING id, name, date_of_birth, photo_url, gender, academic_year, semester, created_at, updated_at
 `
 
 type UpdateContestantParams struct {
-	ID             pgtype.UUID `json:"id"`
-	Name           string      `json:"name"`
-	Birthday       pgtype.Date `json:"birthday"`
-	NicOrStudentID string      `json:"nic_or_student_id"`
-	PhotoUrl       *string     `json:"photo_url"`
-	Gender         *string     `json:"gender"`
-	AcademicYear   *string     `json:"academic_year"`
+	ID           pgtype.UUID `json:"id"`
+	Name         string      `json:"name"`
+	DateOfBirth  pgtype.Date `json:"date_of_birth"`
+	PhotoUrl     *string     `json:"photo_url"`
+	Gender       *string     `json:"gender"`
+	AcademicYear *string     `json:"academic_year"`
+	Semester     *string     `json:"semester"`
 }
 
 type UpdateContestantRow struct {
-	ID             pgtype.UUID        `json:"id"`
-	Name           string             `json:"name"`
-	BirthdayText   interface{}        `json:"birthday_text"`
-	NicOrStudentID string             `json:"nic_or_student_id"`
-	PhotoUrl       *string            `json:"photo_url"`
-	Gender         *string            `json:"gender"`
-	AcademicYear   *string            `json:"academic_year"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	ID           pgtype.UUID        `json:"id"`
+	Name         string             `json:"name"`
+	DateOfBirth  pgtype.Date        `json:"date_of_birth"`
+	PhotoUrl     *string            `json:"photo_url"`
+	Gender       *string            `json:"gender"`
+	AcademicYear *string            `json:"academic_year"`
+	Semester     *string            `json:"semester"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) UpdateContestant(ctx context.Context, arg UpdateContestantParams) (UpdateContestantRow, error) {
 	row := q.db.QueryRow(ctx, updateContestant,
 		arg.ID,
 		arg.Name,
-		arg.Birthday,
-		arg.NicOrStudentID,
+		arg.DateOfBirth,
 		arg.PhotoUrl,
 		arg.Gender,
 		arg.AcademicYear,
+		arg.Semester,
 	)
 	var i UpdateContestantRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.BirthdayText,
-		&i.NicOrStudentID,
+		&i.DateOfBirth,
 		&i.PhotoUrl,
 		&i.Gender,
 		&i.AcademicYear,
+		&i.Semester,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

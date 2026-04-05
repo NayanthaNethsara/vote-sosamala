@@ -70,34 +70,41 @@ func parseID(id string) (uuid.UUID, error) {
 
 func normalizeAndValidateInput(input contestantrepo.UpsertInput) (contestantrepo.UpsertInput, error) {
 	normalized := contestantrepo.UpsertInput{
-		Name:           strings.TrimSpace(input.Name),
-		NicOrStudentID: strings.TrimSpace(input.NicOrStudentID),
-		Birthday:       normalizeOptionalString(input.Birthday),
-		PhotoURL:       normalizeOptionalString(input.PhotoURL),
-		Gender:         normalizeOptionalString(input.Gender),
-		AcademicYear:   normalizeOptionalString(input.AcademicYear),
+		Name:         strings.TrimSpace(input.Name),
+		DateOfBirth:  strings.TrimSpace(input.DateOfBirth),
+		PhotoURL:     normalizeOptionalString(input.PhotoURL),
+		Gender:       strings.TrimSpace(input.Gender),
+		AcademicYear: strings.TrimSpace(input.AcademicYear),
+		Semester:     strings.TrimSpace(input.Semester),
 	}
 
 	if len(normalized.Name) < 2 {
 		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: name must be at least 2 characters", ErrInvalidInput)
 	}
 
-	if normalized.NicOrStudentID == "" {
-		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: nicOrStudentId is required", ErrInvalidInput)
+	if normalized.DateOfBirth == "" {
+		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: dateOfBirth is required", ErrInvalidInput)
 	}
 
-	if normalized.Birthday != nil {
-		if _, err := time.Parse("2006-01-02", *normalized.Birthday); err != nil {
-			return contestantrepo.UpsertInput{}, fmt.Errorf("%w: birthday must be in YYYY-MM-DD format", ErrInvalidInput)
-		}
+	if _, err := time.Parse("2006-01-02", normalized.DateOfBirth); err != nil {
+		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: dateOfBirth must be in YYYY-MM-DD format", ErrInvalidInput)
 	}
 
-	if normalized.Gender != nil {
-		gender := strings.ToLower(*normalized.Gender)
-		if gender != "male" && gender != "female" {
-			return contestantrepo.UpsertInput{}, fmt.Errorf("%w: gender must be male or female", ErrInvalidInput)
-		}
-		normalized.Gender = &gender
+	gender := strings.ToLower(normalized.Gender)
+	if gender == "" {
+		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: gender is required", ErrInvalidInput)
+	}
+	if gender != "male" && gender != "female" {
+		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: gender must be male or female", ErrInvalidInput)
+	}
+	normalized.Gender = gender
+
+	if normalized.AcademicYear == "" {
+		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: academicYear is required", ErrInvalidInput)
+	}
+
+	if normalized.Semester == "" {
+		return contestantrepo.UpsertInput{}, fmt.Errorf("%w: semester is required", ErrInvalidInput)
 	}
 
 	return normalized, nil

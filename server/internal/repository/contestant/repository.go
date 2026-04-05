@@ -11,12 +11,12 @@ var ErrNotFound = errors.New("contestant not found")
 var ErrConflict = errors.New("contestant already exists")
 
 type UpsertInput struct {
-	Name           string
-	Birthday       *string
-	NicOrStudentID string
-	PhotoURL       *string
-	Gender         *string
-	AcademicYear   *string
+	Name         string
+	DateOfBirth  string
+	PhotoURL     *string
+	Gender       string
+	AcademicYear string
+	Semester     string
 }
 
 type Repository interface {

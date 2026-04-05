@@ -29,12 +29,12 @@ func (h *ContestantHandler) CreateContestant(c *gin.Context) {
 	}
 
 	createdContestant, err := h.service.Create(c.Request.Context(), contestantrepo.UpsertInput{
-		Name:           input.Name,
-		Birthday:       input.Birthday,
-		NicOrStudentID: input.NicOrStudentID,
-		PhotoURL:       input.PhotoURL,
-		Gender:         input.Gender,
-		AcademicYear:   input.AcademicYear,
+		Name:         input.Name,
+		DateOfBirth:  input.DateOfBirth,
+		PhotoURL:     input.PhotoURL,
+		Gender:       input.Gender,
+		AcademicYear: input.AcademicYear,
+		Semester:     input.Semester,
 	})
 	if err != nil {
 		respondContestantError(c, err)
@@ -72,12 +72,12 @@ func (h *ContestantHandler) UpdateContestant(c *gin.Context) {
 	}
 
 	updatedContestant, err := h.service.Update(c.Request.Context(), id, contestantrepo.UpsertInput{
-		Name:           input.Name,
-		Birthday:       input.Birthday,
-		NicOrStudentID: input.NicOrStudentID,
-		PhotoURL:       input.PhotoURL,
-		Gender:         input.Gender,
-		AcademicYear:   input.AcademicYear,
+		Name:         input.Name,
+		DateOfBirth:  input.DateOfBirth,
+		PhotoURL:     input.PhotoURL,
+		Gender:       input.Gender,
+		AcademicYear: input.AcademicYear,
+		Semester:     input.Semester,
 	})
 	if err != nil {
 		respondContestantError(c, err)
