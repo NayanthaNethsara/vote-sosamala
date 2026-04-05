@@ -16,6 +16,7 @@ type Config struct {
 	GinMode           string
 	FirebaseProjectID string
 	AllowedOrigins    []string
+	AdminEmails       []string
 }
 
 func LoadConfig() *Config {
@@ -31,6 +32,7 @@ func LoadConfig() *Config {
 		GinMode:           getEnv("GIN_MODE", "release"),
 		FirebaseProjectID: getEnv("FIREBASE_PROJECT_ID", ""),
 		AllowedOrigins:    getEnvSlice("ALLOWED_ORIGINS", []string{"http://localhost:3000"}),
+		AdminEmails:       getEnvSlice("ADMIN_EMAILS", []string{}),
 	}
 }
 

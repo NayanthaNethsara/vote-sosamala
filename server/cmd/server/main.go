@@ -51,6 +51,7 @@ func main() {
 		DBPool:         dbPool,
 		FirebaseAuth:   firebaseAuth,
 		AllowedOrigins: cfg.AllowedOrigins,
+		AdminEmails:    cfg.AdminEmails,
 	})
 
 	server.New(cfg.Port, router).Start()

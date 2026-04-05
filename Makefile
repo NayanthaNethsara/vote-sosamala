@@ -46,6 +46,14 @@ server-build:
 server-run:
 	@cd server && go run cmd/server/main.go
 
+## migrate-up: Run database migrations up
+migrate-up:
+	@cd server && ~/go/bin/migrate -path migrations -database "postgres://user:password@localhost:5432/votes?sslmode=disable" up
+
+## migrate-down: Run database migrations down
+migrate-down:
+	@cd server && ~/go/bin/migrate -path migrations -database "postgres://user:password@localhost:5432/votes?sslmode=disable" down
+
 ## client-install: Install frontend dependencies
 client-install:
 	@cd client && pnpm install
