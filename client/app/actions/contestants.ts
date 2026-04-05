@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 
+import { toActionError } from "@/lib/actions/action-error";
 import { backendRequest } from "@/lib/utils/backend-request";
 import {
   contestantInputSchema,
@@ -29,21 +30,6 @@ const deleteContestantActionSchema = tokenSchema.extend({
   id: idSchema,
 });
 
-function toActionError(error: unknown): ActionResult<never> {
-  if (error instanceof z.ZodError) {
-    return {
-      success: false,
-      error: "Invalid contestant data",
-      fieldErrors: error.flatten().fieldErrors,
-    };
-  }
-
-  return {
-    success: false,
-    error: error instanceof Error ? error.message : "Unexpected server error",
-  };
-}
-
 export async function listContestantsAction(input: {
   token: string;
 }): Promise<ActionResult<Contestant[]>> {
@@ -62,7 +48,7 @@ export async function listContestantsAction(input: {
       data: contestants,
     };
   } catch (error) {
-    return toActionError(error);
+    return toActionError(error, "Invalid contestant data");
   }
 }
 
@@ -87,7 +73,7 @@ export async function createContestantAction(input: {
       data: contestant,
     };
   } catch (error) {
-    return toActionError(error);
+    return toActionError(error, "Invalid contestant data");
   }
 }
 
@@ -113,7 +99,7 @@ export async function updateContestantAction(input: {
       data: contestant,
     };
   } catch (error) {
-    return toActionError(error);
+    return toActionError(error, "Invalid contestant data");
   }
 }
 
@@ -138,6 +124,6 @@ export async function deleteContestantAction(input: {
       data: { id: parsedInput.id },
     };
   } catch (error) {
-    return toActionError(error);
+    return toActionError(error, "Invalid contestant data");
   }
 }
