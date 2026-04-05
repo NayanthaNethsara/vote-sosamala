@@ -4,29 +4,26 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
 import { getFirebaseStorage } from "@/lib/firebase";
 import {
-  contestantAcademicYearValues,
   contestantFormSchema,
-  contestantGenderValues,
   type ContestantFormValues,
 } from "@/lib/validation/contestant";
+import {
+  contestantAcademicYearValues,
+  contestantGenderValues,
+  contestantSemesterValues,
+} from "@/lib/validation/shared";
 import type { ActionResult } from "@/types/action";
 import type { Contestant, ContestantInput } from "@/types/contestant";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SpinnerIcon, CalendarBlankIcon } from "@phosphor-icons/react";
+import { SpinnerIcon } from "@phosphor-icons/react";
 
 interface Props {
   open: boolean;
@@ -61,7 +58,6 @@ export function ContestantDialog({
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [birthdayInput, setBirthdayInput] = useState("");
 
   const {
     register,
@@ -71,72 +67,75 @@ export function ContestantDialog({
     watch,
     formState: { errors },
   } = useForm<ContestantFormValues>({
+    // @ts-expect-error Zod version mismatch with hookform resolvers
     resolver: zodResolver(contestantFormSchema),
+    defaultValues: {
+      name: "",
+      dateOfBirth: "",
+      gender: undefined,
+      academicYear: undefined,
+      semester: undefined,
+    },
   });
 
   useEffect(() => {
-    if (open) {
-      setPhotoFile(null);
-      if (contestant) {
-        reset({
-          name: contestant.name,
-          birthday: contestant.birthday,
-          nicOrStudentId: contestant.nicOrStudentId,
-          gender:
-            contestant.gender &&
-            contestantGenderValues.includes(
-              contestant.gender as (typeof contestantGenderValues)[number],
-            )
-              ? (contestant.gender as (typeof contestantGenderValues)[number])
-              : undefined,
-          academicYear:
-            contestant.academicYear &&
-            contestantAcademicYearValues.includes(
-              contestant.academicYear as (typeof contestantAcademicYearValues)[number],
-            )
-              ? (contestant.academicYear as (typeof contestantAcademicYearValues)[number])
-              : undefined,
-        });
-        setPreviewUrl(contestant.photoUrl || null);
-      } else {
-        reset({
-          name: "",
-          birthday: undefined,
-          nicOrStudentId: "",
-          gender: undefined,
-          academicYear: undefined,
-        });
-        setPreviewUrl(null);
-      }
+    if (!open) {
+      return;
     }
+
+    setPhotoFile(null);
+
+    if (contestant) {
+      reset({
+        name: contestant.name,
+        dateOfBirth: contestant.dateOfBirth,
+        gender: contestantGenderValues.includes(
+          contestant.gender as (typeof contestantGenderValues)[number],
+        )
+          ? (contestant.gender as (typeof contestantGenderValues)[number])
+          : undefined,
+        academicYear: contestantAcademicYearValues.includes(
+          contestant.academicYear as (typeof contestantAcademicYearValues)[number],
+        )
+          ? (contestant.academicYear as (typeof contestantAcademicYearValues)[number])
+          : undefined,
+        semester: contestantSemesterValues.includes(
+          contestant.semester as (typeof contestantSemesterValues)[number],
+        )
+          ? (contestant.semester as (typeof contestantSemesterValues)[number])
+          : undefined,
+      });
+      setPreviewUrl(contestant.photoURL || null);
+      return;
+    }
+
+    reset({
+      name: "",
+      dateOfBirth: "",
+      gender: undefined,
+      academicYear: undefined,
+      semester: undefined,
+    });
+    setPreviewUrl(null);
   }, [open, contestant, reset]);
 
   const genderValue = watch("gender");
   const academicYearValue = watch("academicYear");
-  const birthdayVal = watch("birthday");
-
-  useEffect(() => {
-    if (birthdayVal) {
-      const date = new Date(birthdayVal);
-      if (!isNaN(date.getTime())) {
-        setBirthdayInput(format(date, "MMMM dd, yyyy"));
-      }
-    } else {
-      setBirthdayInput("");
-    }
-  }, [birthdayVal]);
+  const semesterValue = watch("semester");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setPhotoFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
     }
+
+    const file = e.target.files[0];
+    setPhotoFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const onSubmit = async (data: ContestantFormValues) => {
     setLoading(true);
-    let photoUrl = contestant?.photoUrl;
+    let photoURL = contestant?.photoURL;
 
     try {
       if (photoFile) {
@@ -146,16 +145,16 @@ export function ContestantDialog({
           `contestants/${Date.now()}_${photoFile.name}`,
         );
         const task = await uploadBytesResumable(storageRef, photoFile);
-        photoUrl = await getDownloadURL(task.ref);
+        photoURL = await getDownloadURL(task.ref);
       }
 
       const input: ContestantInput = {
         name: data.name,
-        nicOrStudentId: data.nicOrStudentId,
-        birthday: data.birthday,
+        dateOfBirth: data.dateOfBirth,
         gender: data.gender,
         academicYear: data.academicYear,
-        photoUrl: photoUrl || undefined,
+        semester: data.semester,
+        photoURL: photoURL || undefined,
       };
 
       const result = contestant
@@ -168,8 +167,8 @@ export function ContestantDialog({
       }
 
       onOpenChange(false);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       alert("Failed to save contestant. Ensure the server is running!");
     } finally {
       setLoading(false);
@@ -186,9 +185,10 @@ export function ContestantDialog({
           <DialogDescription>
             {contestant
               ? "Update the details below to reflect their latest information."
-              : "Enter contestant details here. Make sure they have a great profile photo!"}
+              : "Enter contestant details and upload a profile photo."}
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="flex flex-col items-center gap-4 p-4 bg-muted/30 border border-dashed">
             {previewUrl ? (
@@ -205,6 +205,7 @@ export function ContestantDialog({
                 No Photo
               </div>
             )}
+
             <Input
               type="file"
               accept="image/*"
@@ -224,25 +225,34 @@ export function ContestantDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="nic">NIC / Student ID</Label>
-            <Input id="nic" {...register("nicOrStudentId")} />
-            {errors.nicOrStudentId && (
+            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} />
+            {errors.dateOfBirth && (
               <span className="text-sm text-red-500">
-                {errors.nicOrStudentId.message}
+                {errors.dateOfBirth.message}
               </span>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
               <Select
                 value={genderValue || ""}
-                onValueChange={(val: string) => {
-                  setValue("gender", val);
+                onValueChange={(value) => {
+                  if (
+                    contestantGenderValues.includes(
+                      value as (typeof contestantGenderValues)[number],
+                    )
+                  ) {
+                    setValue(
+                      "gender",
+                      value as (typeof contestantGenderValues)[number],
+                    );
+                  }
                 }}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="gender" className="w-full">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
@@ -250,83 +260,81 @@ export function ContestantDialog({
                   <SelectItem value="female">Female</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.gender && (
+                <span className="text-sm text-red-500">
+                  {errors.gender.message}
+                </span>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="acadYear">Academic Year</Label>
+              <Label htmlFor="academicYear">Academic Year</Label>
               <Select
                 value={academicYearValue || ""}
-                onValueChange={(val: string) => {
-                  setValue("academicYear", val);
-                }}
-              >
-                <SelectTrigger id="acadYear" className="w-full">
-                  <SelectValue placeholder="Select Year & Sem" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1st Year - 1st Semester">1Y1S</SelectItem>
-                  <SelectItem value="1st Year - 2nd Semester">1Y2S</SelectItem>
-                  <SelectItem value="2nd Year - 1st Semester">2Y1S</SelectItem>
-                  <SelectItem value="2nd Year - 2nd Semester">2Y2S</SelectItem>
-                  <SelectItem value="3rd Year - 1st Semester">3Y1S</SelectItem>
-                  <SelectItem value="3rd Year - 2nd Semester">3Y2S</SelectItem>
-                  <SelectItem value="4th Year - 1st Semester">4Y1S</SelectItem>
-                  <SelectItem value="4th Year - 2nd Semester">4Y2S</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2 flex flex-col">
-            <Label htmlFor="birthday">Birthday</Label>
-            <div className="relative">
-              <Input
-                id="birthday"
-                value={birthdayInput}
-                placeholder="June 01, 2025"
-                onChange={(e) => {
-                  setBirthdayInput(e.target.value);
-                  const parsedDate = new Date(e.target.value);
-                  if (!isNaN(parsedDate.getTime())) {
-                    setValue("birthday", format(parsedDate, "yyyy-MM-dd"));
-                  } else {
-                    setValue("birthday", undefined);
+                onValueChange={(value) => {
+                  if (
+                    contestantAcademicYearValues.includes(
+                      value as (typeof contestantAcademicYearValues)[number],
+                    )
+                  ) {
+                    setValue(
+                      "academicYear",
+                      value as (typeof contestantAcademicYearValues)[number],
+                    );
                   }
                 }}
-                className="w-full pr-10"
-              />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full rounded-l-none text-muted-foreground hover:bg-transparent"
-                  >
-                    <CalendarBlankIcon className="h-4 w-4" />
-                    <span className="sr-only">Select date</span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto p-0"
-                  align="end"
-                  sideOffset={4}
-                >
-                  <Calendar
-                    mode="single"
-                    selected={birthdayVal ? new Date(birthdayVal) : undefined}
-                    onSelect={(date) => {
-                      setValue(
-                        "birthday",
-                        date ? format(date, "yyyy-MM-dd") : undefined,
-                      );
-                    }}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              >
+                <SelectTrigger id="academicYear" className="w-full">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {contestantAcademicYearValues.map((year) => (
+                    <SelectItem key={year} value={year}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.academicYear && (
+                <span className="text-sm text-red-500">
+                  {errors.academicYear.message}
+                </span>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="semester">Semester</Label>
+              <Select
+                value={semesterValue || ""}
+                onValueChange={(value) => {
+                  if (
+                    contestantSemesterValues.includes(
+                      value as (typeof contestantSemesterValues)[number],
+                    )
+                  ) {
+                    setValue(
+                      "semester",
+                      value as (typeof contestantSemesterValues)[number],
+                    );
+                  }
+                }}
+              >
+                <SelectTrigger id="semester" className="w-full">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {contestantSemesterValues.map((semester) => (
+                    <SelectItem key={semester} value={semester}>
+                      {semester}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.semester && (
+                <span className="text-sm text-red-500">
+                  {errors.semester.message}
+                </span>
+              )}
             </div>
           </div>
 

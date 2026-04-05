@@ -19,7 +19,11 @@ interface ContestantsTableProps {
   onDelete: (id: string) => Promise<void> | void;
 }
 
-export function ContestantsTable({ contestants, onEdit, onDelete }: ContestantsTableProps) {
+export function ContestantsTable({
+  contestants,
+  onEdit,
+  onDelete,
+}: ContestantsTableProps) {
   return (
     <div className="border bg-card">
       <Table>
@@ -27,43 +31,53 @@ export function ContestantsTable({ contestants, onEdit, onDelete }: ContestantsT
           <TableRow>
             <TableHead className="w-20">Photo</TableHead>
             <TableHead>Name</TableHead>
-            <TableHead>NIC / Student ID</TableHead>
+            <TableHead>Date of Birth</TableHead>
             <TableHead>Gender</TableHead>
             <TableHead>Academic Year</TableHead>
+            <TableHead>Semester</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {contestants.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+              <TableCell
+                colSpan={7}
+                className="h-48 text-center text-muted-foreground"
+              >
                 <div className="flex flex-col items-center justify-center gap-2">
                   <p>No contestants found.</p>
-                  <p className="text-sm">Click &quot;Add Contestant&quot; to get started.</p>
+                  <p className="text-sm">
+                    Click &quot;Add Contestant&quot; to get started.
+                  </p>
                 </div>
               </TableCell>
             </TableRow>
           ) : (
             contestants.map((c) => (
-              <TableRow key={c.id} className="group transition-colors hover:bg-muted/50">
+              <TableRow
+                key={c.id}
+                className="group transition-colors hover:bg-muted/50"
+              >
                 <TableCell>
                   <Avatar className="h-10 w-10 border shadow-sm">
-                    <AvatarImage src={c.photoUrl} alt={c.name} className="object-cover" />
+                    <AvatarImage
+                      src={c.photoURL}
+                      alt={c.name}
+                      className="object-cover"
+                    />
                     <AvatarFallback className="bg-primary/10 text-primary font-medium">
                       {c.name.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </TableCell>
                 <TableCell className="font-medium">{c.name}</TableCell>
-                <TableCell>{c.nicOrStudentId}</TableCell>
-                <TableCell className="capitalize">{c.gender || "-"}</TableCell>
-                <TableCell>{c.academicYear || "-"}</TableCell>
+                <TableCell>{c.dateOfBirth}</TableCell>
+                <TableCell className="capitalize">{c.gender}</TableCell>
+                <TableCell>{c.academicYear}</TableCell>
+                <TableCell>{c.semester}</TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(c)}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => onEdit(c)}>
                     <PencilSimple className="h-4 w-4" />
                   </Button>
                   <Button

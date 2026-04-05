@@ -1,20 +1,20 @@
 export interface Contestant {
   id: string;
   name: string;
-  birthday?: string;
-  nicOrStudentId: string;
-  photoUrl?: string;
-  gender?: string;
-  academicYear?: string;
+  dateOfBirth: string;
+  photoURL?: string;
+  gender: string;
+  academicYear: string;
+  semester: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ContestantInput {
   name: string;
-  birthday?: string;
-  nicOrStudentId: string;
-  photoUrl?: string;
-  gender?: string;
-  academicYear?: string;
+  dateOfBirth: string;
+  photoURL?: string;
+  gender: string;
+  academicYear: string;
+  semester: string;
 }
