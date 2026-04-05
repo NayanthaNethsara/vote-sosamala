@@ -154,7 +154,7 @@ export function ContestantDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div className="flex flex-col items-center gap-4 p-4 bg-muted/30 rounded-lg border border-dashed">
+          <div className="flex flex-col items-center gap-4 p-4 bg-muted/30 border border-dashed">
             {previewUrl ? (
               <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-background shadow-md">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

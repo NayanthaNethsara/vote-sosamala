@@ -21,7 +21,7 @@ interface ContestantsTableProps {
 
 export function ContestantsTable({ contestants, onEdit, onDelete }: ContestantsTableProps) {
   return (
-    <div className="rounded-md border bg-card">
+    <div className="border bg-card">
       <Table>
         <TableHeader>
           <TableRow>
