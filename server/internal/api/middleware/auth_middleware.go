@@ -11,9 +11,15 @@ import (
 const (
 	ContextKeyUID   = "uid"
 	ContextKeyEmail = "email"
+	ContextKeyRole  = "role"
+
+	RoleGuest      = "guest"
+	RoleAdmin      = "admin"
+	RoleSuperAdmin = "super-admin"
 )
 
 func AuthMiddleware(authClient *auth.Client) gin.HandlerFunc {
+
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
@@ -30,9 +36,24 @@ func AuthMiddleware(authClient *auth.Client) gin.HandlerFunc {
 		}
 
 		c.Set(ContextKeyUID, token.UID)
+		role := RoleGuest
 		if email, ok := token.Claims["email"].(string); ok {
-			c.Set(ContextKeyEmail, email)
+			normalizedEmail := strings.ToLower(strings.TrimSpace(email))
+			c.Set(ContextKeyEmail, normalizedEmail)
 		}
+
+		if claimRole, ok := token.Claims["role"].(string); ok {
+			switch strings.TrimSpace(strings.ToLower(claimRole)) {
+			case RoleSuperAdmin:
+				role = RoleSuperAdmin
+			case RoleAdmin:
+				role = RoleAdmin
+			case RoleGuest:
+				role = RoleGuest
+			}
+		}
+
+		c.Set(ContextKeyRole, role)
 
 		c.Next()
 	}

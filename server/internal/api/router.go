@@ -18,7 +18,6 @@ type Dependencies struct {
 	DBPool         *pgxpool.Pool
 	FirebaseAuth   *auth.Client
 	AllowedOrigins []string
-	AdminEmails    []string
 }
 
 func NewRouter(ginMode string, deps Dependencies) *gin.Engine {
@@ -39,7 +38,7 @@ func registerPublicRoutes(router *gin.Engine, deps Dependencies) {
 }
 
 func registerProtectedRoutes(router *gin.Engine, deps Dependencies) {
-	userHandler := handler.NewUserHandler()
+	userHandler := handler.NewUserHandler(deps.FirebaseAuth)
 	contestantRepository := contestantrepo.NewSQLCRepository(deps.DBPool)
 	contestantService := contestantservice.NewService(contestantRepository)
 	contestantHandler := handler.NewContestantHandler(contestantService)
@@ -53,11 +52,14 @@ func registerProtectedRoutes(router *gin.Engine, deps Dependencies) {
 
 	// Admin routes
 	admin := api.Group("/admin")
-	if len(deps.AdminEmails) > 0 {
-		admin.Use(middleware.AdminMiddleware(deps.AdminEmails))
-	}
+	admin.Use(middleware.AdminMiddleware())
 	admin.GET("/contestants", contestantHandler.ListContestants)
 	admin.POST("/contestants", contestantHandler.CreateContestant)
 	admin.PUT("/contestants/:id", contestantHandler.UpdateContestant)
 	admin.DELETE("/contestants/:id", contestantHandler.DeleteContestant)
+
+	superAdmin := admin.Group("/users")
+	superAdmin.Use(middleware.SuperAdminMiddleware())
+	superAdmin.GET("", userHandler.ListUsers)
+	superAdmin.PUT("/:uid/role", userHandler.UpdateUserRole)
 }
