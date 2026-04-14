@@ -7,23 +7,37 @@ package sqlcgen
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getUserByFirebaseUID = `-- name: GetUserByFirebaseUID :one
-SELECT firebase_uid, email, display_name, photo_url, role, created_at, updated_at
+SELECT firebase_uid, email, display_name, photo_url, role, last_login_at, created_at, updated_at
 FROM users
 WHERE firebase_uid = $1
 `
 
-func (q *Queries) GetUserByFirebaseUID(ctx context.Context, firebaseUid string) (User, error) {
+type GetUserByFirebaseUIDRow struct {
+	FirebaseUid string             `json:"firebase_uid"`
+	Email       string             `json:"email"`
+	DisplayName string             `json:"display_name"`
+	PhotoUrl    *string            `json:"photo_url"`
+	Role        string             `json:"role"`
+	LastLoginAt pgtype.Timestamptz `json:"last_login_at"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) GetUserByFirebaseUID(ctx context.Context, firebaseUid string) (GetUserByFirebaseUIDRow, error) {
 	row := q.db.QueryRow(ctx, getUserByFirebaseUID, firebaseUid)
-	var i User
+	var i GetUserByFirebaseUIDRow
 	err := row.Scan(
 		&i.FirebaseUid,
 		&i.Email,
 		&i.DisplayName,
 		&i.PhotoUrl,
 		&i.Role,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -31,26 +45,38 @@ func (q *Queries) GetUserByFirebaseUID(ctx context.Context, firebaseUid string) 
 }
 
 const listAllUsers = `-- name: ListAllUsers :many
-SELECT firebase_uid, email, display_name, photo_url, role, created_at, updated_at
+SELECT firebase_uid, email, display_name, photo_url, role, last_login_at, created_at, updated_at
 FROM users
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
+type ListAllUsersRow struct {
+	FirebaseUid string             `json:"firebase_uid"`
+	Email       string             `json:"email"`
+	DisplayName string             `json:"display_name"`
+	PhotoUrl    *string            `json:"photo_url"`
+	Role        string             `json:"role"`
+	LastLoginAt pgtype.Timestamptz `json:"last_login_at"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ListAllUsers(ctx context.Context) ([]ListAllUsersRow, error) {
 	rows, err := q.db.Query(ctx, listAllUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []User{}
+	items := []ListAllUsersRow{}
 	for rows.Next() {
-		var i User
+		var i ListAllUsersRow
 		if err := rows.Scan(
 			&i.FirebaseUid,
 			&i.Email,
 			&i.DisplayName,
 			&i.PhotoUrl,
 			&i.Role,
+			&i.LastLoginAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -68,7 +94,7 @@ const updateUserRole = `-- name: UpdateUserRole :one
 UPDATE users
 SET role = $2, updated_at = NOW()
 WHERE firebase_uid = $1
-RETURNING firebase_uid, email, display_name, photo_url, role, created_at, updated_at
+RETURNING firebase_uid, email, display_name, photo_url, role, last_login_at, created_at, updated_at
 `
 
 type UpdateUserRoleParams struct {
@@ -76,15 +102,27 @@ type UpdateUserRoleParams struct {
 	Role        string `json:"role"`
 }
 
-func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (User, error) {
+type UpdateUserRoleRow struct {
+	FirebaseUid string             `json:"firebase_uid"`
+	Email       string             `json:"email"`
+	DisplayName string             `json:"display_name"`
+	PhotoUrl    *string            `json:"photo_url"`
+	Role        string             `json:"role"`
+	LastLoginAt pgtype.Timestamptz `json:"last_login_at"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (UpdateUserRoleRow, error) {
 	row := q.db.QueryRow(ctx, updateUserRole, arg.FirebaseUid, arg.Role)
-	var i User
+	var i UpdateUserRoleRow
 	err := row.Scan(
 		&i.FirebaseUid,
 		&i.Email,
 		&i.DisplayName,
 		&i.PhotoUrl,
 		&i.Role,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -92,15 +130,16 @@ func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) 
 }
 
 const upsertUser = `-- name: UpsertUser :one
-INSERT INTO users (firebase_uid, email, display_name, photo_url, role)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO users (firebase_uid, email, display_name, photo_url, role, last_login_at)
+VALUES ($1, $2, $3, $4, $5, NOW())
 ON CONFLICT (firebase_uid) DO UPDATE SET
-    email        = EXCLUDED.email,
-    display_name = EXCLUDED.display_name,
-    photo_url    = EXCLUDED.photo_url,
-    role         = EXCLUDED.role,
-    updated_at   = NOW()
-RETURNING firebase_uid, email, display_name, photo_url, role, created_at, updated_at
+    email         = EXCLUDED.email,
+    display_name  = EXCLUDED.display_name,
+    photo_url     = EXCLUDED.photo_url,
+    role          = EXCLUDED.role,
+    last_login_at = NOW(),
+    updated_at    = NOW()
+RETURNING firebase_uid, email, display_name, photo_url, role, last_login_at, created_at, updated_at
 `
 
 type UpsertUserParams struct {
@@ -111,7 +150,18 @@ type UpsertUserParams struct {
 	Role        string  `json:"role"`
 }
 
-func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
+type UpsertUserRow struct {
+	FirebaseUid string             `json:"firebase_uid"`
+	Email       string             `json:"email"`
+	DisplayName string             `json:"display_name"`
+	PhotoUrl    *string            `json:"photo_url"`
+	Role        string             `json:"role"`
+	LastLoginAt pgtype.Timestamptz `json:"last_login_at"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (UpsertUserRow, error) {
 	row := q.db.QueryRow(ctx, upsertUser,
 		arg.FirebaseUid,
 		arg.Email,
@@ -119,13 +169,14 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		arg.PhotoUrl,
 		arg.Role,
 	)
-	var i User
+	var i UpsertUserRow
 	err := row.Scan(
 		&i.FirebaseUid,
 		&i.Email,
 		&i.DisplayName,
 		&i.PhotoUrl,
 		&i.Role,
+		&i.LastLoginAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

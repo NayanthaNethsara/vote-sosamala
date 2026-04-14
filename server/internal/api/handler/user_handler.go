@@ -9,7 +9,6 @@ import (
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/middleware"
 	userservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/user"
 	"github.com/gin-gonic/gin"
-	"google.golang.org/api/iterator"
 )
 
 type UserHandler struct {
@@ -54,43 +53,20 @@ func (h *UserHandler) Me(c *gin.Context) {
 	})
 }
 
-type userSummary struct {
-	UID         string `json:"uid"`
-	Email       string `json:"email,omitempty"`
-	DisplayName string `json:"displayName,omitempty"`
-	Disabled    bool   `json:"disabled"`
-	Role        string `json:"role"`
-}
-
 type setRoleRequest struct {
 	Role string `json:"role" binding:"required"`
 }
 
 func (h *UserHandler) ListUsers(c *gin.Context) {
-	if h.authClient == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "firebase auth client unavailable"})
+	if h.userService == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "user service unavailable"})
 		return
 	}
 
-	users := make([]userSummary, 0)
-	iter := h.authClient.Users(c.Request.Context(), "")
-	for {
-		record, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list users"})
-			return
-		}
-
-		users = append(users, userSummary{
-			UID:         record.UID,
-			Email:       record.Email,
-			DisplayName: record.DisplayName,
-			Disabled:    record.Disabled,
-			Role:        resolveRole(record.CustomClaims),
-		})
+	users, err := h.userService.List(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list users"})
+		return
 	}
 
 	c.JSON(http.StatusOK, users)
@@ -122,7 +98,7 @@ func (h *UserHandler) UpdateUserRole(c *gin.Context) {
 
 	record, err := h.authClient.GetUser(c.Request.Context(), uid)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found in Firebase"})
 		return
 	}
 
@@ -133,7 +109,7 @@ func (h *UserHandler) UpdateUserRole(c *gin.Context) {
 	updatedClaims["role"] = newRole
 
 	if err := h.authClient.SetCustomUserClaims(c.Request.Context(), uid, updatedClaims); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user role"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user role in Firebase"})
 		return
 	}
 
@@ -149,20 +125,4 @@ func (h *UserHandler) UpdateUserRole(c *gin.Context) {
 		"role":    newRole,
 		"message": "role updated; user must refresh token to receive new claims",
 	})
-}
-
-func resolveRole(claims map[string]interface{}) string {
-	if claims == nil {
-		return middleware.RoleGuest
-	}
-
-	if roleValue, ok := claims["role"].(string); ok {
-		normalized := strings.ToLower(strings.TrimSpace(roleValue))
-		switch normalized {
-		case middleware.RoleGuest, middleware.RoleAdmin, middleware.RoleSuperAdmin:
-			return normalized
-		}
-	}
-
-	return middleware.RoleGuest
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/model/domain"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/sqlcgen"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -30,7 +31,7 @@ func (r *SQLCRepository) Upsert(ctx context.Context, input UpsertInput) (domain.
 		return domain.User{}, err
 	}
 
-	return toDomainUser(row), nil
+	return toDomainUser(row.FirebaseUid, row.Email, row.DisplayName, row.PhotoUrl, row.Role, row.LastLoginAt, row.CreatedAt, row.UpdatedAt), nil
 }
 
 func (r *SQLCRepository) GetByFirebaseUID(ctx context.Context, firebaseUID string) (domain.User, error) {
@@ -42,7 +43,7 @@ func (r *SQLCRepository) GetByFirebaseUID(ctx context.Context, firebaseUID strin
 		return domain.User{}, err
 	}
 
-	return toDomainUser(row), nil
+	return toDomainUser(row.FirebaseUid, row.Email, row.DisplayName, row.PhotoUrl, row.Role, row.LastLoginAt, row.CreatedAt, row.UpdatedAt), nil
 }
 
 func (r *SQLCRepository) UpdateRole(ctx context.Context, firebaseUID string, role string) (domain.User, error) {
@@ -57,7 +58,7 @@ func (r *SQLCRepository) UpdateRole(ctx context.Context, firebaseUID string, rol
 		return domain.User{}, err
 	}
 
-	return toDomainUser(row), nil
+	return toDomainUser(row.FirebaseUid, row.Email, row.DisplayName, row.PhotoUrl, row.Role, row.LastLoginAt, row.CreatedAt, row.UpdatedAt), nil
 }
 
 func (r *SQLCRepository) List(ctx context.Context) ([]domain.User, error) {
@@ -68,20 +69,36 @@ func (r *SQLCRepository) List(ctx context.Context) ([]domain.User, error) {
 
 	users := make([]domain.User, 0, len(rows))
 	for _, row := range rows {
-		users = append(users, toDomainUser(row))
+		users = append(users, toDomainUser(row.FirebaseUid, row.Email, row.DisplayName, row.PhotoUrl, row.Role, row.LastLoginAt, row.CreatedAt, row.UpdatedAt))
 	}
 
 	return users, nil
 }
 
-func toDomainUser(row sqlcgen.User) domain.User {
-	return domain.User{
-		FirebaseUID: row.FirebaseUid,
-		Email:       row.Email,
-		DisplayName: row.DisplayName,
-		PhotoURL:    row.PhotoUrl,
-		Role:        row.Role,
-		CreatedAt:   row.CreatedAt.Time,
-		UpdatedAt:   row.UpdatedAt.Time,
+func toDomainUser(
+	firebaseUID string,
+	email string,
+	displayName string,
+	photoURL *string,
+	role string,
+	lastLoginAt pgtype.Timestamptz,
+	createdAt pgtype.Timestamptz,
+	updatedAt pgtype.Timestamptz,
+) domain.User {
+	u := domain.User{
+		FirebaseUID: firebaseUID,
+		Email:       email,
+		DisplayName: displayName,
+		PhotoURL:    photoURL,
+		Role:        role,
+		CreatedAt:   createdAt.Time,
+		UpdatedAt:   updatedAt.Time,
 	}
+
+	if lastLoginAt.Valid {
+		t := lastLoginAt.Time
+		u.LastLoginAt = &t
+	}
+
+	return u
 }
