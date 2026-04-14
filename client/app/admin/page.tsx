@@ -4,7 +4,7 @@ import { SquaresFour } from "@phosphor-icons/react";
 
 export default function AdminDashboardPage() {
   return (
-    <div className="py-10 px-6 sm:px-8 max-w-5xl mx-auto space-y-8 font-mono">
+    <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight uppercase">
           Dashboard
