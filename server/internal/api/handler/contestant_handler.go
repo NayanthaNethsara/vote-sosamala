@@ -17,11 +17,17 @@ func NewContestantHandler(service *contestantservice.Service) *ContestantHandler
 	return &ContestantHandler{service: service}
 }
 
-func (h *ContestantHandler) CreateContestant(c *gin.Context) {
-	if !requireAuthenticated(c) {
+func (h *ContestantHandler) ListContestantsPublic(c *gin.Context) {
+	contestants, err := h.service.List(c.Request.Context())
+	if err != nil {
+		respondContestantError(c, err)
 		return
 	}
 
+	c.JSON(http.StatusOK, contestants)
+}
+
+func (h *ContestantHandler) CreateContestant(c *gin.Context) {
 	var input dto.ContestantUpsertRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -47,10 +53,6 @@ func (h *ContestantHandler) CreateContestant(c *gin.Context) {
 }
 
 func (h *ContestantHandler) ListContestants(c *gin.Context) {
-	if !requireAuthenticated(c) {
-		return
-	}
-
 	contestants, err := h.service.List(c.Request.Context())
 	if err != nil {
 		respondContestantError(c, err)
@@ -61,10 +63,6 @@ func (h *ContestantHandler) ListContestants(c *gin.Context) {
 }
 
 func (h *ContestantHandler) UpdateContestant(c *gin.Context) {
-	if !requireAuthenticated(c) {
-		return
-	}
-
 	id := c.Param("id")
 
 	var input dto.ContestantUpsertRequest
@@ -92,10 +90,6 @@ func (h *ContestantHandler) UpdateContestant(c *gin.Context) {
 }
 
 func (h *ContestantHandler) DeleteContestant(c *gin.Context) {
-	if !requireAuthenticated(c) {
-		return
-	}
-
 	id := c.Param("id")
 	err := h.service.Delete(c.Request.Context(), id)
 	if err != nil {

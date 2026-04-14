@@ -1,6 +1,7 @@
 import env from "@/config/env";
 import type { AuthUser } from "@/types/auth";
 import type { MeResponse } from "@/types/user";
+import type { Contestant } from "@/types/contestant";
 
 async function authFetch(
   user: AuthUser,
@@ -19,6 +20,19 @@ async function authFetch(
   });
 }
 
+async function publicFetch(
+  path: string,
+  init?: RequestInit,
+): Promise<Response> {
+  return fetch(`${env.apiBaseUrl}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
+  });
+}
+
 export async function fetchMe(user: AuthUser): Promise<MeResponse> {
   const res = await authFetch(user, "/api/me");
   if (!res.ok) {
@@ -27,7 +41,13 @@ export async function fetchMe(user: AuthUser): Promise<MeResponse> {
   return res.json();
 }
 
-import type { Contestant, ContestantInput } from "@/types/contestant";
+export async function listContestantsPublic(): Promise<Contestant[]> {
+  const res = await publicFetch("/api/contestants");
+  if (!res.ok) throw new Error("Failed to list contestants");
+  return res.json();
+}
+
+import type { ContestantInput } from "@/types/contestant";
 
 export async function listContestants(user: AuthUser): Promise<Contestant[]> {
   const res = await authFetch(user, "/api/admin/contestants");

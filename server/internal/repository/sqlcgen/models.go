@@ -21,3 +21,13 @@ type Contestant struct {
 	Nic          *string            `json:"nic"`
 	StudentID    *string            `json:"student_id"`
 }
+
+type User struct {
+	FirebaseUid string             `json:"firebase_uid"`
+	Email       string             `json:"email"`
+	DisplayName string             `json:"display_name"`
+	PhotoUrl    *string            `json:"photo_url"`
+	Role        string             `json:"role"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}

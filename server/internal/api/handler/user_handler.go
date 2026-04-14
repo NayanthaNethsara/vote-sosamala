@@ -1,31 +1,51 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
 	"firebase.google.com/go/v4/auth"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/middleware"
+	userservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/user"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/iterator"
 )
 
 type UserHandler struct {
-	authClient *auth.Client
+	authClient  *auth.Client
+	userService *userservice.Service
 }
 
-func NewUserHandler(authClient *auth.Client) *UserHandler {
-	return &UserHandler{authClient: authClient}
+func NewUserHandler(authClient *auth.Client, userService *userservice.Service) *UserHandler {
+	return &UserHandler{
+		authClient:  authClient,
+		userService: userService,
+	}
 }
 
 func (h *UserHandler) Me(c *gin.Context) {
-	if !requireAuthenticated(c) {
-		return
-	}
+	uid := contextString(c, middleware.ContextKeyUID)
+	email := contextString(c, middleware.ContextKeyEmail)
+	role := contextString(c, middleware.ContextKeyRole)
+	displayName := contextString(c, middleware.ContextKeyDisplayName)
+	photoURL := contextStringPtr(c, middleware.ContextKeyPhotoURL)
 
-	uid, _ := c.Get(middleware.ContextKeyUID)
-	email, _ := c.Get(middleware.ContextKeyEmail)
-	role, _ := c.Get(middleware.ContextKeyRole)
+	if h.userService != nil {
+		syncedUser, err := h.userService.SyncFromToken(c.Request.Context(), uid, email, displayName, photoURL, role)
+		if err != nil {
+			log.Printf("failed to sync user %s to database: %v", uid, err)
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"uid":         syncedUser.FirebaseUID,
+				"email":       syncedUser.Email,
+				"displayName": syncedUser.DisplayName,
+				"photoURL":    syncedUser.PhotoURL,
+				"role":        syncedUser.Role,
+			})
+			return
+		}
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"uid":   uid,
@@ -47,10 +67,6 @@ type setRoleRequest struct {
 }
 
 func (h *UserHandler) ListUsers(c *gin.Context) {
-	if !requireAuthenticated(c) {
-		return
-	}
-
 	if h.authClient == nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "firebase auth client unavailable"})
 		return
@@ -81,10 +97,6 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 }
 
 func (h *UserHandler) UpdateUserRole(c *gin.Context) {
-	if !requireAuthenticated(c) {
-		return
-	}
-
 	if h.authClient == nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "firebase auth client unavailable"})
 		return
@@ -123,6 +135,12 @@ func (h *UserHandler) UpdateUserRole(c *gin.Context) {
 	if err := h.authClient.SetCustomUserClaims(c.Request.Context(), uid, updatedClaims); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user role"})
 		return
+	}
+
+	if h.userService != nil {
+		if _, err := h.userService.UpdateRole(c.Request.Context(), uid, newRole); err != nil {
+			log.Printf("failed to sync role to database for user %s: %v", uid, err)
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
