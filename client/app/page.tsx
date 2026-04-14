@@ -22,9 +22,7 @@ export default function Home() {
           <p className="text-sm text-gray-400">Loading...</p>
         ) : user ? (
           <>
-            <p className="text-sm text-gray-500">
-              Signed in as {user.email}
-            </p>
+            <p className="text-sm text-gray-500">Signed in as {user.email}</p>
             {isAdmin && (
               <Link
                 href="/admin"
