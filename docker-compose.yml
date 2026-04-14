@@ -11,6 +11,7 @@ services:
       - DB_URL=postgres://user:password@postgres:5432/votes?sslmode=disable
       - GIN_MODE=release
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - GOOGLE_CLOUD_QUOTA_PROJECT=${FIREBASE_PROJECT_ID}
       # This points to LOCAL ADC metadata created by `gcloud auth application-default login`.
       # It is not a long-lived service-account key JSON.
       - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json

@@ -12,15 +12,34 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
 	cfg := config.LoadConfig()
 
 	if cfg.FirebaseProjectID == "" {
 		log.Fatal("FIREBASE_PROJECT_ID is required for setup bootstrap")
 	}
 
-	authClient, err := platform.InitFirebase(context.Background(), cfg.FirebaseProjectID)
+	// Step 1: Initialize database and run migrations
+	if cfg.DBURL != "" {
+		log.Println("Running database migrations...")
+		dbPool, err := platform.InitPostgres(cfg.DBURL)
+		if err != nil {
+			log.Fatalf("failed to initialize database: %v", err)
+		}
+		defer dbPool.Close()
+
+		if err := platform.RunMigrations(ctx, dbPool, "migrations"); err != nil {
+			log.Fatalf("migrations failed: %v", err)
+		}
+	} else {
+		log.Println("DB_URL not set; skipping migrations")
+	}
+
+	// Step 2: Initialize Firebase and set super-admin
+	log.Println("Initializing Firebase...")
+	authClient, err := platform.InitFirebase(ctx, cfg.FirebaseProjectID)
 	if err != nil {
-		log.Fatalf("failed to initialize Firebase for setup bootstrap: %v", err)
+		log.Fatalf("failed to initialize Firebase: %v", err)
 	}
 
 	email := strings.ToLower(strings.TrimSpace(cfg.BootstrapSuperAdminEmail))
@@ -29,7 +48,7 @@ func main() {
 		return
 	}
 
-	userRecord, err := authClient.GetUserByEmail(context.Background(), email)
+	userRecord, err := authClient.GetUserByEmail(ctx, email)
 	if err != nil {
 		if auth.IsUserNotFound(err) {
 			log.Fatalf("bootstrap email %s not found in Firebase Auth; user must sign in at least once", email)
@@ -43,9 +62,10 @@ func main() {
 	}
 	updatedClaims["role"] = middleware.RoleSuperAdmin
 
-	if err := authClient.SetCustomUserClaims(context.Background(), userRecord.UID, updatedClaims); err != nil {
+	if err := authClient.SetCustomUserClaims(ctx, userRecord.UID, updatedClaims); err != nil {
 		log.Fatalf("failed to set super-admin claim: %v", err)
 	}
 
 	log.Printf("super-admin role assigned to %s (%s)", email, userRecord.UID)
+	log.Println("Setup completed successfully")
 }
