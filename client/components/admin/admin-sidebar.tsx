@@ -6,6 +6,7 @@ import {
   SquaresFour,
   CheckSquareOffset,
   Gear,
+  UserList,
 } from "@phosphor-icons/react";
 import {
   Sidebar,
@@ -48,9 +49,18 @@ const items = [
   },
 ];
 
+const superAdminItems = [
+  {
+    title: "User Management",
+    url: "/admin/users",
+    icon: UserList,
+  },
+];
+
 export function AdminSidebar() {
   const { user, role } = useAuth();
   const pathname = usePathname();
+  const isSuperAdmin = role === "super-admin";
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="font-mono">
@@ -110,6 +120,32 @@ export function AdminSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isSuperAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="uppercase font-bold tracking-widest text-[10px]">
+              Super Admin
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {superAdminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.url}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border">
