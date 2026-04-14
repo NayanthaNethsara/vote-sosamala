@@ -118,6 +118,7 @@ export function AdminSidebar() {
             name: user?.displayName || "Admin User",
             email: user?.email || "",
             avatar: user?.photoURL || "",
+            role: user?.role || "guest",
           }}
         />
       </SidebarFooter>

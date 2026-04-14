@@ -14,6 +14,7 @@ import {
 } from "firebase/auth";
 import { getFirebaseAuth, googleProvider } from "@/lib/firebase";
 import type { AuthContextValue, AuthUser } from "@/types/auth";
+import { fetchMe } from "@/lib/api";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -25,8 +26,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let unsubscribe: (() => void) | undefined;
 
     getFirebaseAuth().then((auth) => {
-      unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        setUser(currentUser);
+      unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        if (currentUser) {
+          try {
+            const meData = await fetchMe(currentUser);
+            (currentUser as AuthUser).role = meData.role;
+          } catch (error) {
+            console.error("Failed to fetch user role:", error);
+            (currentUser as AuthUser).role = "guest";
+          }
+        }
+        setUser(currentUser as AuthUser | null);
         setLoading(false);
       });
     });
