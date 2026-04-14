@@ -27,6 +27,7 @@ export function NavUser({
     name: string;
     email: string;
     avatar: string;
+    role: "guest" | "admin" | "super-admin";
   };
 }) {
   const { isMobile } = useSidebar();
@@ -52,6 +53,9 @@ export function NavUser({
                 <span className="truncate text-[10px] text-muted-foreground font-mono">
                   {user.email}
                 </span>
+                <span className="truncate text-[9px] text-muted-foreground font-mono capitalize">
+                  {user.role.replace("-", " ")}
+                </span>
               </div>
               <CaretUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -74,6 +78,9 @@ export function NavUser({
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs text-muted-foreground">
                     {user.email}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground capitalize">
+                    {user.role.replace("-", " ")}
                   </span>
                 </div>
               </div>

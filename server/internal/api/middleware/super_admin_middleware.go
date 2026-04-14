@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AdminMiddleware() gin.HandlerFunc {
+func SuperAdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roleValue, exists := c.Get(ContextKeyRole)
 		if !exists {
@@ -15,8 +15,8 @@ func AdminMiddleware() gin.HandlerFunc {
 		}
 
 		role, ok := roleValue.(string)
-		if !ok || (role != RoleAdmin && role != RoleSuperAdmin) {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "user is not an admin"})
+		if !ok || role != RoleSuperAdmin {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "user is not a super-admin"})
 			return
 		}
 

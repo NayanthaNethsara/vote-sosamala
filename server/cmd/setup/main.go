@@ -3,22 +3,69 @@ package main
 import (
 	"context"
 	"log"
+	"strings"
 
+	"firebase.google.com/go/v4/auth"
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/middleware"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/config"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/platform"
 )
 
 func main() {
+	ctx := context.Background()
 	cfg := config.LoadConfig()
 
 	if cfg.FirebaseProjectID == "" {
 		log.Fatal("FIREBASE_PROJECT_ID is required for setup bootstrap")
 	}
 
-	_, err := platform.InitFirebase(context.Background(), cfg.FirebaseProjectID)
-	if err != nil {
-		log.Fatalf("failed to initialize Firebase for setup bootstrap: %v", err)
+	// Step 1: Initialize database and run migrations
+	if cfg.DBURL != "" {
+		log.Println("Running database migrations...")
+		dbPool, err := platform.InitPostgres(cfg.DBURL)
+		if err != nil {
+			log.Fatalf("failed to initialize database: %v", err)
+		}
+		defer dbPool.Close()
+
+		if err := platform.RunMigrations(ctx, dbPool, "migrations"); err != nil {
+			log.Fatalf("migrations failed: %v", err)
+		}
+	} else {
+		log.Println("DB_URL not set; skipping migrations")
 	}
 
-	log.Println("Setup bootstrap initialized successfully. Add SuperAdmin creation logic here.")
+	// Step 2: Initialize Firebase and set super-admin
+	log.Println("Initializing Firebase...")
+	authClient, err := platform.InitFirebase(ctx, cfg.FirebaseProjectID)
+	if err != nil {
+		log.Fatalf("failed to initialize Firebase: %v", err)
+	}
+
+	email := strings.ToLower(strings.TrimSpace(cfg.BootstrapSuperAdminEmail))
+	if email == "" {
+		log.Println("BOOTSTRAP_SUPER_ADMIN_EMAIL is empty; skipping super-admin bootstrap")
+		return
+	}
+
+	userRecord, err := authClient.GetUserByEmail(ctx, email)
+	if err != nil {
+		if auth.IsUserNotFound(err) {
+			log.Fatalf("bootstrap email %s not found in Firebase Auth; user must sign in at least once", email)
+		}
+		log.Fatalf("failed to get bootstrap user by email: %v", err)
+	}
+
+	updatedClaims := make(map[string]interface{}, len(userRecord.CustomClaims)+1)
+	for k, v := range userRecord.CustomClaims {
+		updatedClaims[k] = v
+	}
+	updatedClaims["role"] = middleware.RoleSuperAdmin
+
+	if err := authClient.SetCustomUserClaims(ctx, userRecord.UID, updatedClaims); err != nil {
+		log.Fatalf("failed to set super-admin claim: %v", err)
+	}
+
+	log.Printf("super-admin role assigned to %s (%s)", email, userRecord.UID)
+	log.Println("Setup completed successfully")
 }

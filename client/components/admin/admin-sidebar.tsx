@@ -49,7 +49,7 @@ const items = [
 ];
 
 export function AdminSidebar() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const pathname = usePathname();
 
   return (
@@ -118,6 +118,7 @@ export function AdminSidebar() {
             name: user?.displayName || "Admin User",
             email: user?.email || "",
             avatar: user?.photoURL || "",
+            role,
           }}
         />
       </SidebarFooter>

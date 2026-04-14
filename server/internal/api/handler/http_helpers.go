@@ -3,29 +3,11 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"strings"
 
-	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/middleware"
 	contestantrepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/contestant"
 	contestantservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/contestant"
 	"github.com/gin-gonic/gin"
 )
-
-func requireAuthenticated(c *gin.Context) bool {
-	uidValue, exists := c.Get(middleware.ContextKeyUID)
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication context not found"})
-		return false
-	}
-
-	uid, ok := uidValue.(string)
-	if !ok || strings.TrimSpace(uid) == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authentication context"})
-		return false
-	}
-
-	return true
-}
 
 func respondContestantError(c *gin.Context, err error) {
 	switch {
@@ -38,4 +20,24 @@ func respondContestantError(c *gin.Context, err error) {
 	default:
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process contestant request"})
 	}
+}
+
+func contextString(c *gin.Context, key string) string {
+	value, _ := c.Get(key)
+	str, _ := value.(string)
+	return str
+}
+
+func contextStringPtr(c *gin.Context, key string) *string {
+	value, exists := c.Get(key)
+	if !exists {
+		return nil
+	}
+
+	str, ok := value.(string)
+	if !ok || str == "" {
+		return nil
+	}
+
+	return &str
 }

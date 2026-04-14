@@ -9,14 +9,14 @@ import (
 )
 
 type Config struct {
-	Port              string
-	RedisAddr         string
-	NatsURL           string
-	DBURL             string
-	GinMode           string
-	FirebaseProjectID string
-	AllowedOrigins    []string
-	AdminEmails       []string
+	Port                     string
+	RedisAddr                string
+	NatsURL                  string
+	DBURL                    string
+	GinMode                  string
+	FirebaseProjectID        string
+	BootstrapSuperAdminEmail string
+	AllowedOrigins           []string
 }
 
 func LoadConfig() *Config {
@@ -25,14 +25,14 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		Port:              getEnv("PORT", "8080"),
-		RedisAddr:         getEnv("REDIS_ADDR", "redis:6379"),
-		NatsURL:           getEnv("NATS_URL", "nats://nats:4222"),
-		DBURL:             getEnv("DB_URL", "postgres://user:password@postgres:5432/votes?sslmode=disable"),
-		GinMode:           getEnv("GIN_MODE", "release"),
-		FirebaseProjectID: getEnv("FIREBASE_PROJECT_ID", ""),
-		AllowedOrigins:    getEnvSlice("ALLOWED_ORIGINS", []string{"http://localhost:3000"}),
-		AdminEmails:       getEnvSlice("ADMIN_EMAILS", []string{}),
+		Port:                     getEnv("PORT", "8080"),
+		RedisAddr:                getEnv("REDIS_ADDR", "redis:6379"),
+		NatsURL:                  getEnv("NATS_URL", "nats://nats:4222"),
+		DBURL:                    getEnv("DB_URL", "postgres://user:password@postgres:5432/votes?sslmode=disable"),
+		GinMode:                  getEnv("GIN_MODE", "release"),
+		FirebaseProjectID:        getEnv("FIREBASE_PROJECT_ID", ""),
+		BootstrapSuperAdminEmail: strings.ToLower(strings.TrimSpace(getEnv("BOOTSTRAP_SUPER_ADMIN_EMAIL", ""))),
+		AllowedOrigins:           getEnvSlice("ALLOWED_ORIGINS", []string{"http://localhost:3000"}),
 	}
 }
 

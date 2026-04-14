@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import env from "@/config/env";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import {
@@ -16,30 +15,27 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
   const router = useRouter();
+  const isAuthorized = !!user && (role === "admin" || role === "super-admin");
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push("/login");
-      } else if (!user.email || !env.adminEmails.includes(user.email)) {
-        router.push("/");
-      }
+    if (loading) {
+      return;
     }
-  }, [user, loading, router]);
 
-  if (
-    loading ||
-    !user ||
-    !user.email ||
-    !env.adminEmails.includes(user.email)
-  ) {
-    return (
-      <div className="p-8 text-center text-muted-foreground font-mono">
-        Checking admin authorization...
-      </div>
-    );
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
+    if (!isAuthorized) {
+      router.replace("/");
+    }
+  }, [user, loading, router, isAuthorized]);
+
+  if (loading || !isAuthorized) {
+    return null;
   }
 
   return (

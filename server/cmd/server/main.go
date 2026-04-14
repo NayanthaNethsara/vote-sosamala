@@ -39,7 +39,7 @@ func main() {
 
 	firebaseAuth, err := platform.InitFirebase(ctx, cfg.FirebaseProjectID)
 	if err != nil {
-		log.Printf("Firebase init warning: %v", err)
+		log.Printf("Firebase init warning: %v (set FIREBASE_PROJECT_ID and ensure ADC is available)", err)
 	} else {
 		log.Println("Firebase Admin SDK ready")
 	}
@@ -50,7 +50,6 @@ func main() {
 		DBPool:         dbPool,
 		FirebaseAuth:   firebaseAuth,
 		AllowedOrigins: cfg.AllowedOrigins,
-		AdminEmails:    cfg.AdminEmails,
 	})
 
 	platform.New(cfg.Port, router).Start()
