@@ -1,29 +1,31 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
-  Users,
-  SquaresFour,
   CheckSquareOffset,
   Gear,
+  SquaresFour,
+  UserList,
+  Users,
 } from "@phosphor-icons/react";
+
+import { NavUser } from "@/components/admin/nav-user";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-
-import { NavUser } from "@/components/admin/nav-user";
 
 const items = [
   {
@@ -46,37 +48,61 @@ const items = [
     url: "/admin/settings",
     icon: Gear,
   },
-];
+] as const;
+
+const superAdminItems = [
+  {
+    title: "User Management",
+    url: "/admin/users",
+    icon: UserList,
+  },
+] as const;
 
 export function AdminSidebar() {
   const { user, role } = useAuth();
   const pathname = usePathname();
+  const isSuperAdmin = role === "super-admin";
+
+  const navigationGroups = [
+    {
+      label: "Management",
+      items,
+    },
+    ...(isSuperAdmin
+      ? [
+          {
+            label: "Super Admin",
+            items: superAdminItems,
+          },
+        ]
+      : []),
+  ] as const;
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="font-mono">
-      <SidebarHeader className="h-16 border-b border-border p-2">
+      <SidebarHeader className="border-b border-sidebar-border p-3">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               asChild
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="h-12 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Link href="/admin">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-none">
+              <Link href="/admin" className="gap-3">
+                <div className="flex size-9 items-center justify-center rounded-none border border-sidebar-border bg-sidebar-foreground/5">
                   <Image
                     src="/logo/logo.png"
                     alt="Logo"
-                    width={20}
-                    height={20}
+                    width={22}
+                    height={22}
                     className="object-contain"
                   />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-bold uppercase tracking-tight">
+                <div className="grid flex-1 text-left leading-tight">
+                  <span className="truncate text-sm font-bold uppercase tracking-tight">
                     Voting System
                   </span>
-                  <span className="truncate text-[10px] text-muted-foreground uppercase tracking-widest">
+                  <span className="truncate text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                     Admin Panel
                   </span>
                 </div>
@@ -86,33 +112,40 @@ export function AdminSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
+      <SidebarSeparator />
+
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="uppercase font-bold tracking-widest text-[10px]">
-            Management
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.url}
-                    tooltip={item.title}
-                  >
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navigationGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className="px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/60">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.url}
+                      tooltip={item.title}
+                      className="h-10"
+                    >
+                      <Link href={item.url} className="gap-3">
+                        <item.icon className="size-4" />
+                        <span className="truncate">{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border">
+      <SidebarSeparator />
+
+      <SidebarFooter className="border-t border-sidebar-border p-3">
         <NavUser
           user={{
             name: user?.displayName || "Admin User",

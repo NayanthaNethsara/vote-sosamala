@@ -49,7 +49,9 @@ export default function AdminLayout({
             Administration
           </h2>
         </header>
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto py-10 px-6 sm:px-8 font-mono">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
