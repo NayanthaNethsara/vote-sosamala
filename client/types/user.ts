@@ -18,3 +18,22 @@ export interface SystemUser {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface UserListPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface UserListFilters {
+  role: UserRole | null;
+}
+
+export interface UserListResponse {
+  users: SystemUser[];
+  pagination: UserListPagination;
+  filters: UserListFilters;
+}
