@@ -29,6 +29,20 @@ func (s *Service) List(ctx context.Context) ([]domain.Contestant, error) {
 	return s.repo.List(ctx)
 }
 
+func (s *Service) ListPage(ctx context.Context, params contestantrepo.ListParams) (contestantrepo.ListResult, error) {
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.Limit < 1 {
+		params.Limit = 20
+	}
+	if params.Limit > 100 {
+		params.Limit = 100
+	}
+
+	return s.repo.ListPage(ctx, params)
+}
+
 func (s *Service) Create(ctx context.Context, input contestantrepo.UpsertInput) (domain.Contestant, error) {
 	normalized, err := normalizeAndValidateInput(input)
 	if err != nil {

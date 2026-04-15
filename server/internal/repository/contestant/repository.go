@@ -21,9 +21,20 @@ type UpsertInput struct {
 	StudentID    *string
 }
 
+type ListParams struct {
+	Page  int
+	Limit int
+}
+
+type ListResult struct {
+	Contestants []domain.Contestant
+	Total       int64
+}
+
 type Repository interface {
 	Create(ctx context.Context, input UpsertInput) (domain.Contestant, error)
 	List(ctx context.Context) ([]domain.Contestant, error)
+	ListPage(ctx context.Context, params ListParams) (ListResult, error)
 	Update(ctx context.Context, id string, input UpsertInput) (domain.Contestant, error)
 	Delete(ctx context.Context, id string) error
 }

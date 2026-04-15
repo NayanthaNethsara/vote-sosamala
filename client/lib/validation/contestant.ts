@@ -57,4 +57,16 @@ export const contestantSchema = contestantInputSchema.extend({
 
 export const contestantListSchema = z.array(contestantSchema);
 
+export const publicContestantListResponseSchema = z.object({
+  contestants: contestantListSchema,
+  pagination: z.object({
+    page: z.number().int().min(1),
+    limit: z.number().int().min(1).max(100),
+    total: z.number().int().min(0),
+    totalPages: z.number().int().min(0),
+    hasNext: z.boolean(),
+    hasPrev: z.boolean(),
+  }),
+});
+
 export type ContestantFormValues = z.infer<typeof contestantFormSchema>;
