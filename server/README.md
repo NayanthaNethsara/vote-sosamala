@@ -1,24 +1,37 @@
-# Go Gin Server
+# Server (Go + Gin)
 
-The backend for the Sosamala Voting system, built with Go 1.25, Gin, NATS, Redis, and Postgres.
+Backend API and domain services for the Sosamala Voting platform.
 
-## Tech Stack
+## Backend Architecture
 
-- **Framework**: [Gin Gonic](https://gin-gonic.com/)
-- **Infrastructure**: [NATS](https://nats.io/), [Redis](https://redis.io/), [PostgreSQL](https://postgresql.org/)
-- **Configuration**: [godotenv](https://github.com/joho/godotenv)
-- **Database Driver**: [pgx/v5](https://github.com/jackc/pgx)
+### Request Pipeline
 
-## Quick Start
+Incoming requests are processed by middleware, dispatched to handlers, executed in service-layer logic, and persisted through repositories into PostgreSQL. Services also interact with Firebase, Redis, and NATS where needed.
 
-From the **root directory**, you can manage the server using:
+### Package Layout
 
-- `make server-fmt`: Format Go code
-- `make server-lint`: Run static analysis
-- `make server-build`: Build the binary
-- `make server-run`: Run Go application locally
+The backend is organized by entrypoints, API transport, domain services, repositories, data models, platform adapters, and shared test utilities.
 
-To run manually for development:
+## Stack
+
+- Go 1.25
+- Gin
+- PostgreSQL + pgx
+- Redis
+- NATS
+- Firebase Admin SDK
+
+## Run Locally
+
+From repository root:
+
+- `make server-fmt`
+- `make server-lint`
+- `make server-build`
+- `make server-run`
+- `make setup-run`
+
+Manual run:
 
 ```bash
 cd server
@@ -26,104 +39,85 @@ cp .env.example .env
 go run cmd/server/main.go
 ```
 
-## Structure
+## Folder Structure
 
-- `/cmd/server`: Main API entry point
-- `/cmd/setup`: Setup/bootstrap entry point
-- `/internal/api/handler`: Gin handlers (transport adapters)
-- `/internal/api/middleware`: Auth/Admin/CORS middleware
-- `/internal/service`: Business logic layer
-- `/internal/repository`: Data access layer
-- `/internal/model/domain`: Domain models
-- `/internal/model/dto`: Request/response DTOs
-- `/internal/platform`: Infrastructure clients (Firebase, Postgres, Redis, NATS, HTTP server)
-- `/internal/config`: Configuration management
-- `/internal/testutil`: Shared test-only helpers reusable across packages
-- `/migrations`: SQL migrations
+- `cmd/server` - API entrypoint
+- `cmd/setup` - setup/bootstrap runner
+- `internal/api/handler` - HTTP handlers
+- `internal/api/middleware` - auth and access middleware
+- `internal/service` - domain business logic
+- `internal/repository` - persistence adapters
+- `internal/repository/sqlcgen` - generated SQL bindings
+- `internal/model/domain` - domain entities
+- `internal/model/dto` - transport DTOs
+- `internal/platform` - external clients and infrastructure wiring
+- `internal/config` - environment and runtime config
+- `internal/testutil` - shared testing helpers
+- `migrations` - SQL migrations
 
-## Testing Conventions
+## Testing
 
-- Keep unit tests colocated with source packages using `*_test.go` (Go standard).
-- Use package-local tests for behavior close to implementation:
-	- `/internal/api/handler/*_test.go`
-	- `/internal/service/*/*_test.go`
-	- `/internal/repository/*/*_test.go`
-- Put cross-package test helpers in `/internal/testutil` to avoid duplication.
-- Prefer table-driven tests and `testify` `assert/require` for readability.
+Testing conventions:
 
-Run tests:
+- Unit tests are colocated with each package (`*_test.go`).
+- Service tests use mocked repositories and in-memory data.
+- Shared helper utilities live in `internal/testutil`.
+- Prefer table-driven tests and `testify` assertions.
+
+Run all tests:
 
 ```bash
 cd server
 go test ./...
 ```
 
+Targeted examples:
+
+```bash
+go test ./internal/service/user -v
+go test ./internal/api/handler -run 'TestListUsers_' -v
+```
+
+## Auth and Roles
+
+Role model:
+
+- `guest` default for authenticated users
+- `admin` for admin area permissions
+- `super-admin` for user role management
+
+Claim key: `role`.
+
+Super-admin APIs:
+
+- `GET /api/admin/users`
+- `PUT /api/admin/users/:uid/role`
+
+After role updates, users must refresh ID token (or sign out/sign in) to receive new claims.
+
+Bootstrap first super-admin:
+
+1. Ensure target user has signed in at least once.
+2. Set `BOOTSTRAP_SUPER_ADMIN_EMAIL` in `server/.env`.
+3. Run `make setup-run`.
+
 ## Environment
 
-Copy the example environment file and update with your local values:
+Create local environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-## Firebase Security Hardening
+## Firebase and Local Docker Notes
 
-- Use least privilege IAM for backend identity: grant only what server needs (typically `roles/firebaseauth.admin` for token verification workflows and targeted Storage permissions if server writes files).
-- Avoid long-lived service account key JSON files in git, images, or env vars. Prefer ADC from workload identity (Cloud Run/GKE) or local ADC during development.
-- Restrict CORS origins with `ALLOWED_ORIGINS` to known frontend domains only.
-- Use Firebase custom claims for app roles (`guest`, `admin`, `super-admin`) and keep claim assignment limited to trusted admin workflows.
-- Keep Firebase Storage rules strict (for client uploads): allow writes only for authenticated users and only expected paths like `contestants/**`.
-- Rotate credentials and audit IAM bindings periodically.
+- Use least-privilege IAM.
+- Prefer ADC over static service account keys.
+- Restrict CORS with `ALLOWED_ORIGINS`.
 
-## Role Model
-- Default role is `guest` for all authenticated users unless a Firebase custom claim sets another role.
-- `super-admin` can manage user roles.
-- `admin` can access admin contestant management routes.
+If Firebase fails inside Docker:
 
-Role claim key used by backend: `role` with allowed values:
-- `guest`
-- `admin`
-- `super-admin`
-
-### Bootstrap First Super-Admin
-1. Ensure target user has signed in at least once (so the account exists in Firebase Auth).
-2. Set `BOOTSTRAP_SUPER_ADMIN_EMAIL` in `server/.env`.
-3. Run:
-```bash
-make setup-run
-```
-
-### Super-Admin Role APIs
-- `GET /api/admin/users` (super-admin only): list Firebase users with resolved app role.
-- `PUT /api/admin/users/:uid/role` (super-admin only): set role claim (`guest`, `admin`, `super-admin`).
-
-After role updates, users must refresh ID token (or sign out/sign in) to receive new claims.
-
-## Firebase In Docker (Local)
-
-If Firebase does not work inside Docker, use this checklist:
-
-1. Create local ADC credentials on host:
-
-```bash
-gcloud auth application-default login
-```
-
-2. Ensure `FIREBASE_PROJECT_ID` is set in root `.env` (used by `docker-compose.yml`).
-3. Confirm credentials file exists on host:
-
-```bash
-ls ~/.config/gcloud/application_default_credentials.json
-```
-
-4. Start stack:
-
-```bash
-docker compose up --build
-```
-
-Notes:
-
-- The backend container mounts `~/.config/gcloud` read-only, and the Google SDK discovers local ADC from that standard path automatically.
-- `application_default_credentials.json` generated by `gcloud auth application-default login` is local ADC metadata, not a service account key JSON.
-- The runtime image installs `ca-certificates`; without this, Firebase HTTPS calls can fail in Alpine containers.
+1. Run `gcloud auth application-default login` on host.
+2. Ensure `FIREBASE_PROJECT_ID` is set in root `.env`.
+3. Verify `~/.config/gcloud/application_default_credentials.json` exists.
+4. Start with `docker compose up --build`.

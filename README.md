@@ -1,71 +1,77 @@
 # Sosamala Voting
 
-A self-hostable, open source, secure voting system for small public beauty contests and similar events. Designed for easy deployment, privacy, and fairness.
+Sosamala Voting is a self-hostable, open-source voting platform for small contests and event-based voting workflows.
 
-## Architecture
+## System Architecture
 
-```mermaid
-graph TD
-    Client[Next.js Client] -->|HTTP/WS| Server[Go Gin Server]
-    Server -->|Pub/Sub| NATS[NATS Messaging]
-    Server -->|Cache/State| Redis[Redis]
-    Server -->|Persistence| Postgres[PostgreSQL]
-```
+### Runtime Topology
+
+Client applications communicate with the Go API over HTTP. The backend persists data in PostgreSQL and uses Redis and NATS for supporting runtime workflows.
+
+### Backend Domain Flow
+
+Request handling flows through middleware, handlers, service logic, and repository access. Platform integrations include Firebase, Redis, and NATS.
 
 ## Quick Start
 
-You must have **Docker** and **Make** installed.
+Prerequisites:
 
-### 🐳 Full Stack (Docker)
-The easiest way to get everything running in parallel is using the root `Makefile`:
+- Docker
+- Docker Compose
+- Make
+
+### Full Stack (Docker)
 
 ```bash
 make dev
 ```
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:8080`
 
-### 🛠️ Manual Development
-If you prefer running services outside of Docker for development:
+Services:
 
-**Backend (Go)**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080
+
+### Local Development (Without Docker)
+
+Backend:
+
 ```bash
 make server-run
 ```
 
-**Frontend (Next.js)**
+Frontend:
+
 ```bash
 make client-install
 cd client && pnpm dev
 ```
 
----
+## Developer Commands
 
-## Makefile Automation
-The central `Makefile` provides several commands for developers:
+Main commands from repository root:
 
-- `make fmt`: Format both client and server code
-- `make lint`: Run all checkers and vets
-- `make test`: Run project test suites
-- `make build`: Build the backend binary
+- `make help` - list all targets
+- `make dev` - run full stack with Docker Compose
+- `make fmt` - format server and client
+- `make lint` - run server vet and client lint
+- `make server-build` - build server binary
+- `make server-run` - run server locally
+- `make setup-run` - run bootstrap/setup script
+- `make client-install` - install client dependencies
 
-The application will be available at:
+## Repository Layout
 
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:8080`
+- `client` - Next.js frontend
+- `server` - Go backend
+- `docker-compose.yml` - local stack orchestration
+- `Makefile` - developer automation
+- `.github/workflows` - CI workflows
 
-## Repository Structure
+## Documentation Map
 
-- `/client`: Next.js frontend (pnpm)
-- `/server`: Go Gin backend (Go 1.25)
-- `docker-compose.yml`: Infrastructure orchestration
-- `Makefile`: Common development tasks
-
-## Documentation
-
-- [Frontend Documentation](client/README.md)
-- [Backend Documentation](server/README.md)
-- [Contributing Guide](CONTRIBUTING.md)
+- [Client README](client/README.md)
+- [Server README](server/README.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## License
 
