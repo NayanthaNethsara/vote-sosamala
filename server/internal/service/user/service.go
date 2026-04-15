@@ -43,8 +43,17 @@ func (s *Service) GetByFirebaseUID(ctx context.Context, firebaseUID string) (dom
 	return s.repo.GetByFirebaseUID(ctx, firebaseUID)
 }
 
-func (s *Service) List(ctx context.Context) ([]domain.User, error) {
-	return s.repo.List(ctx)
+func (s *Service) List(ctx context.Context, params userrepo.ListParams) (userrepo.ListResult, error) {
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.Limit < 1 {
+		params.Limit = 20
+	}
+
+	params.Role = normalizeOptionalRole(params.Role)
+
+	return s.repo.List(ctx, params)
 }
 
 func normalizeRole(role string) string {
@@ -54,5 +63,15 @@ func normalizeRole(role string) string {
 		return normalized
 	default:
 		return middleware.RoleGuest
+	}
+}
+
+func normalizeOptionalRole(role string) string {
+	normalized := strings.ToLower(strings.TrimSpace(role))
+	switch normalized {
+	case middleware.RoleGuest, middleware.RoleAdmin, middleware.RoleSuperAdmin:
+		return normalized
+	default:
+		return ""
 	}
 }

@@ -3,10 +3,12 @@ package handler
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"firebase.google.com/go/v4/auth"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/middleware"
+	userrepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/user"
 	userservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/user"
 	"github.com/gin-gonic/gin"
 )
@@ -57,19 +59,79 @@ type setRoleRequest struct {
 	Role string `json:"role" binding:"required"`
 }
 
+const (
+	defaultUsersPage  = 1
+	defaultUsersLimit = 20
+	maxUsersLimit     = 100
+)
+
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	if h.userService == nil {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "user service unavailable"})
 		return
 	}
 
-	users, err := h.userService.List(c.Request.Context())
+	page := parseQueryInt(c.Query("page"), defaultUsersPage)
+	if page < 1 {
+		page = defaultUsersPage
+	}
+
+	limit := parseQueryInt(c.Query("limit"), defaultUsersLimit)
+	if limit < 1 {
+		limit = defaultUsersLimit
+	}
+	if limit > maxUsersLimit {
+		limit = maxUsersLimit
+	}
+
+	role := strings.ToLower(strings.TrimSpace(c.Query("role")))
+	if role != "" && role != middleware.RoleGuest && role != middleware.RoleAdmin && role != middleware.RoleSuperAdmin {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role must be one of: guest, admin, super-admin"})
+		return
+	}
+
+	result, err := h.userService.List(c.Request.Context(), userrepo.ListParams{
+		Page:  page,
+		Limit: limit,
+		Role:  role,
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list users"})
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
+	totalPages := int((result.Total + int64(limit) - 1) / int64(limit))
+	hasNext := int64(page*limit) < result.Total
+	hasPrev := page > 1
+
+	var responseRoleFilter interface{}
+	if role != "" {
+		responseRoleFilter = role
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"users": result.Users,
+		"pagination": gin.H{
+			"page":       page,
+			"limit":      limit,
+			"total":      result.Total,
+			"totalPages": totalPages,
+			"hasNext":    hasNext,
+			"hasPrev":    hasPrev,
+		},
+		"filters": gin.H{
+			"role": responseRoleFilter,
+		},
+	})
+}
+
+func parseQueryInt(raw string, fallback int) int {
+	parsed, err := strconv.Atoi(strings.TrimSpace(raw))
+	if err != nil {
+		return fallback
+	}
+
+	return parsed
 }
 
 func (h *UserHandler) UpdateUserRole(c *gin.Context) {
