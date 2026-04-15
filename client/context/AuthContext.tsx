@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to sync auth session");
+        return "guest";
       }
 
       const data = (await res.json()) as { role?: AuthRole };
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const nextRole = await syncSessionCookie(idToken);
             setRole(nextRole);
           } catch (error) {
-            console.error("Failed to sync user session:", error);
+            console.warn("Session sync failed; using guest role", error);
             setRole("guest");
           }
         } else {

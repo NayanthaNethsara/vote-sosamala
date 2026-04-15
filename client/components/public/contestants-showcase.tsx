@@ -25,6 +25,12 @@ interface ContestantsShowcaseProps {
 
 const genderFilterValues = ["all", "male", "female"] as const;
 
+const genderFilterLabels: Record<(typeof genderFilterValues)[number], string> = {
+  all: "All",
+  male: "Male",
+  female: "Female",
+};
+
 export function ContestantsShowcase({
   contestants,
   pagination,
@@ -131,9 +137,11 @@ export function ContestantsShowcase({
               <SelectValue placeholder="Gender" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="male">Male</SelectItem>
-              <SelectItem value="female">Female</SelectItem>
+              {genderFilterValues.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {genderFilterLabels[value]}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
