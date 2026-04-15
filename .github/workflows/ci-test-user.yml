@@ -1,0 +1,41 @@
+name: CI Test User
+
+on:
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - "server/internal/service/user/**"
+      - "server/internal/repository/user/**"
+      - "server/internal/api/handler/user_handler.go"
+      - "server/internal/api/handler/user_handler_test.go"
+      - "server/internal/api/middleware/auth_middleware.go"
+      - "server/internal/api/middleware/super_admin_middleware.go"
+      - "server/internal/model/domain/user.go"
+      - "server/internal/testutil/**"
+      - "server/go.mod"
+      - "server/go.sum"
+      - ".github/workflows/ci-test-user.yml"
+
+jobs:
+  user-tests:
+    name: User Domain Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.0"
+          cache-dependency-path: server/go.sum
+
+      - name: Run user service unit tests
+        run: go test ./internal/service/user -v
+
+      - name: Run user handler tests
+        run: go test ./internal/api/handler -run 'TestListUsers_' -v
