@@ -38,7 +38,25 @@ go run cmd/server/main.go
 - `/internal/model/dto`: Request/response DTOs
 - `/internal/platform`: Infrastructure clients (Firebase, Postgres, Redis, NATS, HTTP server)
 - `/internal/config`: Configuration management
+- `/internal/testutil`: Shared test-only helpers reusable across packages
 - `/migrations`: SQL migrations
+
+## Testing Conventions
+
+- Keep unit tests colocated with source packages using `*_test.go` (Go standard).
+- Use package-local tests for behavior close to implementation:
+	- `/internal/api/handler/*_test.go`
+	- `/internal/service/*/*_test.go`
+	- `/internal/repository/*/*_test.go`
+- Put cross-package test helpers in `/internal/testutil` to avoid duplication.
+- Prefer table-driven tests and `testify` `assert/require` for readability.
+
+Run tests:
+
+```bash
+cd server
+go test ./...
+```
 
 ## Environment
 
