@@ -2,16 +2,15 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/model/domain"
 	userrepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/user"
 	userservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/user"
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/testutil/httpx"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -141,9 +140,7 @@ func TestListUsers_TableDriven(t *testing.T) {
 				},
 			})
 
-			req := httptest.NewRequest(http.MethodGet, tc.url, nil)
-			res := httptest.NewRecorder()
-			router.ServeHTTP(res, req)
+			res := httpx.PerformJSONRequest(t, router, http.MethodGet, tc.url, nil)
 
 			require.Equal(t, tc.expectedStatusCode, res.Code)
 			assert.Equal(t, tc.shouldCallRepo, repoCalled)
@@ -155,7 +152,7 @@ func TestListUsers_TableDriven(t *testing.T) {
 			assert.Equal(t, tc.expectedParams, capturedParams)
 
 			var payload listUsersResponse
-			require.NoError(t, json.Unmarshal(res.Body.Bytes(), &payload))
+			httpx.DecodeJSON(t, res, &payload)
 
 			if tc.expectedRoleNull {
 				assert.Nil(t, payload.Filters.Role)
