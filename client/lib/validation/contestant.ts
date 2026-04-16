@@ -6,14 +6,26 @@ import {
   contestantSemesterValues,
   dateYyyyMmDdSchema,
 } from "@/lib/validation/shared";
+import { detectContestantIdentifierType } from "@/lib/utils/contestant-identifier";
 
-const contestantBaseSchema = z
+const optionalNonEmptyStringSchema = z.string().trim().min(1).optional();
+
+const nullableOptionalStringSchema = z.preprocess(
+  (value) => (value === null ? undefined : value),
+  optionalNonEmptyStringSchema,
+);
+
+const contestantCoreSchema = z.object({
+  name: z.string().trim().min(2, "Name is required"),
+  dateOfBirth: dateYyyyMmDdSchema,
+  gender: z.enum(contestantGenderValues),
+  academicYear: z.enum(contestantAcademicYearValues),
+  semester: z.enum(contestantSemesterValues),
+});
+
+const contestantInputBaseSchema = z
   .object({
-    name: z.string().trim().min(2, "Name is required"),
-    dateOfBirth: dateYyyyMmDdSchema,
-    gender: z.enum(contestantGenderValues),
-    academicYear: z.enum(contestantAcademicYearValues),
-    semester: z.enum(contestantSemesterValues),
+    ...contestantCoreSchema.shape,
     nic: z
       .string()
       .trim()
@@ -43,14 +55,40 @@ const contestantBaseSchema = z
     }
   });
 
-export const contestantFormSchema = contestantBaseSchema;
+export const contestantFormSchema = z
+  .object({
+    ...contestantCoreSchema.shape,
+    identifier: z
+      .string()
+      .trim()
+      .min(1, "NIC or Student ID is required")
+      .max(50, "Identifier must be 50 characters or less"),
+  })
+  .superRefine((value, ctx) => {
+    if (!detectContestantIdentifierType(value.identifier)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["identifier"],
+        message:
+          "Enter a valid NIC or Student ID (e.g. 200310110894, 65859604V, IT23162600)",
+      });
+    }
+  });
 
-export const contestantInputSchema = contestantBaseSchema.extend({
+export const contestantInputSchema = contestantInputBaseSchema.extend({
   photoURL: z.string().url().optional(),
 });
 
-export const contestantSchema = contestantInputSchema.extend({
+export const contestantSchema = z.object({
   id: z.string().min(1),
+  name: z.string().trim().min(1, "Name is required"),
+  dateOfBirth: z.string().trim().min(1, "Date of birth is required"),
+  photoURL: nullableOptionalStringSchema,
+  gender: z.string().trim().min(1, "Gender is required"),
+  academicYear: z.string().trim().min(1, "Academic year is required"),
+  semester: z.string().trim().min(1, "Semester is required"),
+  nic: nullableOptionalStringSchema,
+  studentId: nullableOptionalStringSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
 });
