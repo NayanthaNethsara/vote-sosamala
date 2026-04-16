@@ -25,11 +25,12 @@ interface ContestantsShowcaseProps {
 
 const genderFilterValues = ["all", "male", "female"] as const;
 
-const genderFilterLabels: Record<(typeof genderFilterValues)[number], string> = {
-  all: "All",
-  male: "Male",
-  female: "Female",
-};
+const genderFilterLabels: Record<(typeof genderFilterValues)[number], string> =
+  {
+    all: "All",
+    male: "Male",
+    female: "Female",
+  };
 
 export function ContestantsShowcase({
   contestants,

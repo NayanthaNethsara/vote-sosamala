@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ContestantShareButton } from "@/components/public/contestant-share-button";
 import {
   getAllPublicContestants,
   getPublicContestantBySlug,
@@ -12,6 +13,51 @@ interface ContestantDetailPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+function getFacultyLabel(contestant: {
+  studentId?: string;
+  nic?: string;
+}): string {
+  const studentIdPrefix = contestant.studentId?.trim().slice(0, 2);
+  if (studentIdPrefix) {
+    return studentIdPrefix.toUpperCase();
+  }
+
+  const nicSuffix = contestant.nic?.trim().slice(-4);
+  if (nicSuffix) {
+    return `NIC ${nicSuffix}`;
+  }
+
+  return "General";
+}
+
+function formatDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(parsed);
+}
+
+function getOrdinalYear(value: string): string {
+  const year = Number.parseInt(value, 10);
+
+  if (Number.isNaN(year)) {
+    return value;
+  }
+
+  const suffix =
+    year % 100 >= 11 && year % 100 <= 13
+      ? "th"
+      : (["th", "st", "nd", "rd"][year % 10] ?? "th");
+
+  return `${year}${suffix}`;
 }
 
 export async function generateStaticParams() {
@@ -38,65 +84,94 @@ export default async function ContestantDetailPage({
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#27272a_0%,#18181b_35%,#09090b_100%)] px-4 py-10 text-zinc-100 sm:px-6 lg:px-10">
-      <section className="mx-auto grid w-full max-w-5xl gap-8 lg:grid-cols-[22rem_1fr]">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[28px] border border-white/25 bg-white/[0.08]">
-          <Image
-            src={contestant.photoURL ?? "/logo/logo.png"}
-            alt={contestant.name}
-            fill
-            loading="eager"
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 22rem"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
-        </div>
-
-        <div className="space-y-6 rounded-[28px] border border-white/20 bg-white/[0.05] p-6 backdrop-blur-xl">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-300">
-              Contestant Profile
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {contestant.name}
-            </h1>
-            <p className="mt-2 text-zinc-300">
-              {contestant.academicYear} • {contestant.semester}
-            </p>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#27272a_0%,_#18181b_35%,_#09090b_100%)] px-4 py-10 text-zinc-100 sm:px-6 lg:px-8">
+      <section className="container mx-auto max-w-4xl">
+        <div className="flex flex-col gap-10 md:flex-row md:items-start">
+          <div className="mx-auto w-64 shrink-0 sm:w-72 md:mx-0">
+            <div
+              className="relative w-full overflow-hidden rounded-2xl"
+              style={{
+                aspectRatio: "3 / 4",
+                boxShadow:
+                  "0 8px 32px oklch(0.03 0.005 264 / 0.85), 0 0 0 1px oklch(0.25 0.025 264 / 0.35)",
+              }}
+            >
+              <Image
+                src={contestant.photoURL ?? "/logo/logo.png"}
+                alt={contestant.name}
+                fill
+                sizes="288px"
+                className="object-cover object-top"
+                priority
+              />
+            </div>
           </div>
 
-          <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-              <dt className="text-zinc-400">Gender</dt>
-              <dd className="mt-1 capitalize text-zinc-100">
-                {contestant.gender}
-              </dd>
+          <div className="flex min-w-0 flex-1 flex-col gap-5 py-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/35 bg-cyan-500/15 px-3 py-1 text-xs font-bold text-cyan-200 backdrop-blur-md">
+                Contestant Profile
+              </span>
+              <span className="inline-flex max-w-xs items-center truncate rounded-full border border-white/15 bg-white/8 px-3 py-1 text-xs font-medium text-zinc-200 backdrop-blur-md">
+                {getFacultyLabel(contestant)}
+              </span>
             </div>
-            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-              <dt className="text-zinc-400">Date of Birth</dt>
-              <dd className="mt-1 text-zinc-100">{contestant.dateOfBirth}</dd>
-            </div>
-            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-              <dt className="text-zinc-400">Student ID</dt>
-              <dd className="mt-1 text-zinc-100">
-                {contestant.studentId ?? "-"}
-              </dd>
-            </div>
-            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-              <dt className="text-zinc-400">NIC</dt>
-              <dd className="mt-1 text-zinc-100">{contestant.nic ?? "-"}</dd>
-            </div>
-          </dl>
 
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Link
-              href={
-                contestant.gender.toLowerCase() === "female" ? "/ms" : "/mr"
-              }
-              className="inline-flex h-9 items-center justify-center rounded-none border border-white/20 bg-white/10 px-4 text-xs font-medium text-zinc-100 transition hover:bg-white/20"
-            >
-              Back to Contestants
-            </Link>
+            <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight text-zinc-50 sm:text-4xl">
+              {contestant.name}
+            </h1>
+
+            <p className="max-w-2xl text-sm leading-relaxed text-zinc-300 sm:text-base">
+              {getOrdinalYear(contestant.academicYear)} year,{" "}
+              {contestant.semester} semester contestant profile.
+            </p>
+
+            <dl className="flex flex-col">
+              <div className="flex items-center justify-between border-b border-white/10 py-3">
+                <dt className="text-sm text-zinc-400">Date of Birth</dt>
+                <dd className="text-sm font-medium text-zinc-100">
+                  {formatDate(contestant.dateOfBirth)}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between pt-3">
+                <dt className="text-sm text-zinc-400">Year &amp; Semester</dt>
+                <dd className="text-sm font-medium text-zinc-100">
+                  {getOrdinalYear(contestant.academicYear)} Year{" "}
+                  {contestant.semester} Semester
+                </dd>
+              </div>
+            </dl>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+                <dt className="text-xs uppercase tracking-[0.18em] text-zinc-400">
+                  Student ID
+                </dt>
+                <dd className="mt-2 text-sm font-medium text-zinc-100">
+                  {contestant.studentId ?? "-"}
+                </dd>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+                <dt className="text-xs uppercase tracking-[0.18em] text-zinc-400">
+                  NIC
+                </dt>
+                <dd className="mt-2 text-sm font-medium text-zinc-100">
+                  {contestant.nic ?? "-"}
+                </dd>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-stretch gap-3 pt-1">
+              <Link
+                href={
+                  contestant.gender.toLowerCase() === "female" ? "/ms" : "/mr"
+                }
+                className="inline-flex h-12 items-center justify-center rounded-full border border-white/15 bg-white/8 px-5 text-sm font-medium text-zinc-100 transition hover:bg-white/14"
+              >
+                Back to Contestants
+              </Link>
+              <ContestantShareButton name={contestant.name} slug={slug} />
+            </div>
           </div>
         </div>
       </section>
