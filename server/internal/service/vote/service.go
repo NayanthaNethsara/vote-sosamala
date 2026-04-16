@@ -11,6 +11,7 @@ import (
 
 	voterepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/vote"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 )
@@ -20,7 +21,9 @@ const (
 	voteUserKeyPrefix   = "vote:user:"
 	voteCountKeyPrefix  = "vote:contestant:"
 	votePersistQueueKey = "vote:persist:queue"
+	votePersistDLQKey   = "vote:persist:dlq"
 	voteFlushBatchSize  = 200
+	voteMaxRetries      = 5
 )
 
 var (
@@ -33,6 +36,20 @@ type castVoteEvent struct {
 	FirebaseUID  string    `json:"firebaseUid"`
 	ContestantID string    `json:"contestantId"`
 	VotedAt      time.Time `json:"votedAt"`
+	RetryCount   int       `json:"retryCount,omitempty"`
+}
+
+type deadLetterVoteEvent struct {
+	Event    castVoteEvent `json:"event"`
+	Error    string        `json:"error"`
+	Raw      string        `json:"raw,omitempty"`
+	FailedAt time.Time     `json:"failedAt"`
+}
+
+type queuedPersistVote struct {
+	raw   string
+	event castVoteEvent
+	vote  voterepo.PersistVote
 }
 
 type Service struct {
@@ -167,33 +184,50 @@ func (s *Service) flushQueuedVotes(ctx context.Context) error {
 		return nil
 	}
 
+	queueItems := make([]queuedPersistVote, 0, len(events))
 	persistVotes := make([]voterepo.PersistVote, 0, len(events))
-	requeuePayload := make([]interface{}, 0, len(events))
 
 	for _, raw := range events {
 		var event castVoteEvent
 		if err := json.Unmarshal([]byte(raw), &event); err != nil {
+			if dlqErr := s.pushRawToDLQ(ctx, raw, fmt.Errorf("invalid queued vote payload: %w", err)); dlqErr != nil {
+				log.Printf("vote malformed payload DLQ push failed: %v", dlqErr)
+			}
 			continue
 		}
 
-		persistVotes = append(persistVotes, voterepo.PersistVote{
+		vote := voterepo.PersistVote{
 			FirebaseUID:  event.FirebaseUID,
 			ContestantID: event.ContestantID,
 			VotedAt:      event.VotedAt,
+		}
+
+		queueItems = append(queueItems, queuedPersistVote{
+			raw:   raw,
+			event: event,
+			vote:  vote,
 		})
-		requeuePayload = append(requeuePayload, raw)
+		persistVotes = append(persistVotes, vote)
 	}
 
-	if len(persistVotes) == 0 {
+	if len(queueItems) == 0 {
 		return nil
 	}
 
 	batchResult, err := s.repo.ApplyVoteBatch(ctx, persistVotes)
 	if err != nil {
-		if requeueErr := s.redisClient.RPush(ctx, votePersistQueueKey, requeuePayload...).Err(); requeueErr != nil {
-			log.Printf("vote batch requeue failed for %d events: %v", len(requeuePayload), requeueErr)
+		if isTransientPersistError(err) {
+			if requeueErr := s.requeueBatchRaw(ctx, queueItems); requeueErr != nil {
+				log.Printf("vote batch requeue failed for %d events: %v", len(queueItems), requeueErr)
+			}
+			return err
 		}
-		return err
+
+		if isolateErr := s.persistBatchWithIsolation(ctx, queueItems); isolateErr != nil {
+			return isolateErr
+		}
+
+		return nil
 	}
 
 	for contestantID, duplicateCount := range batchResult.DuplicateByContestant {
@@ -207,6 +241,126 @@ func (s *Service) flushQueuedVotes(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (s *Service) persistBatchWithIsolation(ctx context.Context, queueItems []queuedPersistVote) error {
+	for i := range queueItems {
+		item := queueItems[i]
+
+		batchResult, err := s.repo.ApplyVoteBatch(ctx, []voterepo.PersistVote{item.vote})
+		if err != nil {
+			if isTransientPersistError(err) {
+				if requeueErr := s.requeueBatchRaw(ctx, queueItems[i:]); requeueErr != nil {
+					log.Printf("vote isolate requeue failed for %d events: %v", len(queueItems[i:]), requeueErr)
+				}
+				return err
+			}
+
+			if handleErr := s.handleFailedPersistEvent(ctx, item.event, err); handleErr != nil {
+				log.Printf("vote failed-event handling error for user %s contestant %s: %v", item.event.FirebaseUID, item.event.ContestantID, handleErr)
+			}
+			continue
+		}
+
+		duplicateCount := batchResult.DuplicateByContestant[item.event.ContestantID]
+		if duplicateCount <= 0 {
+			continue
+		}
+
+		if decrErr := s.redisClient.DecrBy(ctx, voteCountKey(item.event.ContestantID), duplicateCount).Err(); decrErr != nil {
+			log.Printf("vote cache duplicate correction failed for contestant %s: %v", item.event.ContestantID, decrErr)
+		}
+	}
+
+	return nil
+}
+
+func (s *Service) handleFailedPersistEvent(ctx context.Context, event castVoteEvent, persistErr error) error {
+	event.RetryCount++
+
+	if event.RetryCount > voteMaxRetries {
+		if err := s.pushToDLQ(ctx, event, persistErr); err != nil {
+			return err
+		}
+
+		if err := s.redisClient.Decr(ctx, voteCountKey(event.ContestantID)).Err(); err != nil {
+			log.Printf("vote cache rollback failed for contestant %s: %v", event.ContestantID, err)
+		}
+
+		if err := s.redisClient.Del(ctx, voteUserKey(event.FirebaseUID)).Err(); err != nil {
+			log.Printf("vote user lock rollback failed for user %s: %v", event.FirebaseUID, err)
+		}
+
+		return nil
+	}
+
+	retryPayload, err := json.Marshal(event)
+	if err != nil {
+		return s.pushToDLQ(ctx, event, fmt.Errorf("marshal retry payload: %w", err))
+	}
+
+	return s.redisClient.RPush(ctx, votePersistQueueKey, retryPayload).Err()
+}
+
+func (s *Service) pushToDLQ(ctx context.Context, event castVoteEvent, persistErr error) error {
+	dlqPayload, err := json.Marshal(deadLetterVoteEvent{
+		Event:    event,
+		Error:    persistErr.Error(),
+		FailedAt: time.Now().UTC(),
+	})
+	if err != nil {
+		return err
+	}
+
+	return s.redisClient.RPush(ctx, votePersistDLQKey, dlqPayload).Err()
+}
+
+func (s *Service) pushRawToDLQ(ctx context.Context, raw string, persistErr error) error {
+	dlqPayload, err := json.Marshal(deadLetterVoteEvent{
+		Error:    persistErr.Error(),
+		Raw:      raw,
+		FailedAt: time.Now().UTC(),
+	})
+	if err != nil {
+		return err
+	}
+
+	return s.redisClient.RPush(ctx, votePersistDLQKey, dlqPayload).Err()
+}
+
+func (s *Service) requeueBatchRaw(ctx context.Context, queueItems []queuedPersistVote) error {
+	if len(queueItems) == 0 {
+		return nil
+	}
+
+	requeuePayload := make([]interface{}, 0, len(queueItems))
+	for _, item := range queueItems {
+		requeuePayload = append(requeuePayload, item.raw)
+	}
+
+	return s.redisClient.RPush(ctx, votePersistQueueKey, requeuePayload...).Err()
+}
+
+func isTransientPersistError(err error) bool {
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
+		return false
+	}
+
+	if len(pgErr.Code) < 2 {
+		return false
+	}
+
+	codeClass := pgErr.Code[:2]
+	if codeClass == "08" || codeClass == "53" || codeClass == "57" {
+		return true
+	}
+
+	return pgErr.Code == "40001" || pgErr.Code == "40P01"
 }
 
 func voteUserKey(firebaseUID string) string {
