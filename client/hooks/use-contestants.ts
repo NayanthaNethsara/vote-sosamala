@@ -24,18 +24,11 @@ export function useContestants() {
   }, [user]);
 
   const fetchContestants = useCallback(async () => {
-    if (!user) {
-      setContestants([]);
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const token = await getAuthToken();
-      const result = await listContestantsAction({ token });
+      const result = await listContestantsAction();
 
       if (!result.success) {
         setError(result.error);
@@ -50,7 +43,7 @@ export function useContestants() {
     } finally {
       setLoading(false);
     }
-  }, [getAuthToken, user]);
+  }, []);
 
   useEffect(() => {
     fetchContestants();

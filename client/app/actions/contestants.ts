@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 
+import env from "@/config/env";
 import { toActionError } from "@/lib/actions/action-error";
 import { backendRequest } from "@/lib/utils/backend-request";
 import {
@@ -30,18 +31,26 @@ const deleteContestantActionSchema = tokenSchema.extend({
   id: idSchema,
 });
 
-export async function listContestantsAction(input: {
-  token: string;
-}): Promise<ActionResult<Contestant[]>> {
+export async function listContestantsAction(): Promise<
+  ActionResult<Contestant[]>
+> {
   try {
-    const parsedInput = tokenSchema.parse(input);
-    const contestants = await backendRequest(
-      {
-        path: "/api/admin/contestants",
-        token: parsedInput.token,
+    // Listing contestants is public and should work without authentication.
+    const response = await fetch(`${env.apiBaseUrl}/api/contestants`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
       },
-      contestantListSchema,
-    );
+      cache: "no-store",
+    });
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      throw new Error("Failed to list contestants");
+    }
+
+    const contestants = contestantListSchema.parse(payload);
 
     return {
       success: true,

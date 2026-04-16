@@ -15,6 +15,14 @@ import {
   contestantGenderValues,
   contestantSemesterValues,
 } from "@/lib/validation/shared";
+import {
+  normalizeContestantIdentifier,
+  toContestantIdentityFields,
+} from "@/lib/utils/contestant-identifier";
+import {
+  formatDateForForm,
+  parseDateFromForm,
+} from "@/lib/utils/contestant-date";
 import type { ActionResult } from "@/types/action";
 import type { Contestant, ContestantInput } from "@/types/contestant";
 
@@ -42,45 +50,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarBlankIcon, SpinnerIcon } from "@phosphor-icons/react";
-
-function formatDateForForm(date: Date): string {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, "0");
-  const day = `${date.getDate()}`.padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseDateFromForm(value: string | undefined): Date | undefined {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return undefined;
-  }
-
-  const [year, month, day] = value.split("-").map(Number);
-  const parsed = new Date(year, month - 1, day);
-
-  if (
-    parsed.getFullYear() !== year ||
-    parsed.getMonth() !== month - 1 ||
-    parsed.getDate() !== day
-  ) {
-    return undefined;
-  }
-
-  return parsed;
-}
-
-function formatDateForDisplay(value: string | undefined): string {
-  const date = parseDateFromForm(value);
-  if (!date) {
-    return "";
-  }
-
-  return date.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-}
+import { Field, FieldLabel } from "@/components/ui/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 
 interface Props {
   open: boolean;
@@ -105,6 +81,7 @@ export function ContestantDialog({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [dobPickerOpen, setDobPickerOpen] = useState(false);
   const [dobMonth, setDobMonth] = useState<Date | undefined>(undefined);
+  const [dateOfBirthInputValue, setDateOfBirthInputValue] = useState("");
 
   const {
     register,
@@ -122,8 +99,7 @@ export function ContestantDialog({
       gender: undefined,
       academicYear: undefined,
       semester: undefined,
-      nic: "",
-      studentId: "",
+      identifier: "",
     },
   });
 
@@ -153,8 +129,7 @@ export function ContestantDialog({
         )
           ? (contestant.semester as (typeof contestantSemesterValues)[number])
           : undefined,
-        nic: contestant.nic ?? "",
-        studentId: contestant.studentId ?? "",
+        identifier: contestant.studentId ?? contestant.nic ?? "",
       });
       setPreviewUrl(contestant.photoURL || null);
       return;
@@ -166,8 +141,7 @@ export function ContestantDialog({
       gender: undefined,
       academicYear: undefined,
       semester: undefined,
-      nic: "",
-      studentId: "",
+      identifier: "",
     });
     setPreviewUrl(null);
   }, [open, contestant, reset]);
@@ -180,6 +154,10 @@ export function ContestantDialog({
     () => parseDateFromForm(dateOfBirthValue),
     [dateOfBirthValue],
   );
+
+  useEffect(() => {
+    setDateOfBirthInputValue(dateOfBirthValue || "");
+  }, [dateOfBirthValue]);
 
   useEffect(() => {
     if (!dobPickerOpen) {
@@ -220,8 +198,7 @@ export function ContestantDialog({
         gender: data.gender,
         academicYear: data.academicYear,
         semester: data.semester,
-        nic: data.nic?.trim() || undefined,
-        studentId: data.studentId?.trim() || undefined,
+        ...toContestantIdentityFields(data.identifier),
         photoURL: photoURL || undefined,
       };
 
@@ -283,6 +260,25 @@ export function ContestantDialog({
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="identifier">NIC or Student ID</Label>
+            <Input
+              id="identifier"
+              {...register("identifier", {
+                setValueAs: (value) =>
+                  typeof value === "string"
+                    ? normalizeContestantIdentifier(value)
+                    : value,
+              })}
+              placeholder="e.g. IT23162600 or 200310110894"
+            />
+            {errors.identifier && (
+              <span className="text-sm text-red-500">
+                {errors.identifier.message}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input id="name" {...register("name")} />
             {errors.name && (
@@ -292,67 +288,88 @@ export function ContestantDialog({
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="dateOfBirth">Date of Birth</Label>
-            <input type="hidden" {...register("dateOfBirth")} />
-            <div className="relative">
-              <Input
-                id="dateOfBirth"
-                value={formatDateForDisplay(dateOfBirthValue)}
-                placeholder="Select date of birth"
-                onKeyDown={(e) => {
-                  if (e.key === "ArrowDown") {
-                    e.preventDefault();
-                    setDobPickerOpen(true);
-                  }
-                }}
-                readOnly
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Field>
+                <FieldLabel htmlFor="dateOfBirth">Date of Birth</FieldLabel>
+                <input type="hidden" {...register("dateOfBirth")} />
+                <InputGroup>
+                  <InputGroupInput
+                    id="dateOfBirth"
+                    value={dateOfBirthInputValue}
+                    placeholder="YYYY-MM-DD"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setDateOfBirthInputValue(value);
 
-              <Popover open={dobPickerOpen} onOpenChange={setDobPickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1 h-8 w-8"
-                    aria-label="Select date of birth"
-                  >
-                    <CalendarBlankIcon className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto overflow-hidden p-0"
-                  align="end"
-                >
-                  <Calendar
-                    mode="single"
-                    selected={selectedDateOfBirth}
-                    month={dobMonth}
-                    onMonthChange={setDobMonth}
-                    onSelect={(date) => {
-                      if (!date) {
-                        return;
-                      }
-
-                      setValue("dateOfBirth", formatDateForForm(date), {
+                      setValue("dateOfBirth", value, {
                         shouldDirty: true,
                         shouldValidate: true,
                       });
-                      setDobPickerOpen(false);
+
+                      const parsed = parseDateFromForm(value);
+                      if (parsed) {
+                        setDobMonth(parsed);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setDobPickerOpen(true);
+                      }
                     }}
                   />
-                </PopoverContent>
-              </Popover>
+                  <InputGroupAddon align="inline-end">
+                    <Popover
+                      open={dobPickerOpen}
+                      onOpenChange={setDobPickerOpen}
+                    >
+                      <PopoverTrigger asChild>
+                        <InputGroupButton
+                          id="date-picker"
+                          variant="ghost"
+                          size="icon-xs"
+                          aria-label="Select date of birth"
+                        >
+                          <CalendarBlankIcon />
+                          <span className="sr-only">Select date of birth</span>
+                        </InputGroupButton>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto overflow-hidden p-0"
+                        align="end"
+                        alignOffset={-8}
+                        sideOffset={10}
+                      >
+                        <Calendar
+                          mode="single"
+                          selected={selectedDateOfBirth}
+                          month={dobMonth}
+                          onMonthChange={setDobMonth}
+                          onSelect={(date) => {
+                            setValue(
+                              "dateOfBirth",
+                              date ? formatDateForForm(date) : "",
+                              {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              },
+                            );
+                            setDobPickerOpen(false);
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </InputGroupAddon>
+                </InputGroup>
+              </Field>
+              {errors.dateOfBirth && (
+                <span className="text-sm text-red-500">
+                  {errors.dateOfBirth.message}
+                </span>
+              )}
             </div>
-            {errors.dateOfBirth && (
-              <span className="text-sm text-red-500">
-                {errors.dateOfBirth.message}
-              </span>
-            )}
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="gender">Gender</Label>
               <Select
@@ -384,7 +401,9 @@ export function ContestantDialog({
                 </span>
               )}
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="academicYear">Academic Year</Label>
               <Select
@@ -451,32 +470,6 @@ export function ContestantDialog({
               {errors.semester && (
                 <span className="text-sm text-red-500">
                   {errors.semester.message}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="nic">NIC</Label>
-              <Input id="nic" {...register("nic")} placeholder="Optional" />
-              {errors.nic && (
-                <span className="text-sm text-red-500">
-                  {errors.nic.message}
-                </span>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="studentId">Student ID</Label>
-              <Input
-                id="studentId"
-                {...register("studentId")}
-                placeholder="Optional"
-              />
-              {errors.studentId && (
-                <span className="text-sm text-red-500">
-                  {errors.studentId.message}
                 </span>
               )}
             </div>
