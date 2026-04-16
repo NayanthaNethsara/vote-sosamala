@@ -39,17 +39,19 @@ export function ContestantCard({
           <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/30 to-transparent" />
           <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.24)_0%,rgba(255,255,255,0.03)_45%,rgba(255,255,255,0)_100%)]" />
 
-          <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold text-zinc-100 backdrop-blur-xl">
+          <div className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-zinc-100 backdrop-blur-xl">
             <Fire className="h-3.5 w-3.5 text-amber-500" />
             {votesLabel}
           </div>
 
           <div className="absolute bottom-4 left-4 right-4 space-y-2 text-zinc-50">
-            <p className="text-sm uppercase tracking-[0.2em] text-zinc-200">
+            <p className="text-xs uppercase tracking-[0.14em] text-zinc-200">
               {title}
             </p>
-            <h3 className="text-2xl font-semibold leading-tight">{name}</h3>
-            <div className="flex items-center gap-2 text-sm text-zinc-200">
+            <h3 className="text-xl font-semibold leading-tight sm:text-2xl">
+              {name}
+            </h3>
+            <div className="flex items-center gap-2 text-xs text-zinc-200 sm:text-sm">
               <Medal className="h-4 w-4" />
               <span>{subtitle}</span>
             </div>

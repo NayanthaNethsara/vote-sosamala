@@ -4,7 +4,10 @@ import { z } from "zod";
 
 import { toActionError } from "@/lib/actions/action-error";
 import { publicBackendRequest } from "@/lib/utils/public-backend-request";
-import { publicContestantListResponseSchema } from "@/lib/validation/contestant";
+import {
+  contestantListSchema,
+  publicContestantListResponseSchema,
+} from "@/lib/validation/contestant";
 import type { ActionResult } from "@/types/action";
 import type { PublicContestantListResponse } from "@/types/contestant";
 
@@ -30,12 +33,37 @@ export async function listPublicContestantsAction(input: {
         revalidateSeconds: 120,
         tags: ["public-contestants"],
       },
-      publicContestantListResponseSchema,
+      z.union([publicContestantListResponseSchema, contestantListSchema]),
     );
+
+    const normalizedPayload = Array.isArray(payload)
+      ? (() => {
+          const total = payload.length;
+          const totalPages = Math.ceil(total / parsedInput.limit);
+          const currentPage =
+            totalPages === 0
+              ? 1
+              : Math.min(parsedInput.page, Math.max(1, totalPages));
+          const start = (currentPage - 1) * parsedInput.limit;
+          const contestants = payload.slice(start, start + parsedInput.limit);
+
+          return {
+            contestants,
+            pagination: {
+              page: currentPage,
+              limit: parsedInput.limit,
+              total,
+              totalPages,
+              hasNext: currentPage < totalPages,
+              hasPrev: currentPage > 1,
+            },
+          } satisfies PublicContestantListResponse;
+        })()
+      : payload;
 
     return {
       success: true,
-      data: payload,
+      data: normalizedPayload,
     };
   } catch (error) {
     if (error instanceof Error) {

@@ -1,8 +1,8 @@
 import { ContestantCategoryPage } from "@/components/public/contestant-category-page";
-import { getPublicContestantsPage } from "@/lib/public-contestants";
+import { getAllPublicContestants } from "@/lib/public-contestants";
 
 export default async function MrPage() {
-  const { contestants } = await getPublicContestantsPage(1, 100);
+  const contestants = await getAllPublicContestants();
   const maleContestants = contestants.filter(
     (contestant) => contestant.gender.toLowerCase() === "male",
   );

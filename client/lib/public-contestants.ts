@@ -3,7 +3,10 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 
 import { listPublicContestantsAction } from "@/app/actions/public-contestants";
-import type { PublicContestantListResponse } from "@/types/contestant";
+import type {
+  Contestant,
+  PublicContestantListResponse,
+} from "@/types/contestant";
 
 const fetchPublicContestantsPage = unstable_cache(
   async (
@@ -30,4 +33,35 @@ export async function getPublicContestantsPage(
   limit: number,
 ): Promise<PublicContestantListResponse> {
   return fetchPublicContestantsPage(page, limit);
+}
+
+const fetchAllPublicContestants = unstable_cache(
+  async (limit: number): Promise<Contestant[]> => {
+    const allContestants: Contestant[] = [];
+    let currentPage = 1;
+
+    while (true) {
+      const pageData = await getPublicContestantsPage(currentPage, limit);
+      allContestants.push(...pageData.contestants);
+
+      if (!pageData.pagination.hasNext) {
+        break;
+      }
+
+      currentPage += 1;
+    }
+
+    return allContestants;
+  },
+  ["public-contestants-all"],
+  {
+    revalidate: 120,
+    tags: ["public-contestants"],
+  },
+);
+
+export async function getAllPublicContestants(
+  limit = 100,
+): Promise<Contestant[]> {
+  return fetchAllPublicContestants(limit);
 }
