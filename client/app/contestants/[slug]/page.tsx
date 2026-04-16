@@ -18,7 +18,12 @@ export async function generateStaticParams() {
   const contestants = await getAllPublicContestants();
 
   return contestants.map((contestant) => ({
-    slug: createContestantSlug(contestant.name, contestant.id),
+    slug: createContestantSlug({
+      id: contestant.id,
+      name: contestant.name,
+      studentId: contestant.studentId,
+      nic: contestant.nic,
+    }),
   }));
 }
 

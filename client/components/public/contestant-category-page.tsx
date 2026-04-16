@@ -38,7 +38,12 @@ export function ContestantCategoryPage({
               subtitle={`${contestant.academicYear} • ${contestant.semester}`}
               votesLabel={contestant.studentId ?? "Student contestant"}
               imageUrl={contestant.photoURL ?? "/logo/logo.png"}
-              href={`/contestants/${createContestantSlug(contestant.name, contestant.id)}`}
+              href={`/contestants/${createContestantSlug({
+                id: contestant.id,
+                name: contestant.name,
+                studentId: contestant.studentId,
+                nic: contestant.nic,
+              })}`}
               eager={index === 0}
               className="w-full"
             />

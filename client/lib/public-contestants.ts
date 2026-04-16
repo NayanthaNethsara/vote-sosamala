@@ -3,7 +3,10 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 
 import { listPublicContestantsAction } from "@/app/actions/public-contestants";
-import { extractContestantIdFromSlug } from "@/lib/utils/contestant-slug";
+import {
+  createContestantSlug,
+  extractContestantIdFromSlug,
+} from "@/lib/utils/contestant-slug";
 import type {
   Contestant,
   PublicContestantListResponse,
@@ -71,13 +74,28 @@ export async function getPublicContestantBySlug(
   slug: string,
   limit = 100,
 ): Promise<Contestant | null> {
+  const contestants = await getAllPublicContestants(limit);
+
   const contestantId = extractContestantIdFromSlug(slug);
-  if (!contestantId) {
-    return null;
+  if (contestantId) {
+    const byId = contestants.find(
+      (contestant) => contestant.id === contestantId,
+    );
+    if (byId) {
+      return byId;
+    }
   }
 
-  const contestants = await getAllPublicContestants(limit);
   return (
-    contestants.find((contestant) => contestant.id === contestantId) ?? null
+    contestants.find((contestant) => {
+      const contestantSlug = createContestantSlug({
+        id: contestant.id,
+        name: contestant.name,
+        studentId: contestant.studentId,
+        nic: contestant.nic,
+      });
+
+      return contestantSlug === slug;
+    }) ?? null
   );
 }
