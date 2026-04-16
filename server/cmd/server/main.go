@@ -3,14 +3,26 @@ package main
 import (
 	"context"
 	"log"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api"
+	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/handler"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/config"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/platform"
+	contestantrepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/contestant"
+	userrepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/user"
+	voterepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/vote"
+	contestantservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/contestant"
+	userservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/user"
+	voteservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/vote"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
 	cfg := config.LoadConfig()
 
 	redisClient, err := platform.InitRedis(cfg.RedisAddr)
@@ -44,12 +56,42 @@ func main() {
 		log.Println("Firebase Admin SDK ready")
 	}
 
+	contestantRepository := contestantrepo.NewSQLCRepository(dbPool)
+	contestantService := contestantservice.NewService(contestantRepository)
+	contestantHandler := handler.NewContestantHandler(contestantService)
+
+	var userService *userservice.Service
+	if dbPool != nil {
+		userRepository := userrepo.NewSQLCRepository(dbPool)
+		userService = userservice.NewService(userRepository)
+	}
+	userHandler := handler.NewUserHandler(firebaseAuth, userService)
+
+	healthHandler := handler.NewHealthHandler(redisClient, natsConn, dbPool)
+
+	var voteHandler *handler.VoteHandler
+	if dbPool != nil && redisClient != nil && natsConn != nil {
+		voteRepository := voterepo.NewSQLRepository(dbPool)
+		voteService := voteservice.NewService(
+			voteRepository,
+			redisClient,
+			natsConn,
+			10*time.Second,
+		)
+		voteService.StartBackground(ctx)
+		voteHandler = handler.NewVoteHandler(voteService)
+	} else {
+		log.Println("Vote pipeline disabled: requires Postgres, Redis, and NATS")
+	}
+
 	router := api.NewRouter(cfg.GinMode, api.Dependencies{
-		RedisClient:    redisClient,
-		NatsConn:       natsConn,
-		DBPool:         dbPool,
 		FirebaseAuth:   firebaseAuth,
 		AllowedOrigins: cfg.AllowedOrigins,
+	}, api.Handlers{
+		Health:     healthHandler,
+		Contestant: contestantHandler,
+		User:       userHandler,
+		Vote:       voteHandler,
 	})
 
 	platform.New(cfg.Port, router).Start()
