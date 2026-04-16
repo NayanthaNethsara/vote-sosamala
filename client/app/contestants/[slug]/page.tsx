@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ContestantShareButton } from "@/components/public/contestant-share-button";
+import { ContestantVoteButton } from "@/components/public/contestant-vote-button";
 import {
   getAllPublicContestants,
   getPublicContestantBySlug,
@@ -162,6 +163,9 @@ export default async function ContestantDetailPage({
             </div>
 
             <div className="flex flex-wrap items-stretch gap-3 pt-1">
+              <div className="w-full sm:w-auto sm:min-w-56">
+                <ContestantVoteButton contestantId={contestant.id} />
+              </div>
               <Link
                 href={
                   contestant.gender.toLowerCase() === "female" ? "/ms" : "/mr"
