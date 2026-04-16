@@ -3,6 +3,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 
 import { listPublicContestantsAction } from "@/app/actions/public-contestants";
+import { extractContestantIdFromSlug } from "@/lib/utils/contestant-slug";
 import type {
   Contestant,
   PublicContestantListResponse,
@@ -64,4 +65,19 @@ export async function getAllPublicContestants(
   limit = 100,
 ): Promise<Contestant[]> {
   return fetchAllPublicContestants(limit);
+}
+
+export async function getPublicContestantBySlug(
+  slug: string,
+  limit = 100,
+): Promise<Contestant | null> {
+  const contestantId = extractContestantIdFromSlug(slug);
+  if (!contestantId) {
+    return null;
+  }
+
+  const contestants = await getAllPublicContestants(limit);
+  return (
+    contestants.find((contestant) => contestant.id === contestantId) ?? null
+  );
 }

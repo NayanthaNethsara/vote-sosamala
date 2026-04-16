@@ -1,6 +1,7 @@
 "use client";
 
 import { ContestantCard } from "@/components/ui/contestant-card";
+import { createContestantSlug } from "@/lib/utils/contestant-slug";
 import type { Contestant } from "@/types/contestant";
 
 interface ContestantCategoryPageProps {
@@ -37,6 +38,7 @@ export function ContestantCategoryPage({
               subtitle={`${contestant.academicYear} • ${contestant.semester}`}
               votesLabel={contestant.studentId ?? "Student contestant"}
               imageUrl={contestant.photoURL ?? "/logo/logo.png"}
+              href={`/contestants/${createContestantSlug(contestant.name, contestant.id)}`}
               eager={index === 0}
               className="w-full"
             />

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Medal, Fire } from "@phosphor-icons/react";
 
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ interface ContestantCardProps {
   subtitle: string;
   votesLabel: string;
   imageUrl: string;
+  href?: string;
   eager?: boolean;
   className?: string;
 }
@@ -21,11 +23,12 @@ export function ContestantCard({
   subtitle,
   votesLabel,
   imageUrl,
+  href,
   eager = false,
   className,
 }: ContestantCardProps) {
-  return (
-    <article className={cn("group relative", className)}>
+  const cardContent = (
+    <>
       <div className="relative overflow-hidden rounded-[28px] border border-white/25 bg-white/[0.08] shadow-[0_26px_80px_-34px_rgba(0,0,0,0.9)] ring-1 ring-white/15 backdrop-blur-2xl">
         <div className="relative aspect-[4/5] overflow-hidden rounded-[28px]">
           <Image
@@ -58,6 +61,18 @@ export function ContestantCard({
           </div>
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <article className={cn("group relative", className)}>
+      {href ? (
+        <Link href={href} className="block" aria-label={`View ${name}`}>
+          {cardContent}
+        </Link>
+      ) : (
+        cardContent
+      )}
     </article>
   );
 }
