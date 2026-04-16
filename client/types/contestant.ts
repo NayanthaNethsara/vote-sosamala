@@ -22,3 +22,17 @@ export interface ContestantInput {
   nic?: string;
   studentId?: string;
 }
+
+export interface ContestantListPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface PublicContestantListResponse {
+  contestants: Contestant[];
+  pagination: ContestantListPagination;
+}

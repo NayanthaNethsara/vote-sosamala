@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import env from "@/config/env";
 import { toActionError } from "@/lib/actions/action-error";
+import { revalidatePublicContestantsCache } from "@/lib/cache/public-contestants";
 import { backendRequest } from "@/lib/utils/backend-request";
 import {
   contestantInputSchema,
@@ -77,6 +78,8 @@ export async function createContestantAction(input: {
       contestantSchema,
     );
 
+    revalidatePublicContestantsCache();
+
     return {
       success: true,
       data: contestant,
@@ -103,6 +106,8 @@ export async function updateContestantAction(input: {
       contestantSchema,
     );
 
+    revalidatePublicContestantsCache();
+
     return {
       success: true,
       data: contestant,
@@ -127,6 +132,8 @@ export async function deleteContestantAction(input: {
       },
       z.object({ message: z.string() }),
     );
+
+    revalidatePublicContestantsCache();
 
     return {
       success: true,

@@ -18,13 +18,43 @@ func NewContestantHandler(service *contestantservice.Service) *ContestantHandler
 }
 
 func (h *ContestantHandler) ListContestantsPublic(c *gin.Context) {
-	contestants, err := h.service.List(c.Request.Context())
+	page := parseQueryInt(c.Query("page"), 1)
+	if page < 1 {
+		page = 1
+	}
+
+	limit := parseQueryInt(c.Query("limit"), 20)
+	if limit < 1 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	result, err := h.service.ListPage(c.Request.Context(), contestantrepo.ListParams{
+		Page:  page,
+		Limit: limit,
+	})
 	if err != nil {
 		respondContestantError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, contestants)
+	totalPages := int((result.Total + int64(limit) - 1) / int64(limit))
+	hasNext := int64(page*limit) < result.Total
+	hasPrev := page > 1
+
+	c.JSON(http.StatusOK, gin.H{
+		"contestants": result.Contestants,
+		"pagination": gin.H{
+			"page":       page,
+			"limit":      limit,
+			"total":      result.Total,
+			"totalPages": totalPages,
+			"hasNext":    hasNext,
+			"hasPrev":    hasPrev,
+		},
+	})
 }
 
 func (h *ContestantHandler) CreateContestant(c *gin.Context) {

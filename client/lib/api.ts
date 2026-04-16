@@ -44,7 +44,16 @@ export async function fetchMe(user: AuthUser): Promise<MeResponse> {
 export async function listContestantsPublic(): Promise<Contestant[]> {
   const res = await publicFetch("/api/contestants");
   if (!res.ok) throw new Error("Failed to list contestants");
-  return res.json();
+
+  const payload = (await res.json()) as
+    | Contestant[]
+    | { contestants?: Contestant[] };
+
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  return payload.contestants ?? [];
 }
 
 import type { ContestantInput } from "@/types/contestant";

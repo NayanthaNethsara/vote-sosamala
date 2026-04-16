@@ -15,11 +15,12 @@ import (
 )
 
 type SQLCRepository struct {
+	db      *pgxpool.Pool
 	queries *sqlcgen.Queries
 }
 
 func NewSQLCRepository(db *pgxpool.Pool) *SQLCRepository {
-	return &SQLCRepository{queries: sqlcgen.New(db)}
+	return &SQLCRepository{db: db, queries: sqlcgen.New(db)}
 }
 
 func (r *SQLCRepository) Create(ctx context.Context, input UpsertInput) (domain.Contestant, error) {
@@ -84,6 +85,75 @@ func (r *SQLCRepository) List(ctx context.Context) ([]domain.Contestant, error) 
 	}
 
 	return contestants, nil
+}
+
+func (r *SQLCRepository) ListPage(ctx context.Context, params ListParams) (ListResult, error) {
+	offset := (params.Page - 1) * params.Limit
+	if offset < 0 {
+		offset = 0
+	}
+
+	var total int64
+	err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM contestants`).Scan(&total)
+	if err != nil {
+		return ListResult{}, err
+	}
+
+	rows, err := r.db.Query(
+		ctx,
+		`SELECT id, name, date_of_birth, photo_url, gender, academic_year, semester, nic, student_id, created_at, updated_at
+		 FROM contestants
+		 ORDER BY created_at DESC
+		 LIMIT $1 OFFSET $2`,
+		params.Limit,
+		offset,
+	)
+	if err != nil {
+		return ListResult{}, err
+	}
+	defer rows.Close()
+
+	contestants := make([]domain.Contestant, 0, params.Limit)
+	for rows.Next() {
+		var id pgtype.UUID
+		var name string
+		var dateOfBirth pgtype.Date
+		var photoURL *string
+		var gender *string
+		var academicYear *string
+		var semester *string
+		var nic *string
+		var studentID *string
+		var createdAt pgtype.Timestamptz
+		var updatedAt pgtype.Timestamptz
+
+		if err := rows.Scan(&id, &name, &dateOfBirth, &photoURL, &gender, &academicYear, &semester, &nic, &studentID, &createdAt, &updatedAt); err != nil {
+			return ListResult{}, err
+		}
+
+		contestants = append(contestants, toDomainContestant(
+			id,
+			name,
+			dateOfBirth,
+			photoURL,
+			gender,
+			academicYear,
+			semester,
+			nic,
+			studentID,
+			createdAt,
+			updatedAt,
+		))
+	}
+
+	if err := rows.Err(); err != nil {
+		return ListResult{}, err
+	}
+
+	return ListResult{
+		Contestants: contestants,
+		Total:       total,
+	}, nil
 }
 
 func (r *SQLCRepository) Update(ctx context.Context, id string, input UpsertInput) (domain.Contestant, error) {
