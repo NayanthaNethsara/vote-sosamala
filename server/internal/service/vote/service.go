@@ -167,7 +167,8 @@ func (s *Service) flushQueuedVotes(ctx context.Context) error {
 		return nil
 	}
 
-	increments := make(map[string]int64)
+	persistVotes := make([]voterepo.PersistVote, 0, len(events))
+	requeuePayload := make([]interface{}, 0, len(events))
 
 	for _, raw := range events {
 		var event castVoteEvent
@@ -175,25 +176,33 @@ func (s *Service) flushQueuedVotes(ctx context.Context) error {
 			continue
 		}
 
-		inserted, err := s.repo.InsertUserVote(ctx, event.FirebaseUID, event.ContestantID, event.VotedAt)
-		if err != nil {
-			if requeueErr := s.redisClient.RPush(ctx, votePersistQueueKey, raw).Err(); requeueErr != nil {
-				log.Printf("vote requeue failed for user %s contestant %s: %v", event.FirebaseUID, event.ContestantID, requeueErr)
-			}
-			continue
-		}
-
-		if !inserted {
-			_ = s.redisClient.Decr(ctx, voteCountKey(event.ContestantID)).Err()
-			continue
-		}
-
-		increments[event.ContestantID]++
+		persistVotes = append(persistVotes, voterepo.PersistVote{
+			FirebaseUID:  event.FirebaseUID,
+			ContestantID: event.ContestantID,
+			VotedAt:      event.VotedAt,
+		})
+		requeuePayload = append(requeuePayload, raw)
 	}
 
-	for contestantID, delta := range increments {
-		if err := s.repo.IncrementContestantVotes(ctx, contestantID, delta); err != nil {
-			return err
+	if len(persistVotes) == 0 {
+		return nil
+	}
+
+	batchResult, err := s.repo.ApplyVoteBatch(ctx, persistVotes)
+	if err != nil {
+		if requeueErr := s.redisClient.RPush(ctx, votePersistQueueKey, requeuePayload...).Err(); requeueErr != nil {
+			log.Printf("vote batch requeue failed for %d events: %v", len(requeuePayload), requeueErr)
+		}
+		return err
+	}
+
+	for contestantID, duplicateCount := range batchResult.DuplicateByContestant {
+		if duplicateCount <= 0 {
+			continue
+		}
+
+		if decrErr := s.redisClient.DecrBy(ctx, voteCountKey(contestantID), duplicateCount).Err(); decrErr != nil {
+			log.Printf("vote cache correction failed for contestant %s: %v", contestantID, decrErr)
 		}
 	}
 
