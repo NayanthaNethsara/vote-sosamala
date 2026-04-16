@@ -2,6 +2,7 @@ package vote
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -164,4 +165,28 @@ func (r *SQLRepository) ApplyVoteBatch(ctx context.Context, votes []PersistVote)
 	}
 
 	return result, nil
+}
+
+func (r *SQLRepository) GetContestantVotes(ctx context.Context, contestantID string) (int64, error) {
+	parsedContestantID, err := uuid.Parse(contestantID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid contestant id: %w", err)
+	}
+
+	var totalVotes int64
+	err = r.db.QueryRow(
+		ctx,
+		`SELECT COALESCE(total_votes, 0)
+         FROM contestant_vote_totals
+         WHERE contestant_id = $1`,
+		parsedContestantID,
+	).Scan(&totalVotes)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, nil
+		}
+		return 0, err
+	}
+
+	return totalVotes, nil
 }

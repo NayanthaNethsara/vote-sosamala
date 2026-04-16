@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { castVoteAction } from "@/app/actions/votes";
 import { useAuth } from "@/context/AuthContext";
@@ -17,6 +17,40 @@ export function ContestantVoteButton({
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [voteCount, setVoteCount] = useState<number | null>(null);
+
+  const refreshVoteCount = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `/api/votes/${contestantId}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        },
+      );
+
+      if (!response.ok) {
+        return;
+      }
+
+      const payload = (await response.json()) as { votes?: unknown };
+      if (typeof payload.votes === "number" && Number.isFinite(payload.votes)) {
+        setVoteCount(payload.votes);
+      }
+    } catch {
+      // Keep existing count if polling fails; next interval will retry.
+    }
+  }, [contestantId]);
+
+  useEffect(() => {
+    void refreshVoteCount();
+
+    const interval = setInterval(() => {
+      void refreshVoteCount();
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [refreshVoteCount]);
 
   if (loading) {
     return (
@@ -67,6 +101,11 @@ export function ContestantVoteButton({
 
       setStatus("success");
       setMessage("Vote submitted. It will appear shortly.");
+      void refreshVoteCount();
+
+      setTimeout(() => {
+        void refreshVoteCount();
+      }, 1500);
     } finally {
       setSubmitting(false);
     }
@@ -81,6 +120,9 @@ export function ContestantVoteButton({
 
   return (
     <div className="w-full">
+      <p className="mb-2 text-sm font-medium text-zinc-300">
+        Votes: <span className="text-zinc-100">{voteCount ?? "--"}</span>
+      </p>
       <button
         type="button"
         onClick={handleVote}

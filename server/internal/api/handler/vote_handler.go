@@ -46,3 +46,24 @@ func (h *VoteHandler) CastVote(c *gin.Context) {
 		"message":  "vote accepted",
 	})
 }
+
+func (h *VoteHandler) GetContestantVotes(c *gin.Context) {
+	contestantID := c.Param("id")
+	votes, err := h.service.GetContestantVoteCount(c.Request.Context(), contestantID)
+	if err != nil {
+		switch {
+		case errors.Is(err, voteservice.ErrInvalidVoteInput):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		case errors.Is(err, voteservice.ErrVoteUnavailable):
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "vote service is unavailable"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch vote count"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"contestantId": contestantID,
+		"votes":        votes,
+	})
+}

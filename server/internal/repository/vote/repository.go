@@ -24,4 +24,5 @@ type Repository interface {
 	InsertUserVote(ctx context.Context, firebaseUID string, contestantID string, votedAt time.Time) (bool, error)
 	IncrementContestantVotes(ctx context.Context, contestantID string, delta int64) error
 	ApplyVoteBatch(ctx context.Context, votes []PersistVote) (BatchPersistResult, error)
+	GetContestantVotes(ctx context.Context, contestantID string) (int64, error)
 }

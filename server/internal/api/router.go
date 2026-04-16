@@ -25,14 +25,19 @@ func NewRouter(ginMode string, deps Dependencies, handlers Handlers) *gin.Engine
 
 	router.Use(middleware.CORSMiddleware(deps.AllowedOrigins))
 
-	registerPublicRoutes(router, handlers.Health, handlers.Contestant)
+	registerPublicRoutes(router, handlers.Health, handlers.Contestant, handlers.Vote)
 	registerAuthenticatedRoutes(router, deps, handlers.User, handlers.Vote)
 	registerAdminRoutes(router, deps, handlers.Contestant, handlers.User)
 
 	return router
 }
 
-func registerPublicRoutes(router *gin.Engine, healthHandler *handler.HealthHandler, contestantHandler *handler.ContestantHandler) {
+func registerPublicRoutes(
+	router *gin.Engine,
+	healthHandler *handler.HealthHandler,
+	contestantHandler *handler.ContestantHandler,
+	voteHandler *handler.VoteHandler,
+) {
 	if healthHandler != nil {
 		router.GET("/health", healthHandler.HealthCheck)
 	}
@@ -40,6 +45,9 @@ func registerPublicRoutes(router *gin.Engine, healthHandler *handler.HealthHandl
 	publicAPI := router.Group("/api")
 	if contestantHandler != nil {
 		publicAPI.GET("/contestants", contestantHandler.ListContestantsPublic)
+	}
+	if voteHandler != nil {
+		publicAPI.GET("/contestants/:id/votes", voteHandler.GetContestantVotes)
 	}
 }
 

@@ -120,6 +120,30 @@ func (s *Service) CastVote(ctx context.Context, firebaseUID string, contestantID
 	return nil
 }
 
+func (s *Service) GetContestantVoteCount(ctx context.Context, contestantID string) (int64, error) {
+	if s.repo == nil {
+		return 0, ErrVoteUnavailable
+	}
+
+	normalizedContestantID := strings.TrimSpace(contestantID)
+	if _, err := uuid.Parse(normalizedContestantID); err != nil {
+		return 0, fmt.Errorf("%w: invalid contestant id", ErrInvalidVoteInput)
+	}
+
+	if s.redisClient != nil {
+		cachedVotes, err := s.redisClient.Get(ctx, voteCountKey(normalizedContestantID)).Int64()
+		if err == nil {
+			return cachedVotes, nil
+		}
+
+		if !errors.Is(err, redis.Nil) {
+			log.Printf("vote count redis read failed for contestant %s: %v", normalizedContestantID, err)
+		}
+	}
+
+	return s.repo.GetContestantVotes(ctx, normalizedContestantID)
+}
+
 func (s *Service) StartBackground(ctx context.Context) {
 	if s.repo == nil || s.redisClient == nil || s.natsConn == nil {
 		return
