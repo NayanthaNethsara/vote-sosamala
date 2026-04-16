@@ -76,16 +76,8 @@ func (s *Service) CastVote(ctx context.Context, firebaseUID string, contestantID
 		return fmt.Errorf("%w: invalid contestant id", ErrInvalidVoteInput)
 	}
 
-	hasVoted, err := s.repo.HasUserVote(ctx, uid)
-	if err != nil {
-		return err
-	}
-	if hasVoted {
-		return ErrAlreadyVoted
-	}
-
 	userVoteKey := voteUserKey(uid)
-	_, err = s.redisClient.SetArgs(ctx, userVoteKey, normalizedContestantID, redis.SetArgs{Mode: "NX"}).Result()
+	_, err := s.redisClient.SetArgs(ctx, userVoteKey, normalizedContestantID, redis.SetArgs{Mode: "NX"}).Result()
 	if errors.Is(err, redis.Nil) {
 		return ErrAlreadyVoted
 	}
@@ -153,11 +145,13 @@ func (s *Service) processVoteEvent(ctx context.Context, payload []byte) error {
 		return fmt.Errorf("invalid vote event payload")
 	}
 
-	if err := s.redisClient.Incr(ctx, voteCountKey(event.ContestantID)).Err(); err != nil {
-		return err
-	}
+	_, err := s.redisClient.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		pipe.Incr(ctx, voteCountKey(event.ContestantID))
+		pipe.RPush(ctx, votePersistQueueKey, payload)
+		return nil
+	})
 
-	return s.redisClient.RPush(ctx, votePersistQueueKey, payload).Err()
+	return err
 }
 
 func (s *Service) flushQueuedVotes(ctx context.Context) error {
@@ -183,8 +177,9 @@ func (s *Service) flushQueuedVotes(ctx context.Context) error {
 
 		inserted, err := s.repo.InsertUserVote(ctx, event.FirebaseUID, event.ContestantID, event.VotedAt)
 		if err != nil {
-			_ = s.redisClient.Decr(ctx, voteCountKey(event.ContestantID)).Err()
-			_ = s.redisClient.Del(ctx, voteUserKey(event.FirebaseUID)).Err()
+			if requeueErr := s.redisClient.RPush(ctx, votePersistQueueKey, raw).Err(); requeueErr != nil {
+				log.Printf("vote requeue failed for user %s contestant %s: %v", event.FirebaseUID, event.ContestantID, requeueErr)
+			}
 			continue
 		}
 
