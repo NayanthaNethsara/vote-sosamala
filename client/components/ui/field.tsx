@@ -5,11 +5,7 @@ import { Label } from "@/components/ui/label";
 
 function Field({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div
-      data-slot="field"
-      className={cn("grid gap-2", className)}
-      {...props}
-    />
+    <div data-slot="field" className={cn("grid gap-2", className)} {...props} />
   );
 }
 

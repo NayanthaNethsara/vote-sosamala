@@ -31,7 +31,9 @@ const deleteContestantActionSchema = tokenSchema.extend({
   id: idSchema,
 });
 
-export async function listContestantsAction(): Promise<ActionResult<Contestant[]>> {
+export async function listContestantsAction(): Promise<
+  ActionResult<Contestant[]>
+> {
   try {
     // Listing contestants is public and should work without authentication.
     const response = await fetch(`${env.apiBaseUrl}/api/contestants`, {
