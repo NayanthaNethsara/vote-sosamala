@@ -109,6 +109,19 @@ func (s *Service) CastVote(ctx context.Context, firebaseUID string, contestantID
 	return nil
 }
 
+func (s *Service) HasUserVoted(ctx context.Context, firebaseUID string) (bool, error) {
+	if s.repo == nil {
+		return false, ErrVoteUnavailable
+	}
+
+	uid := strings.TrimSpace(firebaseUID)
+	if uid == "" {
+		return false, fmt.Errorf("%w: missing user", ErrInvalidVoteInput)
+	}
+
+	return s.repo.HasUserVote(ctx, uid)
+}
+
 func (s *Service) GetContestantVoteCount(ctx context.Context, contestantID string) (int64, error) {
 	if s.repo == nil {
 		return 0, ErrVoteUnavailable

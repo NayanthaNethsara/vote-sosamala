@@ -16,6 +16,10 @@ const castVoteResponseSchema = z.object({
   message: z.string(),
 });
 
+const voteStatusResponseSchema = z.object({
+  hasVoted: z.boolean(),
+});
+
 export async function castVoteAction(input: {
   token: string;
   contestantId: string;
@@ -41,5 +45,31 @@ export async function castVoteAction(input: {
     };
   } catch (error) {
     return toActionError(error, "Failed to cast vote");
+  }
+}
+
+export async function getVoteStatusAction(input: {
+  token: string;
+}): Promise<ActionResult<{ hasVoted: boolean }>> {
+  try {
+    const parsedToken = z
+      .object({ token: z.string().min(1, "Missing auth token") })
+      .parse(input);
+
+    const response = await backendRequest(
+      {
+        path: "/api/votes/status",
+        token: parsedToken.token,
+        method: "GET",
+      },
+      voteStatusResponseSchema,
+    );
+
+    return {
+      success: true,
+      data: response,
+    };
+  } catch (error) {
+    return toActionError(error, "Failed to fetch vote status");
   }
 }

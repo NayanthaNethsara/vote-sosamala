@@ -66,6 +66,7 @@ func registerAuthenticatedRoutes(
 		authed.GET("/me", userHandler.Me)
 	}
 	if voteHandler != nil {
+		authed.GET("/votes/status", voteHandler.GetMyVoteStatus)
 		authed.POST("/votes", voteHandler.CastVote)
 	}
 }

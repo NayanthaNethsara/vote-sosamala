@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-import { castVoteAction } from "@/app/actions/votes";
+import { castVoteAction, getVoteStatusAction } from "@/app/actions/votes";
 import { useAuth } from "@/context/AuthContext";
 
 interface ContestantVoteButtonProps {
@@ -15,6 +15,8 @@ export function ContestantVoteButton({
 }: ContestantVoteButtonProps) {
   const { user, loading } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [checkingVoteStatus, setCheckingVoteStatus] = useState(false);
+  const [hasVoted, setHasVoted] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [voteCount, setVoteCount] = useState<number | null>(null);
@@ -52,6 +54,44 @@ export function ContestantVoteButton({
     return () => clearInterval(interval);
   }, [refreshVoteCount]);
 
+  useEffect(() => {
+    let active = true;
+
+    async function checkVoteStatus() {
+      if (!user) {
+        if (active) {
+          setHasVoted(false);
+        }
+        return;
+      }
+
+      setCheckingVoteStatus(true);
+      try {
+        const token = await user.getIdToken();
+        const result = await getVoteStatusAction({ token });
+        if (!active || !result.success) {
+          return;
+        }
+
+        setHasVoted(result.data.hasVoted);
+        if (result.data.hasVoted) {
+          setStatus("success");
+          setMessage("You have already voted.");
+        }
+      } finally {
+        if (active) {
+          setCheckingVoteStatus(false);
+        }
+      }
+    }
+
+    void checkVoteStatus();
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
   if (loading) {
     return (
       <button
@@ -60,6 +100,18 @@ export function ContestantVoteButton({
         className="inline-flex h-12 w-full items-center justify-center rounded-full border border-white/15 bg-white/8 px-5 text-sm font-medium text-zinc-100"
       >
         Checking account...
+      </button>
+    );
+  }
+
+  if (checkingVoteStatus) {
+    return (
+      <button
+        type="button"
+        disabled
+        className="inline-flex h-12 w-full items-center justify-center rounded-full border border-white/15 bg-white/8 px-5 text-sm font-medium text-zinc-100"
+      >
+        Checking vote status...
       </button>
     );
   }
@@ -100,6 +152,7 @@ export function ContestantVoteButton({
       }
 
       setStatus("success");
+      setHasVoted(true);
       setMessage("Vote submitted. It will appear shortly.");
       void refreshVoteCount();
 
@@ -112,7 +165,7 @@ export function ContestantVoteButton({
   }
 
   const buttonLabel =
-    status === "success"
+    hasVoted || status === "success"
       ? "Vote Submitted"
       : submitting
         ? "Submitting..."
@@ -126,7 +179,7 @@ export function ContestantVoteButton({
       <button
         type="button"
         onClick={handleVote}
-        disabled={submitting || status === "success"}
+        disabled={submitting || hasVoted || status === "success"}
         className="inline-flex h-12 w-full items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-500/15 px-5 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-75"
       >
         {buttonLabel}
