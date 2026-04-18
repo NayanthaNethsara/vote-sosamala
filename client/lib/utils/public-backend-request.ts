@@ -28,18 +28,23 @@ export async function publicBackendRequest<T>(
   params: PublicBackendRequestParams,
   schema: z.ZodType<T>,
 ): Promise<T> {
-  const response = await fetch(`${env.apiBaseUrl}${params.path}`, {
-    method: params.method ?? "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: params.body ? JSON.stringify(params.body) : undefined,
-    cache: "force-cache",
-    next: {
-      revalidate: params.revalidateSeconds ?? 120,
-      tags: params.tags,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${env.apiBaseUrl}${params.path}`, {
+      method: params.method ?? "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: params.body ? JSON.stringify(params.body) : undefined,
+      cache: "force-cache",
+      next: {
+        revalidate: params.revalidateSeconds ?? 120,
+        tags: params.tags,
+      },
+    });
+  } catch {
+    throw new Error(`Unable to reach backend API at ${env.apiBaseUrl}`);
+  }
 
   const payload = await response.json().catch(() => null);
 
