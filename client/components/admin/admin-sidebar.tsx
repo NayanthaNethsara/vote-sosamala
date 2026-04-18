@@ -23,7 +23,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
 import { adminSupportLinks } from "@/config/side-config";
