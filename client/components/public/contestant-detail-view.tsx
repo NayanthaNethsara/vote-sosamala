@@ -64,16 +64,14 @@ export function ContestantDetailView({
   shareBasePath,
 }: ContestantDetailViewProps) {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#27272a_0%,_#18181b_35%,_#09090b_100%)] px-4 py-10 text-zinc-100 sm:px-6 lg:px-8">
+    <main className="vote-shell min-h-screen px-4 py-10 text-foreground sm:px-6 lg:px-8">
       <section className="container mx-auto max-w-4xl">
         <div className="flex flex-col gap-10 md:flex-row md:items-start">
           <div className="mx-auto w-64 shrink-0 sm:w-72 md:mx-0">
             <div
-              className="relative w-full overflow-hidden rounded-2xl"
+              className="vote-panel-strong relative w-full overflow-hidden rounded-2xl"
               style={{
                 aspectRatio: "3 / 4",
-                boxShadow:
-                  "0 8px 32px oklch(0.03 0.005 264 / 0.85), 0 0 0 1px oklch(0.25 0.025 264 / 0.35)",
               }}
             >
               <Image
@@ -89,33 +87,35 @@ export function ContestantDetailView({
 
           <div className="flex min-w-0 flex-1 flex-col gap-5 py-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/35 bg-cyan-500/15 px-3 py-1 text-xs font-bold text-cyan-200 backdrop-blur-md">
+              <span className="vote-pill px-3! py-1! font-bold text-foreground! tracking-[0.16em]!">
                 Contestant Profile
               </span>
-              <span className="inline-flex max-w-xs items-center truncate rounded-full border border-white/15 bg-white/8 px-3 py-1 text-xs font-medium text-zinc-200 backdrop-blur-md">
+              <span className="vote-pill max-w-xs truncate px-3! py-1! text-foreground/80! tracking-[0.16em]!">
                 {getFacultyLabel(contestant)}
               </span>
             </div>
 
-            <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight text-zinc-50 sm:text-4xl">
+            <h1 className="vote-heading text-balance text-3xl leading-tight tracking-tight text-foreground sm:text-4xl">
               {contestant.name}
             </h1>
 
-            <p className="max-w-2xl text-sm leading-relaxed text-zinc-300 sm:text-base">
+            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               {getOrdinalYear(contestant.academicYear)} year,{" "}
               {contestant.semester} semester contestant profile.
             </p>
 
             <dl className="flex flex-col">
-              <div className="flex items-center justify-between border-b border-white/10 py-3">
-                <dt className="text-sm text-zinc-400">Date of Birth</dt>
-                <dd className="text-sm font-medium text-zinc-100">
+              <div className="flex items-center justify-between border-b border-border/70 py-3">
+                <dt className="text-sm text-muted-foreground">Date of Birth</dt>
+                <dd className="text-sm font-medium text-foreground">
                   {formatDate(contestant.dateOfBirth)}
                 </dd>
               </div>
               <div className="flex items-center justify-between pt-3">
-                <dt className="text-sm text-zinc-400">Year &amp; Semester</dt>
-                <dd className="text-sm font-medium text-zinc-100">
+                <dt className="text-sm text-muted-foreground">
+                  Year &amp; Semester
+                </dt>
+                <dd className="text-sm font-medium text-foreground">
                   {getOrdinalYear(contestant.academicYear)} Year{" "}
                   {contestant.semester} Semester
                 </dd>
@@ -123,19 +123,19 @@ export function ContestantDetailView({
             </dl>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                <dt className="text-xs uppercase tracking-[0.18em] text-zinc-400">
+              <div className="vote-panel rounded-2xl p-4">
+                <dt className="vote-kicker tracking-[0.18em]! text-muted-foreground!">
                   Student ID
                 </dt>
-                <dd className="mt-2 text-sm font-medium text-zinc-100">
+                <dd className="mt-2 text-sm font-medium text-foreground">
                   {contestant.studentId ?? "-"}
                 </dd>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                <dt className="text-xs uppercase tracking-[0.18em] text-zinc-400">
+              <div className="vote-panel rounded-2xl p-4">
+                <dt className="vote-kicker tracking-[0.18em]! text-muted-foreground!">
                   NIC
                 </dt>
-                <dd className="mt-2 text-sm font-medium text-zinc-100">
+                <dd className="mt-2 text-sm font-medium text-foreground">
                   {contestant.nic ?? "-"}
                 </dd>
               </div>
@@ -147,7 +147,7 @@ export function ContestantDetailView({
               </div>
               <Link
                 href={backHref}
-                className="inline-flex h-12 items-center justify-center rounded-full border border-white/15 bg-white/8 px-5 text-sm font-medium text-zinc-100 transition hover:bg-white/14"
+                className="glass-button inline-flex h-12 items-center justify-center rounded-full px-5 text-sm font-medium"
               >
                 Back to Contestants
               </Link>

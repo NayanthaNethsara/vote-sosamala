@@ -42,7 +42,7 @@ export function ContestantShareButton({
     <button
       type="button"
       onClick={handleShare}
-      className="inline-flex h-12 items-center justify-center rounded-full border border-white/15 bg-white/8 px-5 text-sm font-medium text-zinc-100 transition hover:bg-white/14"
+      className="glass-button inline-flex h-12 items-center justify-center rounded-full px-5 text-sm font-medium"
     >
       {copied ? "Copied" : "Share"}
     </button>

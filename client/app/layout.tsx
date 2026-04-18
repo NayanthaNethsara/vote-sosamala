@@ -1,15 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
+import { Teko } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const teko = Teko({
+  variable: "--font-teko",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -61,11 +57,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -74,16 +65,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(
-        "h-full",
-        "antialiased",
-        "dark",
-        geistSans.variable,
-        geistMono.variable,
-        jetbrainsMono.variable,
-      )}
+      className={cn("h-full", "antialiased", "dark", teko.variable)}
     >
-      <body className="min-h-full flex flex-col pt-0">
+      <body className="min-h-full flex flex-col pt-0 [--font-sans:var(--font-teko)] [--font-heading:var(--font-teko)] [--font-mono:var(--font-teko)]">
         <AuthProvider>
           <TooltipProvider>{children}</TooltipProvider>
         </AuthProvider>
