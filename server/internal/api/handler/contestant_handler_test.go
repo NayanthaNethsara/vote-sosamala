@@ -147,6 +147,39 @@ func TestCreateContestant_BadRequestOnInvalidPayload(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, res.Code)
 }
 
+func TestCreateContestant_Returns201OnSuccess(t *testing.T) {
+	now := time.Now().UTC()
+	router := setupContestantRouter(&contestantRepoStub{
+		createFn: func(ctx context.Context, input contestantrepo.UpsertInput) (domain.Contestant, error) {
+			return domain.Contestant{
+				ID:           uuid.NewString(),
+				Name:         input.Name,
+				DateOfBirth:  input.DateOfBirth,
+				Gender:       input.Gender,
+				AcademicYear: input.AcademicYear,
+				Semester:     input.Semester,
+				NIC:          input.NIC,
+				CreatedAt:    now,
+				UpdatedAt:    now,
+			}, nil
+		},
+	})
+
+	res := httpx.PerformJSONRequest(t, router, http.MethodPost, "/api/admin/contestants", map[string]any{
+		"name":         "Contestant One",
+		"dateOfBirth":  "2000-02-10",
+		"gender":       "male",
+		"academicYear": "3rd Year",
+		"semester":     "2nd Semester",
+		"nic":          "200012345678",
+	})
+
+	require.Equal(t, http.StatusCreated, res.Code)
+	var payload domain.Contestant
+	httpx.DecodeJSON(t, res, &payload)
+	assert.Equal(t, "Contestant One", payload.Name)
+}
+
 func TestListContestants_AdminEndpointReturns200(t *testing.T) {
 	now := time.Now().UTC()
 	router := setupContestantRouter(&contestantRepoStub{
@@ -203,6 +236,41 @@ func TestUpdateContestant_NotFoundReturns404(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, res.Code)
 }
 
+func TestUpdateContestant_Returns200OnSuccess(t *testing.T) {
+	now := time.Now().UTC()
+	router := setupContestantRouter(&contestantRepoStub{
+		updateFn: func(ctx context.Context, id string, input contestantrepo.UpsertInput) (domain.Contestant, error) {
+			return domain.Contestant{
+				ID:           id,
+				Name:         input.Name,
+				DateOfBirth:  input.DateOfBirth,
+				Gender:       input.Gender,
+				AcademicYear: input.AcademicYear,
+				Semester:     input.Semester,
+				NIC:          input.NIC,
+				CreatedAt:    now,
+				UpdatedAt:    now,
+			}, nil
+		},
+	})
+
+	id := uuid.NewString()
+	res := httpx.PerformJSONRequest(t, router, http.MethodPut, "/api/admin/contestants/"+id, map[string]any{
+		"name":         "Contestant One",
+		"dateOfBirth":  "2000-02-10",
+		"gender":       "male",
+		"academicYear": "3rd Year",
+		"semester":     "2nd Semester",
+		"nic":          "200012345678",
+	})
+
+	require.Equal(t, http.StatusOK, res.Code)
+	var payload domain.Contestant
+	httpx.DecodeJSON(t, res, &payload)
+	assert.Equal(t, id, payload.ID)
+	assert.Equal(t, "Contestant One", payload.Name)
+}
+
 func TestDeleteContestant_NotFoundReturns404(t *testing.T) {
 	router := setupContestantRouter(&contestantRepoStub{
 		deleteFn: func(ctx context.Context, id string) error {
@@ -223,4 +291,17 @@ func TestDeleteContestant_InternalErrorReturns500(t *testing.T) {
 
 	res := httpx.PerformJSONRequest(t, router, http.MethodDelete, "/api/admin/contestants/"+uuid.NewString(), nil)
 	require.Equal(t, http.StatusInternalServerError, res.Code)
+}
+
+func TestDeleteContestant_Returns200OnSuccess(t *testing.T) {
+	router := setupContestantRouter(&contestantRepoStub{})
+
+	res := httpx.PerformJSONRequest(t, router, http.MethodDelete, "/api/admin/contestants/"+uuid.NewString(), nil)
+	require.Equal(t, http.StatusOK, res.Code)
+
+	var payload struct {
+		Message string `json:"message"`
+	}
+	httpx.DecodeJSON(t, res, &payload)
+	assert.Equal(t, "Deleted successfully", payload.Message)
 }

@@ -18,6 +18,10 @@ type repositorySpy struct {
 	createErr    error
 	createCalled bool
 
+	listResult []domain.Contestant
+	listErr    error
+	listCalled bool
+
 	updateID     string
 	updateInput  contestantrepo.UpsertInput
 	updateResult domain.Contestant
@@ -40,7 +44,8 @@ func (s *repositorySpy) Create(ctx context.Context, input contestantrepo.UpsertI
 }
 
 func (s *repositorySpy) List(ctx context.Context) ([]domain.Contestant, error) {
-	return nil, nil
+	s.listCalled = true
+	return s.listResult, s.listErr
 }
 
 func (s *repositorySpy) ListPage(ctx context.Context, params contestantrepo.ListParams) (contestantrepo.ListResult, error) {
@@ -159,6 +164,30 @@ func TestServiceDelete_ReturnsInvalidIDAndSkipsRepo(t *testing.T) {
 	require.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidID)
 	assert.False(t, spy.deleteCalled)
+}
+
+func TestServiceDelete_DelegatesForValidID(t *testing.T) {
+	spy := &repositorySpy{}
+	service := NewService(spy)
+	id := uuid.NewString()
+
+	err := service.Delete(context.Background(), id)
+	require.NoError(t, err)
+	assert.True(t, spy.deleteCalled)
+	assert.Equal(t, id, spy.deleteID)
+}
+
+func TestServiceList_DelegatesAndReturnsResult(t *testing.T) {
+	spy := &repositorySpy{
+		listResult: []domain.Contestant{{ID: uuid.NewString(), Name: "Contestant One"}},
+	}
+	service := NewService(spy)
+
+	result, err := service.List(context.Background())
+	require.NoError(t, err)
+	assert.True(t, spy.listCalled)
+	require.Len(t, result, 1)
+	assert.Equal(t, "Contestant One", result[0].Name)
 }
 
 func TestServiceListPage_NormalizesPaginationParams(t *testing.T) {
