@@ -8,7 +8,7 @@ import { revalidatePublicContestantsCache } from "@/lib/cache/public-contestants
 import { backendRequest } from "@/lib/utils/backend-request";
 import {
   contestantInputSchema,
-  contestantListSchema,
+  publicContestantListResponseSchema,
   contestantSchema,
 } from "@/lib/validation/contestant";
 import type { ActionResult } from "@/types/action";
@@ -51,11 +51,12 @@ export async function listContestantsAction(): Promise<
       throw new Error("Failed to list contestants");
     }
 
-    const contestants = contestantListSchema.parse(payload);
+    const contestantsResponse =
+      publicContestantListResponseSchema.parse(payload);
 
     return {
       success: true,
-      data: contestants,
+      data: contestantsResponse.contestants,
     };
   } catch (error) {
     return toActionError(error, "Invalid contestant data");

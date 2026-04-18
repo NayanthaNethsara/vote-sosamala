@@ -10,10 +10,17 @@ import { detectContestantIdentifierType } from "@/lib/utils/contestant-identifie
 
 const optionalNonEmptyStringSchema = z.string().trim().min(1).optional();
 
-const nullableOptionalStringSchema = z.preprocess(
-  (value) => (value === null ? undefined : value),
-  optionalNonEmptyStringSchema,
-);
+const nullableOptionalStringSchema = z.preprocess((value) => {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value === "string" && value.trim() === "") {
+    return undefined;
+  }
+
+  return value;
+}, optionalNonEmptyStringSchema);
 
 const contestantCoreSchema = z.object({
   name: z.string().trim().min(2, "Name is required"),

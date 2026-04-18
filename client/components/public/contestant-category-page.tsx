@@ -1,7 +1,15 @@
 "use client";
 
+import { useMemo } from "react";
+
+import { useLeaderboardResults } from "@/hooks/use-leaderboard-results";
 import { ContestantCard } from "@/components/ui/contestant-card";
 import { createContestantSlug } from "@/lib/utils/contestant-slug";
+import {
+  formatVotesLabel,
+  mapContestantsWithLeaderboard,
+  sortContestantLeaderboardRows,
+} from "@/lib/utils/leaderboard";
 import type { Contestant } from "@/types/contestant";
 
 interface ContestantCategoryPageProps {
@@ -9,6 +17,8 @@ interface ContestantCategoryPageProps {
   title: string;
   description: string;
   contestants: Contestant[];
+  showLiveResults?: boolean;
+  detailBasePath: string;
 }
 
 export function ContestantCategoryPage({
@@ -16,7 +26,28 @@ export function ContestantCategoryPage({
   title,
   description,
   contestants,
+  showLiveResults = false,
+  detailBasePath,
 }: ContestantCategoryPageProps) {
+  const { results } = useLeaderboardResults({
+    limit: 200,
+    enabled: showLiveResults,
+  });
+
+  const contestantRows = useMemo(
+    () =>
+      showLiveResults
+        ? sortContestantLeaderboardRows(
+            mapContestantsWithLeaderboard(contestants, results),
+          )
+        : contestants.map((contestant) => ({
+            contestant,
+            rank: null,
+            votes: 0,
+          })),
+    [contestants, results, showLiveResults],
+  );
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#27272a_0%,#18181b_35%,#09090b_100%)] px-4 py-10 text-zinc-100 sm:px-6 lg:px-10">
       <section className="mx-auto w-full max-w-7xl space-y-8">
@@ -30,15 +61,19 @@ export function ContestantCategoryPage({
         </header>
 
         <div className="grid grid-cols-2 gap-4 justify-items-center sm:justify-items-start md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {contestants.map((contestant, index) => (
+          {contestantRows.map(({ contestant, rank, votes }, index) => (
             <ContestantCard
               key={contestant.id}
               name={contestant.name}
               title={badgeLabel}
               subtitle={`${contestant.academicYear} • ${contestant.semester}`}
-              votesLabel={contestant.studentId ?? "Student contestant"}
+              votesLabel={
+                showLiveResults
+                  ? formatVotesLabel(rank, votes)
+                  : (contestant.studentId ?? "Student contestant")
+              }
               imageUrl={contestant.photoURL ?? "/logo/logo.png"}
-              href={`/contestants/${createContestantSlug({
+              href={`${detailBasePath}/${createContestantSlug({
                 id: contestant.id,
                 name: contestant.name,
                 studentId: contestant.studentId,

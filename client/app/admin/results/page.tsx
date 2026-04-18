@@ -1,8 +1,9 @@
-"use client";
+import { getAllPublicContestants } from "@/lib/public-contestants";
+import { ResultsBoard } from "@/components/admin/results-board";
 
-import { CheckSquareOffset } from "@phosphor-icons/react";
+export default async function ResultsAdminPage() {
+  const contestants = await getAllPublicContestants(100);
 
-export default function ResultsAdminPage() {
   return (
     <div className="space-y-8">
       <div>
@@ -13,15 +14,8 @@ export default function ResultsAdminPage() {
           Monitor live voting results and analytics.
         </p>
       </div>
-      <div className="border bg-card p-12 flex flex-col items-center justify-center min-h-[400px] text-center gap-4">
-        <CheckSquareOffset size={48} className="text-muted-foreground/30" />
-        <div>
-          <p className="font-semibold text-lg">Results Board</p>
-          <p className="text-muted-foreground text-sm">
-            Real-time statistics will populate here once voting begins.
-          </p>
-        </div>
-      </div>
+
+      <ResultsBoard contestants={contestants} />
     </div>
   );
 }

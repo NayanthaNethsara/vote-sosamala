@@ -4,64 +4,72 @@ import (
 	"firebase.google.com/go/v4/auth"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/handler"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/middleware"
-	contestantrepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/contestant"
-	userrepo "github.com/NayanthaNethsara/vote-sosamala/server/internal/repository/user"
-	contestantservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/contestant"
-	userservice "github.com/NayanthaNethsara/vote-sosamala/server/internal/service/user"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/nats-io/nats.go"
-	"github.com/redis/go-redis/v9"
 )
 
 type Dependencies struct {
-	RedisClient    *redis.Client
-	NatsConn       *nats.Conn
-	DBPool         *pgxpool.Pool
 	FirebaseAuth   *auth.Client
 	AllowedOrigins []string
 }
 
-func NewRouter(ginMode string, deps Dependencies) *gin.Engine {
+type Handlers struct {
+	Health     *handler.HealthHandler
+	Contestant *handler.ContestantHandler
+	User       *handler.UserHandler
+	Vote       *handler.VoteHandler
+}
+
+func NewRouter(ginMode string, deps Dependencies, handlers Handlers) *gin.Engine {
 	gin.SetMode(ginMode)
 	router := gin.Default()
 
 	router.Use(middleware.CORSMiddleware(deps.AllowedOrigins))
 
-	contestantRepository := contestantrepo.NewSQLCRepository(deps.DBPool)
-	contestantService := contestantservice.NewService(contestantRepository)
-	contestantHandler := handler.NewContestantHandler(contestantService)
-
-	var userService *userservice.Service
-	if deps.DBPool != nil {
-		userRepository := userrepo.NewSQLCRepository(deps.DBPool)
-		userService = userservice.NewService(userRepository)
-	}
-
-	userHandler := handler.NewUserHandler(deps.FirebaseAuth, userService)
-
-	registerPublicRoutes(router, deps, contestantHandler)
-	registerAuthenticatedRoutes(router, deps, userHandler)
-	registerAdminRoutes(router, deps, contestantHandler, userHandler)
+	registerPublicRoutes(router, handlers.Health, handlers.Contestant, handlers.Vote)
+	registerAuthenticatedRoutes(router, deps, handlers.User, handlers.Vote)
+	registerAdminRoutes(router, deps, handlers.Contestant, handlers.User)
 
 	return router
 }
 
-func registerPublicRoutes(router *gin.Engine, deps Dependencies, contestantHandler *handler.ContestantHandler) {
-	healthHandler := handler.NewHealthHandler(deps.RedisClient, deps.NatsConn, deps.DBPool)
-	router.GET("/health", healthHandler.HealthCheck)
+func registerPublicRoutes(
+	router *gin.Engine,
+	healthHandler *handler.HealthHandler,
+	contestantHandler *handler.ContestantHandler,
+	voteHandler *handler.VoteHandler,
+) {
+	if healthHandler != nil {
+		router.GET("/health", healthHandler.HealthCheck)
+	}
 
 	publicAPI := router.Group("/api")
-	publicAPI.GET("/contestants", contestantHandler.ListContestantsPublic)
+	if contestantHandler != nil {
+		publicAPI.GET("/contestants", contestantHandler.ListContestantsPublic)
+	}
+	if voteHandler != nil {
+		publicAPI.GET("/contestants/:id/votes", voteHandler.GetContestantVotes)
+		publicAPI.GET("/results", voteHandler.GetLeaderboard)
+	}
 }
 
-func registerAuthenticatedRoutes(router *gin.Engine, deps Dependencies, userHandler *handler.UserHandler) {
+func registerAuthenticatedRoutes(
+	router *gin.Engine,
+	deps Dependencies,
+	userHandler *handler.UserHandler,
+	voteHandler *handler.VoteHandler,
+) {
 	authed := router.Group("/api")
 	if deps.FirebaseAuth != nil {
 		authed.Use(middleware.AuthMiddleware(deps.FirebaseAuth))
 	}
 
-	authed.GET("/me", userHandler.Me)
+	if userHandler != nil {
+		authed.GET("/me", userHandler.Me)
+	}
+	if voteHandler != nil {
+		authed.GET("/votes/status", voteHandler.GetMyVoteStatus)
+		authed.POST("/votes", voteHandler.CastVote)
+	}
 }
 
 func registerAdminRoutes(router *gin.Engine, deps Dependencies, contestantHandler *handler.ContestantHandler, userHandler *handler.UserHandler) {
@@ -71,13 +79,17 @@ func registerAdminRoutes(router *gin.Engine, deps Dependencies, contestantHandle
 	}
 	admin.Use(middleware.AdminMiddleware())
 
-	admin.GET("/contestants", contestantHandler.ListContestants)
-	admin.POST("/contestants", contestantHandler.CreateContestant)
-	admin.PUT("/contestants/:id", contestantHandler.UpdateContestant)
-	admin.DELETE("/contestants/:id", contestantHandler.DeleteContestant)
+	if contestantHandler != nil {
+		admin.GET("/contestants", contestantHandler.ListContestants)
+		admin.POST("/contestants", contestantHandler.CreateContestant)
+		admin.PUT("/contestants/:id", contestantHandler.UpdateContestant)
+		admin.DELETE("/contestants/:id", contestantHandler.DeleteContestant)
+	}
 
 	superAdmin := admin.Group("/users")
 	superAdmin.Use(middleware.SuperAdminMiddleware())
-	superAdmin.GET("", userHandler.ListUsers)
-	superAdmin.PUT("/:uid/role", userHandler.UpdateUserRole)
+	if userHandler != nil {
+		superAdmin.GET("", userHandler.ListUsers)
+		superAdmin.PUT("/:uid/role", userHandler.UpdateUserRole)
+	}
 }
