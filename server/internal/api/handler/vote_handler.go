@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/api/middleware"
 	"github.com/NayanthaNethsara/vote-sosamala/server/internal/model/dto"
@@ -65,6 +66,41 @@ func (h *VoteHandler) GetContestantVotes(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"contestantId": contestantID,
 		"votes":        votes,
+	})
+}
+
+func (h *VoteHandler) GetLeaderboard(c *gin.Context) {
+	page := int64(1)
+	if pageQuery := c.Query("page"); pageQuery != "" {
+		if parsedPage, err := strconv.ParseInt(pageQuery, 10, 64); err == nil {
+			page = parsedPage
+		}
+	}
+
+	limit := int64(20)
+	if limitQuery := c.Query("limit"); limitQuery != "" {
+		if parsedLimit, err := strconv.ParseInt(limitQuery, 10, 64); err == nil {
+			limit = parsedLimit
+		}
+	}
+
+	leaderboard, err := h.service.GetLeaderboard(c.Request.Context(), page, limit)
+	if err != nil {
+		switch {
+		case errors.Is(err, voteservice.ErrVoteUnavailable):
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "vote service is unavailable"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch leaderboard"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"results": leaderboard,
+		"pagination": gin.H{
+			"page":  page,
+			"limit": limit,
+		},
 	})
 }
 

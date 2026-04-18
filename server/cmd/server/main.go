@@ -78,6 +78,13 @@ func main() {
 			natsConn,
 			10*time.Second,
 		)
+
+		warmupCtx, cancelWarmup := context.WithTimeout(ctx, 15*time.Second)
+		if warmupErr := voteService.WarmupVoteCounts(warmupCtx); warmupErr != nil {
+			log.Fatalf("Vote warm-up failed: %v", warmupErr)
+		}
+		cancelWarmup()
+
 		voteService.StartBackground(ctx)
 		voteHandler = handler.NewVoteHandler(voteService)
 	} else {

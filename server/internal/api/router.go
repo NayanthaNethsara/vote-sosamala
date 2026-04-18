@@ -48,6 +48,7 @@ func registerPublicRoutes(
 	}
 	if voteHandler != nil {
 		publicAPI.GET("/contestants/:id/votes", voteHandler.GetContestantVotes)
+		publicAPI.GET("/results", voteHandler.GetLeaderboard)
 	}
 }
 

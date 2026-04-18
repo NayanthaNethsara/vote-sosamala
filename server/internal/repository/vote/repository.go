@@ -14,6 +14,11 @@ type PersistVote struct {
 	VotedAt      time.Time
 }
 
+type ContestantVoteCount struct {
+	ContestantID string
+	Votes        int64
+}
+
 type BatchPersistResult struct {
 	InsertedByContestant  map[string]int64
 	DuplicateByContestant map[string]int64
@@ -25,4 +30,5 @@ type Repository interface {
 	IncrementContestantVotes(ctx context.Context, contestantID string, delta int64) error
 	ApplyVoteBatch(ctx context.Context, votes []PersistVote) (BatchPersistResult, error)
 	GetContestantVotes(ctx context.Context, contestantID string) (int64, error)
+	GetAllContestantVoteCounts(ctx context.Context) ([]ContestantVoteCount, error)
 }

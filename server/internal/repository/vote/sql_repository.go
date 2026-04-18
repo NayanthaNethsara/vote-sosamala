@@ -190,3 +190,32 @@ func (r *SQLRepository) GetContestantVotes(ctx context.Context, contestantID str
 
 	return totalVotes, nil
 }
+
+func (r *SQLRepository) GetAllContestantVoteCounts(ctx context.Context) ([]ContestantVoteCount, error) {
+	rows, err := r.db.Query(
+		ctx,
+		`SELECT contestant_id::text, COUNT(*)::bigint
+         FROM user_votes
+         GROUP BY contestant_id`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	counts := make([]ContestantVoteCount, 0)
+	for rows.Next() {
+		var count ContestantVoteCount
+		if scanErr := rows.Scan(&count.ContestantID, &count.Votes); scanErr != nil {
+			return nil, scanErr
+		}
+
+		counts = append(counts, count)
+	}
+
+	if rowsErr := rows.Err(); rowsErr != nil {
+		return nil, rowsErr
+	}
+
+	return counts, nil
+}

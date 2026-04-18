@@ -49,7 +49,9 @@ func (s *Service) StartBackground(ctx context.Context) {
 
 		go func() {
 			ticker := time.NewTicker(s.flushInterval)
+			reconcileTicker := time.NewTicker(time.Hour)
 			defer ticker.Stop()
+			defer reconcileTicker.Stop()
 			defer func() {
 				if unsubErr := sub.Unsubscribe(); unsubErr != nil {
 					log.Printf("vote subscription unsubscribe failed: %v", unsubErr)
@@ -63,6 +65,10 @@ func (s *Service) StartBackground(ctx context.Context) {
 				case <-ticker.C:
 					if err := s.flushQueuedVotes(ctx); err != nil {
 						log.Printf("vote flush failed: %v", err)
+					}
+				case <-reconcileTicker.C:
+					if err := s.reconcileVoteCountsFromDB(ctx); err != nil {
+						log.Printf("vote reconciliation failed: %v", err)
 					}
 				}
 			}
@@ -80,22 +86,9 @@ func (s *Service) processVoteEvent(ctx context.Context, payload []byte) error {
 		return fmt.Errorf("invalid vote event payload")
 	}
 
-	countKey := voteCountKey(event.ContestantID)
-	if _, err := s.redisClient.Get(ctx, countKey).Result(); errors.Is(err, redis.Nil) {
-		persistedVotes, loadErr := s.repo.GetContestantVotes(ctx, event.ContestantID)
-		if loadErr != nil {
-			return loadErr
-		}
-
-		if _, setErr := s.redisClient.SetNX(ctx, countKey, persistedVotes, 0).Result(); setErr != nil {
-			return setErr
-		}
-	} else if err != nil {
-		return err
-	}
-
 	_, err := s.redisClient.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-		pipe.Incr(ctx, countKey)
+		pipe.HIncrBy(ctx, voteCountHashKey, voteCountHashField(event.ContestantID), 1)
+		pipe.ZIncrBy(ctx, voteRankingZSetKey, 1, event.ContestantID)
 		pipe.RPush(ctx, votePersistQueueKey, payload)
 		return nil
 	})
@@ -167,8 +160,11 @@ func (s *Service) flushQueuedVotes(ctx context.Context) error {
 			continue
 		}
 
-		if decrErr := s.redisClient.DecrBy(ctx, voteCountKey(contestantID), duplicateCount).Err(); decrErr != nil {
+		if decrErr := s.redisClient.HIncrBy(ctx, voteCountHashKey, voteCountHashField(contestantID), -duplicateCount).Err(); decrErr != nil {
 			log.Printf("vote cache correction failed for contestant %s: %v", contestantID, decrErr)
+		}
+		if zErr := s.redisClient.ZIncrBy(ctx, voteRankingZSetKey, float64(-duplicateCount), contestantID).Err(); zErr != nil {
+			log.Printf("vote ranking correction failed for contestant %s: %v", contestantID, zErr)
 		}
 	}
 
@@ -199,8 +195,11 @@ func (s *Service) persistBatchWithIsolation(ctx context.Context, queueItems []qu
 			continue
 		}
 
-		if decrErr := s.redisClient.DecrBy(ctx, voteCountKey(item.event.ContestantID), duplicateCount).Err(); decrErr != nil {
+		if decrErr := s.redisClient.HIncrBy(ctx, voteCountHashKey, voteCountHashField(item.event.ContestantID), -duplicateCount).Err(); decrErr != nil {
 			log.Printf("vote cache duplicate correction failed for contestant %s: %v", item.event.ContestantID, decrErr)
+		}
+		if zErr := s.redisClient.ZIncrBy(ctx, voteRankingZSetKey, float64(-duplicateCount), item.event.ContestantID).Err(); zErr != nil {
+			log.Printf("vote ranking duplicate correction failed for contestant %s: %v", item.event.ContestantID, zErr)
 		}
 	}
 
@@ -215,8 +214,11 @@ func (s *Service) handleFailedPersistEvent(ctx context.Context, event castVoteEv
 			return err
 		}
 
-		if err := s.redisClient.Decr(ctx, voteCountKey(event.ContestantID)).Err(); err != nil {
+		if err := s.redisClient.HIncrBy(ctx, voteCountHashKey, voteCountHashField(event.ContestantID), -1).Err(); err != nil {
 			log.Printf("vote cache rollback failed for contestant %s: %v", event.ContestantID, err)
+		}
+		if zErr := s.redisClient.ZIncrBy(ctx, voteRankingZSetKey, -1, event.ContestantID).Err(); zErr != nil {
+			log.Printf("vote ranking rollback failed for contestant %s: %v", event.ContestantID, zErr)
 		}
 
 		if err := s.redisClient.Del(ctx, voteUserKey(event.FirebaseUID)).Err(); err != nil {

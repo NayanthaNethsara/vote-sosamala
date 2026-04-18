@@ -20,7 +20,8 @@ import (
 const (
 	voteSubject         = "votes.cast"
 	voteUserKeyPrefix   = "vote:user:"
-	voteCountKeyPrefix  = "vote:contestant:"
+	voteCountHashKey    = "vote:counts:hash"
+	voteRankingZSetKey  = "vote:counts:rank"
 	votePersistQueueKey = "vote:persist:queue"
 	votePersistDLQKey   = "vote:persist:dlq"
 	voteFlushBatchSize  = 200
@@ -46,6 +47,12 @@ type Service struct {
 	natsConn      *nats.Conn
 	flushInterval time.Duration
 	startOnce     sync.Once
+}
+
+type LeaderboardEntry struct {
+	Rank         int64  `json:"rank"`
+	ContestantID string `json:"contestantId"`
+	Votes        int64  `json:"votes"`
 }
 
 func NewService(
@@ -123,7 +130,7 @@ func (s *Service) HasUserVoted(ctx context.Context, firebaseUID string) (bool, e
 }
 
 func (s *Service) GetContestantVoteCount(ctx context.Context, contestantID string) (int64, error) {
-	if s.repo == nil {
+	if s.repo == nil || s.redisClient == nil {
 		return 0, ErrVoteUnavailable
 	}
 
@@ -132,56 +139,95 @@ func (s *Service) GetContestantVoteCount(ctx context.Context, contestantID strin
 		return 0, fmt.Errorf("%w: invalid contestant id", ErrInvalidVoteInput)
 	}
 
-	if s.redisClient != nil {
-		cachedVotes, err := s.redisClient.Get(ctx, voteCountKey(normalizedContestantID)).Int64()
-		if err == nil {
-			return cachedVotes, nil
-		}
-
-		if !errors.Is(err, redis.Nil) {
-			log.Printf("vote count redis read failed for contestant %s: %v", normalizedContestantID, err)
-		} else {
-			seededVotes, seedErr := s.seedVoteCountCacheFromDB(ctx, normalizedContestantID)
-			if seedErr == nil {
-				return seededVotes, nil
-			}
-			log.Printf("vote count cache seed failed for contestant %s: %v", normalizedContestantID, seedErr)
-		}
+	votes, err := s.redisClient.HGet(ctx, voteCountHashKey, normalizedContestantID).Int64()
+	if err == nil {
+		return votes, nil
+	}
+	if errors.Is(err, redis.Nil) {
+		return 0, nil
 	}
 
-	return s.repo.GetContestantVotes(ctx, normalizedContestantID)
+	log.Printf("vote count hash read failed for contestant %s: %v", normalizedContestantID, err)
+	return 0, ErrVoteUnavailable
 }
 
-func (s *Service) seedVoteCountCacheFromDB(ctx context.Context, contestantID string) (int64, error) {
-	persistedVotes, err := s.repo.GetContestantVotes(ctx, contestantID)
-	if err != nil {
-		return 0, err
+func (s *Service) WarmupVoteCounts(ctx context.Context) error {
+	if s.repo == nil || s.redisClient == nil {
+		return ErrVoteUnavailable
 	}
 
+	return s.reconcileVoteCountsFromDB(ctx)
+}
+
+func (s *Service) GetLeaderboard(ctx context.Context, page int64, limit int64) ([]LeaderboardEntry, error) {
 	if s.redisClient == nil {
-		return persistedVotes, nil
+		return nil, ErrVoteUnavailable
 	}
 
-	if _, err := s.redisClient.SetNX(ctx, voteCountKey(contestantID), persistedVotes, 0).Result(); err != nil {
-		return 0, err
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
 	}
 
-	latestVotes, err := s.redisClient.Get(ctx, voteCountKey(contestantID)).Int64()
-	if err == nil {
-		return latestVotes, nil
+	start := (page - 1) * limit
+	end := start + limit - 1
+
+	entries, err := s.redisClient.ZRevRangeWithScores(ctx, voteRankingZSetKey, start, end).Result()
+	if err != nil {
+		return nil, err
 	}
 
-	if errors.Is(err, redis.Nil) {
-		return persistedVotes, nil
+	leaderboard := make([]LeaderboardEntry, 0, len(entries))
+	for idx, entry := range entries {
+		contestantID, ok := entry.Member.(string)
+		if !ok {
+			continue
+		}
+
+		leaderboard = append(leaderboard, LeaderboardEntry{
+			Rank:         start + int64(idx) + 1,
+			ContestantID: contestantID,
+			Votes:        int64(entry.Score),
+		})
 	}
 
-	return 0, err
+	return leaderboard, nil
+}
+
+func (s *Service) reconcileVoteCountsFromDB(ctx context.Context) error {
+	counts, err := s.repo.GetAllContestantVoteCounts(ctx)
+	if err != nil {
+		return err
+	}
+
+	pipe := s.redisClient.TxPipeline()
+	pipe.Del(ctx, voteCountHashKey)
+	pipe.Del(ctx, voteRankingZSetKey)
+
+	for _, count := range counts {
+		pipe.HSet(ctx, voteCountHashKey, count.ContestantID, count.Votes)
+		pipe.ZAdd(ctx, voteRankingZSetKey, redis.Z{
+			Score:  float64(count.Votes),
+			Member: count.ContestantID,
+		})
+	}
+
+	if _, execErr := pipe.Exec(ctx); execErr != nil {
+		return execErr
+	}
+
+	return nil
 }
 
 func voteUserKey(firebaseUID string) string {
 	return voteUserKeyPrefix + firebaseUID
 }
 
-func voteCountKey(contestantID string) string {
-	return voteCountKeyPrefix + contestantID
+func voteCountHashField(contestantID string) string {
+	return contestantID
 }
