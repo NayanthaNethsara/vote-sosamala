@@ -13,6 +13,7 @@ export default async function MsPage() {
       title="Vote for Ms Sosamala 2026"
       description="A curated spotlight of this season's most inspiring contestants. Meet the finalists and support your favorite with confidence."
       contestants={femaleContestants}
+      showLiveResults
     />
   );
 }

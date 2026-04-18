@@ -13,6 +13,7 @@ export default async function MrPage() {
       title="Vote for Mr Sosamala 2026"
       description="Discover the leading contestants shaping this year's stage. Browse profiles and cast your vote for the one who stands out."
       contestants={maleContestants}
+      showLiveResults
     />
   );
 }

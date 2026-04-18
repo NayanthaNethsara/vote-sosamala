@@ -1,78 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/admin/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 
+import { useLeaderboardResults } from "@/hooks/use-leaderboard-results";
+import { buildHydratedLeaderboardRows } from "@/lib/utils/leaderboard";
 import type { Contestant } from "@/types/contestant";
-import type { VoteLeaderboardResponse } from "@/types/vote";
 
-interface HydratedResultRow {
-  contestantId: string;
-  rank: number | null;
-  votes: number;
-  name: string;
-  photoURL?: string;
-  studentId?: string;
-  academicYear: string;
-  semester: string;
-}
+type HydratedResultRow = ReturnType<typeof buildHydratedLeaderboardRows>[number];
 
 interface ResultsBoardProps {
   contestants: Contestant[];
-}
-
-function buildHydratedRows(
-  contestants: Contestant[],
-  leaderboard: VoteLeaderboardResponse["results"],
-): HydratedResultRow[] {
-  const byContestantId = new Map(
-    contestants.map((contestant) => [contestant.id, contestant]),
-  );
-
-  const hydratedFromLeaderboard: HydratedResultRow[] = leaderboard.map(
-    (entry) => {
-      const contestant = byContestantId.get(entry.contestantId);
-
-      return {
-        contestantId: entry.contestantId,
-        rank: entry.rank,
-        votes: entry.votes,
-        name: contestant?.name ?? "Unknown Contestant",
-        photoURL: contestant?.photoURL,
-        studentId: contestant?.studentId,
-        academicYear: contestant?.academicYear ?? "-",
-        semester: contestant?.semester ?? "-",
-      };
-    },
-  );
-
-  const knownLeaderboardIds = new Set(
-    leaderboard.map((entry) => entry.contestantId),
-  );
-
-  const missingContestants = contestants
-    .filter((contestant) => !knownLeaderboardIds.has(contestant.id))
-    .map((contestant) => ({
-      contestantId: contestant.id,
-      rank: null,
-      votes: 0,
-      name: contestant.name,
-      photoURL: contestant.photoURL,
-      studentId: contestant.studentId,
-      academicYear: contestant.academicYear,
-      semester: contestant.semester,
-    }));
-
-  return [...hydratedFromLeaderboard, ...missingContestants].sort((a, b) => {
-    if (b.votes !== a.votes) {
-      return b.votes - a.votes;
-    }
-
-    return a.name.localeCompare(b.name);
-  });
 }
 
 const resultColumns: ColumnDef<HydratedResultRow>[] = [
@@ -160,50 +101,17 @@ function searchResultRows(
 }
 
 export function ResultsBoard({ contestants }: ResultsBoardProps) {
-  const [rows, setRows] = useState<HydratedResultRow[]>(
-    buildHydratedRows(contestants, []),
+  const { results, error } = useLeaderboardResults({ limit: 100 });
+
+  const rows = useMemo(
+    () => buildHydratedLeaderboardRows(contestants, results),
+    [contestants, results],
   );
-  const [error, setError] = useState<string | null>(null);
 
   const totalVotes = useMemo(
     () => rows.reduce((sum, row) => sum + row.votes, 0),
     [rows],
   );
-
-  const refreshVolatileResults = useCallback(async () => {
-    try {
-      const response = await fetch("/api/results?limit=100", {
-        method: "GET",
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        setError("Failed to refresh leaderboard");
-        return;
-      }
-
-      const payload = (await response.json()) as VoteLeaderboardResponse;
-      setRows(buildHydratedRows(contestants, payload.results ?? []));
-      setError(null);
-    } catch {
-      setError("Failed to refresh leaderboard");
-    }
-  }, [contestants]);
-
-  useEffect(() => {
-    const initialFetch = setTimeout(() => {
-      void refreshVolatileResults();
-    }, 0);
-
-    const interval = setInterval(() => {
-      void refreshVolatileResults();
-    }, 5000);
-
-    return () => {
-      clearTimeout(initialFetch);
-      clearInterval(interval);
-    };
-  }, [refreshVolatileResults]);
 
   return (
     <div className="space-y-4">
