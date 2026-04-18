@@ -80,7 +80,6 @@ export default function RootLayout({
         "dark",
         geistSans.variable,
         geistMono.variable,
-        "font-mono",
         jetbrainsMono.variable,
       )}
     >
