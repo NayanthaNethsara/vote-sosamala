@@ -1,0 +1,42 @@
+name: CI Test Vote
+
+on:
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - "server/internal/service/vote/**"
+      - "server/internal/repository/vote/**"
+      - "server/internal/api/handler/vote_handler.go"
+      - "server/internal/api/handler/vote_handler_test.go"
+      - "server/internal/model/dto/vote_dto.go"
+      - "server/internal/testutil/**"
+      - "server/go.mod"
+      - "server/go.sum"
+      - ".github/workflows/ci-test-vote.yml"
+
+jobs:
+  vote-tests:
+    name: Vote Domain Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.0"
+          cache-dependency-path: server/go.sum
+
+      - name: Run vote repository tests
+        run: go test ./internal/repository/vote -v
+
+      - name: Run vote service tests
+        run: go test ./internal/service/vote -v
+
+      - name: Run vote handler tests
+        run: go test ./internal/api/handler -run 'Test(CastVote|GetContestantVotes|GetLeaderboard|GetMyVoteStatus)' -v
