@@ -1,9 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Teko } from "next/font/google";
+import { JetBrains_Mono, Teko } from "next/font/google";
 import "./globals.css";
 
 const teko = Teko({
   variable: "--font-teko",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
@@ -65,9 +71,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", "dark", teko.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        "dark",
+        teko.variable,
+        jetbrainsMono.variable,
+      )}
     >
-      <body className="min-h-full flex flex-col pt-0 [--font-sans:var(--font-teko)] [--font-heading:var(--font-teko)] [--font-mono:var(--font-teko)]">
+      <body className="min-h-full flex flex-col pt-0 font-sans [--font-sans:var(--font-teko)] [--font-heading:var(--font-teko)] [--font-mono:var(--font-teko)]">
         <AuthProvider>
           <TooltipProvider>{children}</TooltipProvider>
         </AuthProvider>

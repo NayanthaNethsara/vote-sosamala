@@ -37,8 +37,10 @@ export default function AdminLayout({
 
   return (
     <SidebarProvider
+      className="font-mono [--font-mono:var(--font-jetbrains-mono)] [--font-sans:var(--font-mono)] [--font-heading:var(--font-mono)]"
       style={
         {
+          fontFamily: "var(--font-jetbrains-mono)",
           "--sidebar-width": "calc(var(--spacing) * 72)",
           "--header-height": "calc(var(--spacing) * 12)",
         } as React.CSSProperties
