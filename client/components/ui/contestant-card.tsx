@@ -29,8 +29,8 @@ export function ContestantCard({
 }: ContestantCardProps) {
   const cardContent = (
     <>
-      <div className="vote-panel relative overflow-hidden ring-1 ring-white/10">
-        <div className="relative aspect-4/5 overflow-hidden rounded-[28px]">
+      <div className="vote-panel relative overflow-hidden ring-1 ring-white/12">
+        <div className="relative aspect-4/5 overflow-hidden rounded-[30px]">
           <Image
             src={imageUrl}
             alt={name}
@@ -42,20 +42,20 @@ export function ContestantCard({
           <div className="absolute inset-0 bg-linear-to-t from-black/78 via-black/32 to-transparent" />
           <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,200,235,0.24)_0%,rgba(255,180,240,0.08)_45%,rgba(255,255,255,0)_100%)]" />
 
-          <div className="vote-pill absolute left-4 top-4 px-2.5! py-1! font-semibold tracking-[0.18em]! text-foreground!">
-            <Fire className="h-3.5 w-3.5 text-pink-300" />
+          <div className="vote-pill absolute left-4 top-4 px-3! py-1.5! text-xs! font-semibold tracking-[0.16em]! text-foreground!">
+            <Fire className="h-4 w-4 text-pink-300" />
             {votesLabel}
           </div>
 
-          <div className="absolute bottom-4 left-4 right-4 space-y-2 text-foreground">
-            <p className="vote-kicker text-foreground/70! tracking-[0.16em]!">
+          <div className="absolute bottom-5 left-5 right-5 space-y-2.5 text-foreground">
+            <p className="vote-kicker text-xs! text-foreground/72! tracking-[0.14em]!">
               {title}
             </p>
-            <h3 className="vote-heading text-xl leading-tight sm:text-2xl">
+            <h3 className="vote-heading text-[1.38rem] leading-tight sm:text-[1.55rem]">
               {name}
             </h3>
-            <div className="flex items-center gap-2 text-xs text-foreground/75 sm:text-sm">
-              <Medal className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-sm text-foreground/78">
+              <Medal className="h-[1.05rem] w-[1.05rem]" />
               <span>{subtitle}</span>
             </div>
           </div>

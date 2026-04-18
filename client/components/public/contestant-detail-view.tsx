@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ContestantShareButton } from "@/components/public/contestant-share-button";
 import { ContestantVoteButton } from "@/components/public/contestant-vote-button";
 import type { Contestant } from "@/types/contestant";
+import { GridDecoration } from "./page-deco";
 
 interface ContestantDetailViewProps {
   contestant: Contestant;
@@ -64,8 +65,9 @@ export function ContestantDetailView({
   shareBasePath,
 }: ContestantDetailViewProps) {
   return (
-    <main className="vote-shell min-h-screen px-4 py-10 text-foreground sm:px-6 lg:px-8">
-      <section className="container mx-auto max-w-4xl">
+    <main className="vote-shell relative min-h-screen overflow-hidden text-foreground">
+      <GridDecoration />
+      <section className="relative container mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 md:flex-row md:items-start">
           <div className="mx-auto w-64 shrink-0 sm:w-72 md:mx-0">
             <div
