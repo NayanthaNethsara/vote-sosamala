@@ -8,14 +8,26 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+type sqlDB interface {
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
+}
+
 type SQLRepository struct {
-	db *pgxpool.Pool
+	db sqlDB
 }
 
 func NewSQLRepository(db *pgxpool.Pool) *SQLRepository {
+	return NewSQLRepositoryWithDB(db)
+}
+
+func NewSQLRepositoryWithDB(db sqlDB) *SQLRepository {
 	return &SQLRepository{db: db}
 }
 
