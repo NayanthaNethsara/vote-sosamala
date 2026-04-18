@@ -125,27 +125,24 @@ export function ContestantDetailView({
     <main className="vote-shell relative min-h-screen overflow-hidden text-foreground">
       <GridDecoration />
 
-      <section className="relative container mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
-          <div className="mx-auto w-64 sm:w-72 lg:mx-0 lg:w-full">
-            <div
-              className="relative w-full overflow-hidden rounded-2xl"
-              style={{
-                aspectRatio: "3 / 4",
-              }}
-            >
-              <Image
-                src={contestant.photoURL ?? "/logo/logo.png"}
-                alt={contestant.name}
-                fill
-                sizes="(max-width: 1024px) 288px, 300px"
-                className="object-cover object-top"
-                priority
-              />
+      <section className="relative container mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+          <div className="mx-auto w-full max-w-sm lg:mx-0 lg:max-w-none">
+            <div className="vote-panel aspect-square rounded-[28px] p-2">
+              <div className="relative h-full w-full overflow-hidden rounded-2xl">
+                <Image
+                  src={contestant.photoURL ?? "/logo/logo.png"}
+                  alt={contestant.name}
+                  fill
+                  sizes="(max-width: 1024px) 384px, 540px"
+                  className="object-cover object-top"
+                  priority
+                />
+              </div>
             </div>
           </div>
 
-          <article className="vote-panel space-y-6 rounded-[28px] p-5 sm:p-7">
+          <article className="vote-panel-strong flex flex-col space-y-6 rounded-[28px] p-5 sm:p-7 lg:aspect-square lg:space-y-5">
             <div className="flex flex-wrap items-center gap-2">
               <span className="vote-pill px-3! py-1! font-bold text-foreground! tracking-[0.16em]!">
                 Contestant Profile
