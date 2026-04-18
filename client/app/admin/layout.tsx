@@ -3,12 +3,9 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import {
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { AdminHeader } from "@/components/admin/admin-header";
 
 export default function AdminLayout({
   children,
@@ -39,19 +36,24 @@ export default function AdminLayout({
   }
 
   return (
-    <SidebarProvider>
-      <AdminSidebar />
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AdminSidebar variant="inset" />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border px-6 sticky top-0 bg-background z-10">
-          <SidebarTrigger />
-          <div className="h-4 w-px bg-border mx-2" />
-          <h2 className="text-sm font-bold tracking-tight uppercase font-mono">
-            Administration
-          </h2>
-        </header>
-        <main className="flex-1 overflow-y-auto py-10 px-6 sm:px-8 font-mono">
-          {children}
-        </main>
+        <AdminHeader />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 px-4 md:gap-6 md:py-6">
+              {children}
+            </div>
+          </div>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

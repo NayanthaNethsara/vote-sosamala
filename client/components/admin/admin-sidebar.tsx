@@ -26,6 +26,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
+import { adminSupportLinks } from "@/config/side-config";
 
 const items = [
   {
@@ -58,7 +59,9 @@ const superAdminItems = [
   },
 ] as const;
 
-export function AdminSidebar() {
+export function AdminSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   const { user, role } = useAuth();
   const pathname = usePathname();
   const isSuperAdmin = role === "super-admin";
@@ -79,8 +82,8 @@ export function AdminSidebar() {
   ] as const;
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar" className="font-mono">
-      <SidebarHeader className="border-b border-sidebar-border p-3">
+    <Sidebar collapsible="offcanvas" {...props}>
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -141,6 +144,31 @@ export function AdminSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
+
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupLabel className="px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/60">
+            Support
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {adminSupportLinks.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="gap-3"
+                    >
+                      <item.icon className="size-4" />
+                      <span className="truncate">{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarSeparator />

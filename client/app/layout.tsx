@@ -83,7 +83,6 @@ export default function RootLayout({
         "font-mono",
         jetbrainsMono.variable,
       )}
-      style={{ colorScheme: "dark" }}
     >
       <body className="min-h-full flex flex-col pt-0">
         <AuthProvider>
