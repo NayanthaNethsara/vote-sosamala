@@ -27,15 +27,20 @@ export async function backendRequest<T>(
   params: BackendRequestParams,
   schema: z.ZodType<T>,
 ): Promise<T> {
-  const response = await fetch(`${env.apiBaseUrl}${params.path}`, {
-    method: params.method ?? "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${params.token}`,
-    },
-    body: params.body ? JSON.stringify(params.body) : undefined,
-    cache: "no-store",
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${env.apiBaseUrl}${params.path}`, {
+      method: params.method ?? "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${params.token}`,
+      },
+      body: params.body ? JSON.stringify(params.body) : undefined,
+      cache: "no-store",
+    });
+  } catch {
+    throw new Error(`Unable to reach backend API at ${env.apiBaseUrl}`);
+  }
 
   const payload = await response.json().catch(() => null);
 

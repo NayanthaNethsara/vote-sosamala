@@ -47,13 +47,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "idToken is required" }, { status: 400 });
   }
 
-  const meRes = await fetch(`${env.apiBaseUrl}/api/me`, {
-    headers: {
-      Authorization: `Bearer ${idToken}`,
-      "Content-Type": "application/json",
-    },
-    cache: "no-store",
-  });
+  let meRes: Response;
+  try {
+    meRes = await fetch(`${env.apiBaseUrl}/api/me`, {
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        error: `Unable to reach backend API at ${env.apiBaseUrl}`,
+      },
+      { status: 503 },
+    );
+  }
 
   if (!meRes.ok) {
     return NextResponse.json({ error: "invalid token" }, { status: 401 });
