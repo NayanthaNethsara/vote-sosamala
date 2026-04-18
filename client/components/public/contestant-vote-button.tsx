@@ -170,9 +170,27 @@ export function ContestantVoteButton({
 
   return (
     <div className="w-full">
-      <p className="mb-2 text-sm font-medium text-muted-foreground">
-        Votes: <span className="text-foreground">{voteCount ?? "--"}</span>
-      </p>
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+          Total Votes
+        </span>
+        <span className="text-3xl font-bold leading-none text-foreground tabular-nums sm:text-4xl">
+          {voteCount ?? "--"}
+        </span>
+      </div>
+      <div className="mb-2 min-h-5">
+        {message ? (
+          <p
+            className={`text-xs ${
+              status === "error" ? "text-destructive" : "text-muted-foreground"
+            }`}
+          >
+            {message}
+          </p>
+        ) : (
+          <p className="invisible text-xs">Status</p>
+        )}
+      </div>
       <button
         type="button"
         onClick={handleVote}
@@ -181,15 +199,6 @@ export function ContestantVoteButton({
       >
         {buttonLabel}
       </button>
-      {message ? (
-        <p
-          className={`mt-2 text-xs ${
-            status === "error" ? "text-destructive" : "text-muted-foreground"
-          }`}
-        >
-          {message}
-        </p>
-      ) : null}
     </div>
   );
 }

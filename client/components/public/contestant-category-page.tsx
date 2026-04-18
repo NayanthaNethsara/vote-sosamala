@@ -57,7 +57,11 @@ export function ContestantCategoryPage({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_12%,oklch(0.78_0.16_335/0.08)_0%,transparent_52%)]"
         animate={{ opacity: [0.4, 0.62, 0.4], x: [0, 6, 0], y: [0, 5, 0] }}
-        transition={{ duration: 18, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        transition={{
+          duration: 18,
+          repeat: Number.POSITIVE_INFINITY,
+          ease: "easeInOut",
+        }}
       />
       <section className="relative mx-auto w-full max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-10">
         <header className="space-y-3 py-2">

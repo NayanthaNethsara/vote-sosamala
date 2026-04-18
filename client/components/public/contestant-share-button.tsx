@@ -6,12 +6,14 @@ interface ContestantShareButtonProps {
   name: string;
   slug: string;
   basePath: string;
+  className?: string;
 }
 
 export function ContestantShareButton({
   name,
   slug,
   basePath,
+  className,
 }: ContestantShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
@@ -42,7 +44,7 @@ export function ContestantShareButton({
     <button
       type="button"
       onClick={handleShare}
-      className="glass-button inline-flex h-12 items-center justify-center rounded-full px-5 text-sm font-medium"
+      className={`glass-button inline-flex h-12 items-center justify-center rounded-full px-5 text-sm font-medium ${className ?? ""}`}
     >
       {copied ? "Copied" : "Share"}
     </button>

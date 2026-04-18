@@ -11,14 +11,26 @@ export default function Home() {
         <motion.div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_center,oklch(0.78_0.16_335/0.12)_0%,transparent_60%)]"
-          animate={{ opacity: [0.72, 1, 0.72], scale: [1, 1.02, 1], y: [0, 8, 0] }}
-          transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          animate={{
+            opacity: [0.72, 1, 0.72],
+            scale: [1, 1.02, 1],
+            y: [0, 8, 0],
+          }}
+          transition={{
+            duration: 14,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
         />
         <motion.div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_24%,oklch(0.74_0.14_315/0.08)_0%,transparent_52%)]"
           animate={{ opacity: [0.35, 0.62, 0.35], x: [0, -6, 0], y: [0, 4, 0] }}
-          transition={{ duration: 17, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          transition={{
+            duration: 17,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
         />
 
         <h1 className="vote-heading mb-8 px-4 text-center text-4xl tracking-[0.12em] text-muted-foreground md:text-5xl">

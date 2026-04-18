@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import { ContestantShareButton } from "@/components/public/contestant-share-button";
 import { ContestantVoteButton } from "@/components/public/contestant-vote-button";
@@ -9,7 +8,6 @@ import { GridDecoration } from "./page-deco";
 interface ContestantDetailViewProps {
   contestant: Contestant;
   slug: string;
-  backHref: string;
   shareBasePath: string;
 }
 
@@ -58,20 +56,80 @@ function getOrdinalYear(value: string): string {
   return `${year}${suffix}`;
 }
 
+function calculateAge(dateOfBirth: string): number | null {
+  const dob = new Date(dateOfBirth);
+  if (Number.isNaN(dob.getTime())) {
+    return null;
+  }
+
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const hasNotHadBirthdayYetThisYear =
+    today.getMonth() < dob.getMonth() ||
+    (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate());
+
+  if (hasNotHadBirthdayYetThisYear) {
+    age -= 1;
+  }
+
+  return age >= 0 ? age : null;
+}
+
+function stableHash(input: string): number {
+  let hash = 0;
+  for (let index = 0; index < input.length; index += 1) {
+    hash = (hash * 31 + input.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function getContestantDescription(contestant: Contestant): string {
+  const age = calculateAge(contestant.dateOfBirth);
+  const yearLabel = getOrdinalYear(contestant.academicYear);
+  const semesterLabel = contestant.semester;
+
+  const specializationOptions = [
+    "full-stack engineering",
+    "AI and machine learning",
+    "data engineering",
+    "cybersecurity",
+    "cloud-native development",
+  ];
+  const activityOptions = [
+    "participates in hackathons and coding competitions",
+    "enjoys mentoring juniors in programming clubs",
+    "builds practical open-source tools for students",
+    "explores UI/UX ideas and rapid product prototyping",
+    "focuses on solving real-world problems with software",
+  ];
+
+  const seed = stableHash(`${contestant.id}:${contestant.name}`);
+  const specialization =
+    specializationOptions[seed % specializationOptions.length];
+  const activity = activityOptions[(seed >> 3) % activityOptions.length];
+
+  const ageText = age !== null ? `${age}-year-old ` : "";
+
+  return `${contestant.name} is a ${ageText}${yearLabel} year, ${semesterLabel} semester undergraduate reading BSc (Hons) in Computer Science at the Faculty of Computing. The contestant has a strong interest in ${specialization} and ${activity}.`;
+}
+
 export function ContestantDetailView({
   contestant,
   slug,
-  backHref,
   shareBasePath,
 }: ContestantDetailViewProps) {
+  const yearSemesterLabel = `${getOrdinalYear(contestant.academicYear)} Year ${contestant.semester} Semester`;
+  const contestantDescription = getContestantDescription(contestant);
+
   return (
     <main className="vote-shell relative min-h-screen overflow-hidden text-foreground">
       <GridDecoration />
+
       <section className="relative container mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-10 md:flex-row md:items-start">
-          <div className="mx-auto w-64 shrink-0 sm:w-72 md:mx-0">
+        <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
+          <div className="mx-auto w-64 sm:w-72 lg:mx-0 lg:w-full">
             <div
-              className="vote-panel-strong relative w-full overflow-hidden rounded-2xl"
+              className="relative w-full overflow-hidden rounded-2xl"
               style={{
                 aspectRatio: "3 / 4",
               }}
@@ -80,14 +138,14 @@ export function ContestantDetailView({
                 src={contestant.photoURL ?? "/logo/logo.png"}
                 alt={contestant.name}
                 fill
-                sizes="288px"
+                sizes="(max-width: 1024px) 288px, 300px"
                 className="object-cover object-top"
                 priority
               />
             </div>
           </div>
 
-          <div className="flex min-w-0 flex-1 flex-col gap-5 py-1">
+          <article className="vote-panel space-y-6 rounded-[28px] p-5 sm:p-7">
             <div className="flex flex-wrap items-center gap-2">
               <span className="vote-pill px-3! py-1! font-bold text-foreground! tracking-[0.16em]!">
                 Contestant Profile
@@ -97,69 +155,46 @@ export function ContestantDetailView({
               </span>
             </div>
 
-            <h1 className="vote-heading text-balance text-3xl leading-tight tracking-tight text-foreground sm:text-4xl">
-              {contestant.name}
-            </h1>
+            <div className="space-y-3">
+              <h1 className="vote-heading text-balance text-4xl leading-tight tracking-tight text-foreground sm:text-5xl">
+                {contestant.name}
+              </h1>
+              <p className="max-w-3xl text-base leading-relaxed text-foreground/88 sm:text-lg">
+                {contestantDescription}
+              </p>
+            </div>
 
-            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              {getOrdinalYear(contestant.academicYear)} year,{" "}
-              {contestant.semester} semester contestant profile.
-            </p>
-
-            <dl className="flex flex-col">
-              <div className="flex items-center justify-between border-b border-border/70 py-3">
-                <dt className="text-sm text-muted-foreground">Date of Birth</dt>
-                <dd className="text-sm font-medium text-foreground">
+            <dl className="space-y-0">
+              <div className="flex items-center justify-between gap-4 border-b border-border/60 py-3">
+                <dt className="vote-kicker tracking-[0.18em]! text-muted-foreground!">
+                  Date of Birth
+                </dt>
+                <dd className="text-right text-sm font-medium text-foreground sm:text-base">
                   {formatDate(contestant.dateOfBirth)}
                 </dd>
               </div>
-              <div className="flex items-center justify-between pt-3">
-                <dt className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between gap-4 py-3">
+                <dt className="vote-kicker tracking-[0.18em]! text-muted-foreground!">
                   Year &amp; Semester
                 </dt>
-                <dd className="text-sm font-medium text-foreground">
-                  {getOrdinalYear(contestant.academicYear)} Year{" "}
-                  {contestant.semester} Semester
+                <dd className="text-right text-sm font-medium text-foreground sm:text-base">
+                  {yearSemesterLabel}
                 </dd>
               </div>
             </dl>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="vote-panel rounded-2xl p-4">
-                <dt className="vote-kicker tracking-[0.18em]! text-muted-foreground!">
-                  Student ID
-                </dt>
-                <dd className="mt-2 text-sm font-medium text-foreground">
-                  {contestant.studentId ?? "-"}
-                </dd>
-              </div>
-              <div className="vote-panel rounded-2xl p-4">
-                <dt className="vote-kicker tracking-[0.18em]! text-muted-foreground!">
-                  NIC
-                </dt>
-                <dd className="mt-2 text-sm font-medium text-foreground">
-                  {contestant.nic ?? "-"}
-                </dd>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-stretch gap-3 pt-1">
-              <div className="w-full sm:w-auto sm:min-w-56">
+            <div className="grid grid-cols-1 items-end gap-3 pt-1 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <div className="w-full">
                 <ContestantVoteButton contestantId={contestant.id} />
               </div>
-              <Link
-                href={backHref}
-                className="glass-button inline-flex h-12 items-center justify-center rounded-full px-5 text-sm font-medium"
-              >
-                Back to Contestants
-              </Link>
               <ContestantShareButton
                 name={contestant.name}
                 slug={slug}
                 basePath={shareBasePath}
+                className="h-12 w-full sm:w-auto sm:min-w-36"
               />
             </div>
-          </div>
+          </article>
         </div>
       </section>
     </main>

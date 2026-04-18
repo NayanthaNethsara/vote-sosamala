@@ -11,18 +11,34 @@ export function GridDecoration() {
       >
         <motion.div
           className="absolute inset-x-0 top-0 h-80 bg-[radial-gradient(56%_72%_at_50%_0%,oklch(0.78_0.16_335/0.26),transparent)] contain-strict"
-          animate={{ opacity: [0.86, 1, 0.86], y: [0, 6, 0], scale: [1, 1.02, 1] }}
-          transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          animate={{
+            opacity: [0.86, 1, 0.86],
+            y: [0, 6, 0],
+            scale: [1, 1.02, 1],
+          }}
+          transition={{
+            duration: 14,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
         />
         <motion.div
           className="absolute right-[8%] top-16 h-56 w-56 rounded-full bg-[radial-gradient(circle,oklch(0.74_0.14_315/0.2),transparent_70%)] blur-2xl"
           animate={{ opacity: [0.58, 0.78, 0.58], x: [0, -8, 0], y: [0, 6, 0] }}
-          transition={{ duration: 16, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          transition={{
+            duration: 16,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
         />
         <motion.div
           className="absolute left-[10%] top-28 h-44 w-44 rounded-full bg-[radial-gradient(circle,oklch(0.72_0.13_320/0.15),transparent_72%)] blur-xl"
           animate={{ opacity: [0.5, 0.68, 0.5], x: [0, 7, 0], y: [0, -5, 0] }}
-          transition={{ duration: 18, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          transition={{
+            duration: 18,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
         />
       </div>
 
@@ -33,7 +49,11 @@ export function GridDecoration() {
         <motion.div
           className="absolute inset-0 bg-[linear-gradient(180deg,oklch(0.92_0.02_330/0.02),transparent_40%)]"
           animate={{ opacity: [0.55, 0.75, 0.55] }}
-          transition={{ duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          transition={{
+            duration: 12,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
         />
 
         <div className="absolute inset-0 mx-auto w-full max-w-6xl">
