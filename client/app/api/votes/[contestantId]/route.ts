@@ -14,7 +14,10 @@ export async function GET(
   const { contestantId: rawContestantId } = await context.params;
   const contestantId = rawContestantId?.trim();
   if (!contestantId) {
-    return NextResponse.json({ error: "contestantId is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "contestantId is required" },
+      { status: 400 },
+    );
   }
 
   let response: Response;

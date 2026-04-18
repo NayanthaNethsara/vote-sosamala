@@ -10,7 +10,9 @@ import { useLeaderboardResults } from "@/hooks/use-leaderboard-results";
 import { buildHydratedLeaderboardRows } from "@/lib/utils/leaderboard";
 import type { Contestant } from "@/types/contestant";
 
-type HydratedResultRow = ReturnType<typeof buildHydratedLeaderboardRows>[number];
+type HydratedResultRow = ReturnType<
+  typeof buildHydratedLeaderboardRows
+>[number];
 
 interface ResultsBoardProps {
   contestants: Contestant[];

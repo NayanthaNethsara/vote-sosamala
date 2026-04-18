@@ -51,7 +51,8 @@ export async function listContestantsAction(): Promise<
       throw new Error("Failed to list contestants");
     }
 
-    const contestantsResponse = publicContestantListResponseSchema.parse(payload);
+    const contestantsResponse =
+      publicContestantListResponseSchema.parse(payload);
 
     return {
       success: true,
