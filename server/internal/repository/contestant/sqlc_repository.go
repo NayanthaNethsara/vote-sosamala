@@ -15,11 +15,15 @@ import (
 )
 
 type SQLCRepository struct {
-	db      *pgxpool.Pool
+	db      sqlcgen.DBTX
 	queries *sqlcgen.Queries
 }
 
 func NewSQLCRepository(db *pgxpool.Pool) *SQLCRepository {
+	return NewSQLCRepositoryWithDB(db)
+}
+
+func NewSQLCRepositoryWithDB(db sqlcgen.DBTX) *SQLCRepository {
 	return &SQLCRepository{db: db, queries: sqlcgen.New(db)}
 }
 
