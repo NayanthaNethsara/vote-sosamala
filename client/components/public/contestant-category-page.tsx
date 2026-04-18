@@ -18,6 +18,7 @@ interface ContestantCategoryPageProps {
   description: string;
   contestants: Contestant[];
   showLiveResults?: boolean;
+  detailBasePath: string;
 }
 
 export function ContestantCategoryPage({
@@ -26,6 +27,7 @@ export function ContestantCategoryPage({
   description,
   contestants,
   showLiveResults = false,
+  detailBasePath,
 }: ContestantCategoryPageProps) {
   const { results } = useLeaderboardResults({
     limit: 200,
@@ -71,7 +73,7 @@ export function ContestantCategoryPage({
                   : (contestant.studentId ?? "Student contestant")
               }
               imageUrl={contestant.photoURL ?? "/logo/logo.png"}
-              href={`/contestants/${createContestantSlug({
+              href={`${detailBasePath}/${createContestantSlug({
                 id: contestant.id,
                 name: contestant.name,
                 studentId: contestant.studentId,

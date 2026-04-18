@@ -5,16 +5,21 @@ import { useState } from "react";
 interface ContestantShareButtonProps {
   name: string;
   slug: string;
+  basePath: string;
 }
 
 export function ContestantShareButton({
   name,
   slug,
+  basePath,
 }: ContestantShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleShare() {
-    const shareUrl = `${window.location.origin}/contestants/${slug}`;
+    const normalizedBasePath = basePath.startsWith("/")
+      ? basePath
+      : `/${basePath}`;
+    const shareUrl = `${window.location.origin}${normalizedBasePath}/${slug}`;
 
     if (navigator.share) {
       try {

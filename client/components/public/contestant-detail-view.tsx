@@ -1,19 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 import { ContestantShareButton } from "@/components/public/contestant-share-button";
 import { ContestantVoteButton } from "@/components/public/contestant-vote-button";
-import {
-  getAllPublicContestants,
-  getPublicContestantBySlug,
-} from "@/lib/public-contestants";
-import { createContestantSlug } from "@/lib/utils/contestant-slug";
+import type { Contestant } from "@/types/contestant";
 
-interface ContestantDetailPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+interface ContestantDetailViewProps {
+  contestant: Contestant;
+  slug: string;
+  backHref: string;
+  shareBasePath: string;
 }
 
 function getFacultyLabel(contestant: {
@@ -61,29 +57,12 @@ function getOrdinalYear(value: string): string {
   return `${year}${suffix}`;
 }
 
-export async function generateStaticParams() {
-  const contestants = await getAllPublicContestants();
-
-  return contestants.map((contestant) => ({
-    slug: createContestantSlug({
-      id: contestant.id,
-      name: contestant.name,
-      studentId: contestant.studentId,
-      nic: contestant.nic,
-    }),
-  }));
-}
-
-export default async function ContestantDetailPage({
-  params,
-}: ContestantDetailPageProps) {
-  const { slug } = await params;
-  const contestant = await getPublicContestantBySlug(slug);
-
-  if (!contestant) {
-    notFound();
-  }
-
+export function ContestantDetailView({
+  contestant,
+  slug,
+  backHref,
+  shareBasePath,
+}: ContestantDetailViewProps) {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#27272a_0%,_#18181b_35%,_#09090b_100%)] px-4 py-10 text-zinc-100 sm:px-6 lg:px-8">
       <section className="container mx-auto max-w-4xl">
@@ -167,14 +146,16 @@ export default async function ContestantDetailPage({
                 <ContestantVoteButton contestantId={contestant.id} />
               </div>
               <Link
-                href={
-                  contestant.gender.toLowerCase() === "female" ? "/ms" : "/mr"
-                }
+                href={backHref}
                 className="inline-flex h-12 items-center justify-center rounded-full border border-white/15 bg-white/8 px-5 text-sm font-medium text-zinc-100 transition hover:bg-white/14"
               >
                 Back to Contestants
               </Link>
-              <ContestantShareButton name={contestant.name} slug={slug} />
+              <ContestantShareButton
+                name={contestant.name}
+                slug={slug}
+                basePath={shareBasePath}
+              />
             </div>
           </div>
         </div>
