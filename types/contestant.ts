@@ -1,11 +1,13 @@
 export type Contestant = {
-  rank?: number;
   id: string;
-  bio?: string;
   name: string;
-  faculty?: string;
+  student_id: string;
+  bio: string | null;
+  faculty: string;
+  academic_year: string | null;
   image_url: string;
-  vote_count: number;
-  category: string;
   active: boolean;
+  vote_count: number;
+  created_at: string;
+  updated_at: string;
 };
