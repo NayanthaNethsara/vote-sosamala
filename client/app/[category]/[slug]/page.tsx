@@ -42,7 +42,6 @@ export default async function ContestantCategoryDetailPage({
     <ContestantDetailView
       contestant={contestant}
       slug={slug}
-      backHref={categoryConfig.detailBasePath}
       shareBasePath={categoryConfig.detailBasePath}
     />
   );

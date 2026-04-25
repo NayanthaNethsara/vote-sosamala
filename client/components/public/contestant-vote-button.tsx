@@ -94,7 +94,7 @@ export function ContestantVoteButton({
       <button
         type="button"
         disabled
-        className="inline-flex h-12 w-full items-center justify-center rounded-full border border-white/15 bg-white/8 px-5 text-sm font-medium text-zinc-100"
+        className="glass-button inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-sm font-medium"
       >
         Checking account...
       </button>
@@ -106,7 +106,7 @@ export function ContestantVoteButton({
       <button
         type="button"
         disabled
-        className="inline-flex h-12 w-full items-center justify-center rounded-full border border-white/15 bg-white/8 px-5 text-sm font-medium text-zinc-100"
+        className="glass-button inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-sm font-medium"
       >
         Checking vote status...
       </button>
@@ -117,7 +117,7 @@ export function ContestantVoteButton({
     return (
       <Link
         href="/login"
-        className="inline-flex h-12 w-full items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-500/15 px-5 text-sm font-medium text-cyan-100 transition hover:bg-cyan-500/25"
+        className="inline-flex h-12 w-full items-center justify-center rounded-full border border-primary/40 bg-primary/20 px-5 text-sm font-medium text-foreground transition hover:bg-primary/30"
       >
         Sign in with Google to Vote
       </Link>
@@ -170,26 +170,35 @@ export function ContestantVoteButton({
 
   return (
     <div className="w-full">
-      <p className="mb-2 text-sm font-medium text-zinc-300">
-        Votes: <span className="text-zinc-100">{voteCount ?? "--"}</span>
-      </p>
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+          Total Votes
+        </span>
+        <span className="text-3xl font-bold leading-none text-foreground tabular-nums sm:text-4xl">
+          {voteCount ?? "--"}
+        </span>
+      </div>
+      <div className="mb-2 min-h-5">
+        {message ? (
+          <p
+            className={`text-xs ${
+              status === "error" ? "text-destructive" : "text-muted-foreground"
+            }`}
+          >
+            {message}
+          </p>
+        ) : (
+          <p className="invisible text-xs">Status</p>
+        )}
+      </div>
       <button
         type="button"
         onClick={handleVote}
         disabled={submitting || hasVoted || status === "success"}
-        className="inline-flex h-12 w-full items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-500/15 px-5 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-75"
+        className="inline-flex h-12 w-full items-center justify-center rounded-full border border-primary/40 bg-primary/22 px-5 text-sm font-semibold text-foreground transition hover:bg-primary/30 disabled:cursor-not-allowed disabled:opacity-75"
       >
         {buttonLabel}
       </button>
-      {message ? (
-        <p
-          className={`mt-2 text-xs ${
-            status === "error" ? "text-red-300" : "text-zinc-300"
-          }`}
-        >
-          {message}
-        </p>
-      ) : null}
     </div>
   );
 }
