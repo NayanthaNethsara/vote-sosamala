@@ -25,6 +25,7 @@ describe("validateContestantForm", () => {
       name: "Alice",
       bio: "Test bio",
       category: "cutie",
+      faculty: "herbivores",
       image: validImage,
     });
 
@@ -36,6 +37,7 @@ describe("validateContestantForm", () => {
       name: undefined,
       bio: "bio",
       category: "cutie",
+      faculty: "herbivores",
       image: validImage,
     });
 
@@ -48,6 +50,7 @@ describe("validateContestantForm", () => {
       name: "bob",
       bio: "bio",
       category: "cutie",
+      faculty: "herbivores",
       image: "not-a-file",
     });
 
@@ -62,6 +65,7 @@ describe("validateContestantForm", () => {
       name: longName,
       bio: longBio,
       category: "cutie",
+      faculty: "herbivores",
       image: validImage,
     });
 
