@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { X, Chrome } from "lucide-react";
+import { X, LogIn } from "lucide-react";
 import { signInWithGoogle } from "@/lib/auth/actions";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -59,7 +59,7 @@ export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
                   transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
                   className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6"
                 >
-                  <Chrome className="w-8 h-8 text-white" />
+                  <LogIn className="w-8 h-8 text-white" />
                 </motion.div>
 
                 {/* Title */}
@@ -95,7 +95,7 @@ export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
                     onClick={handleGoogleLogin}
                     className="w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-3 rounded-xl transition-all duration-300 "
                   >
-                    <Chrome className="w-5 h-5 mr-3" />
+                    <LogIn className="w-5 h-5 mr-3" />
                     Continue with Google
                   </Button>
 
