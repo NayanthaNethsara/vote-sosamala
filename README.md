@@ -60,7 +60,7 @@ A self-hostable, open source, secure voting system for small public beauty conte
 2. Run [`schema.sql`](./schema.sql) and [`rls.sql`](./rls.sql) in the Supabase SQL editor
 3. Set up Supabase Storage bucket (for contestant images)
 4. Clone this repo and configure your `.env` (see `.env.example`)
-5. Deploy to Vercel (or run locally with `npm run dev`)
+5. Deploy to Vercel (or run locally with `pnpm dev`)
 
 For detailed instructions, see [docs/SETUP.md](docs/SETUP.md) (coming soon!)
 
