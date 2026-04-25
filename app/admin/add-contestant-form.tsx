@@ -63,7 +63,7 @@ export function AddContestantForm() {
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
-        toast.error(err.errors[0]?.message || "Validation error");
+        toast.error(err.issues[0]?.message || "Validation error");
       } else {
         toast.error("Unexpected error occurred");
       }
