@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -18,7 +19,6 @@ export const metadata: Metadata = {
   title: "Sosamala Voting App",
   description:
     "Sosamala Voting is a secure, modern, and self-hostable online voting platform built for small-scale beauty contests and public competitions.",
-  // Standard meta tags
   metadataBase: new URL("https://vote-sosamala.vercel.app"),
   robots: {
     index: true,
@@ -26,12 +26,6 @@ export const metadata: Metadata = {
     nocache: false,
   },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
-  // Open Graph
   openGraph: {
     title: "Sosamala Voting App",
     description:
@@ -57,6 +51,12 @@ export const metadata: Metadata = {
       "Sosamala Voting is a secure, modern, and self-hostable online voting platform built for small-scale beauty contests and public competitions.",
     images: ["https://vote-sosamala.vercel.app/ss1.png"],
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
