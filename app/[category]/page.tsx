@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { AuruduBackdrop } from "@/components/public/aurudu-backdrop";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,8 +44,7 @@ export default async function CategoryPage({
   });
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-[linear-gradient(160deg,#24080f_0%,#40101a_45%,#27080f_100%)] px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
-      <AuruduBackdrop />
+    <div className="relative min-h-screen px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-10">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-3">

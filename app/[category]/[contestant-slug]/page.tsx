@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { AuruduBackdrop } from "@/components/public/aurudu-backdrop";
 import { Badge } from "@/components/ui/badge";
 import { LoginModal } from "@/components/auth/login-modal";
 import { Button } from "@/components/ui/button";
@@ -131,8 +130,7 @@ export default async function ContestantPage({
   const isErrorFeedback = Boolean(queryParams.error);
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-[linear-gradient(160deg,#24080f_0%,#40101a_45%,#27080f_100%)] px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
-      <AuruduBackdrop />
+    <div className="relative min-h-screen px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <Button
           asChild

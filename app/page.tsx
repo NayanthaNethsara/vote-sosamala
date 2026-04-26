@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { AuruduBackdrop } from "@/components/public/aurudu-backdrop";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,8 +21,7 @@ const publicCategories = [
 
 export default function HomePage() {
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-[linear-gradient(160deg,#24080f_0%,#40101a_45%,#27080f_100%)] px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
-      <AuruduBackdrop />
+    <div className="relative min-h-screen px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <header className="space-y-4 text-center">
           <Badge className="w-fit self-center border border-amber-200/30 bg-amber-100/10 text-amber-100">

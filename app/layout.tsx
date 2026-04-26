@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TopNavbar } from "@/components/top-navbar";
+import { AuruduBackdrop } from "@/components/background/aurudu-backdrop";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -72,10 +73,13 @@ export default async function RootLayout({
   return (
     <html lang="en" className={cn("font-mono", jetbrainsMono.variable)}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-gray-950 via-gray-900 to-black`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-[#24080f] text-amber-50 antialiased`}
       >
-        <TopNavbar />
-        <main>{children}</main>
+        <div className="relative isolate min-h-dvh overflow-x-clip bg-[linear-gradient(160deg,#24080f_0%,#40101a_45%,#27080f_100%)]">
+          <AuruduBackdrop />
+          <TopNavbar />
+          <main className="relative z-10">{children}</main>
+        </div>
       </body>
     </html>
   );
