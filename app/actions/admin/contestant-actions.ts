@@ -1,0 +1,118 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+import { requireAdminUser } from "@/lib/supabase/auth";
+import { createClient } from "@/lib/supabase/server";
+import {
+  contestantCreateSchema,
+  contestantDeleteSchema,
+  contestantUpdateSchema,
+} from "@/lib/validation/adminContestantSchema";
+import { generateUniqueContestantSlug } from "@/lib/contestant-slug";
+
+function getReadableDatabaseError(error: { code?: string; message?: string }): string {
+  const errorMessage = error.message ?? "";
+
+  if (error.code === "23505" && errorMessage.includes("contestants_student_id")) {
+    return "That student ID is already in use.";
+  }
+
+  if (error.code === "23505" && errorMessage.includes("contestants_slug_key")) {
+    return "That slug is already in use. Try a different name.";
+  }
+
+  return errorMessage || "An unexpected database error occurred.";
+}
+
+function redirectWithMessage(messageType: "message" | "error", message: string): never {
+  redirect(`/admin?${messageType}=${encodeURIComponent(message)}`);
+}
+
+export async function createContestantAction(formData: FormData) {
+  await requireAdminUser();
+
+  const parsed = contestantCreateSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (!parsed.success) {
+    redirectWithMessage("error", parsed.error.issues[0]?.message ?? "Invalid contestant data");
+  }
+
+  const supabase = await createClient();
+  const slug = await generateUniqueContestantSlug(supabase, parsed.data.name);
+
+  const { error } = await supabase.from("contestants").insert({
+    name: parsed.data.name,
+    student_id: parsed.data.student_id,
+    bio: parsed.data.bio,
+    faculty: parsed.data.faculty,
+    academic_year: parsed.data.academic_year || null,
+    category: parsed.data.category,
+    active: parsed.data.active === "true",
+    slug,
+    image_url: `/${slug}.png`,
+  });
+
+  if (error) {
+    redirectWithMessage("error", getReadableDatabaseError(error));
+  }
+
+  revalidatePath("/admin");
+  redirectWithMessage("message", "Contestant created.");
+}
+
+export async function updateContestantAction(formData: FormData) {
+  await requireAdminUser();
+
+  const parsed = contestantUpdateSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (!parsed.success) {
+    redirectWithMessage("error", parsed.error.issues[0]?.message ?? "Invalid contestant data");
+  }
+
+  const supabase = await createClient();
+  const slug = await generateUniqueContestantSlug(supabase, parsed.data.name, parsed.data.id);
+
+  const { error } = await supabase
+    .from("contestants")
+    .update({
+      name: parsed.data.name,
+      student_id: parsed.data.student_id,
+      bio: parsed.data.bio,
+      faculty: parsed.data.faculty,
+      academic_year: parsed.data.academic_year || null,
+      category: parsed.data.category,
+      active: parsed.data.active === "true",
+      slug,
+      image_url: `/${slug}.png`,
+    })
+    .eq("id", parsed.data.id);
+
+  if (error) {
+    redirectWithMessage("error", getReadableDatabaseError(error));
+  }
+
+  revalidatePath("/admin");
+  redirectWithMessage("message", "Contestant updated.");
+}
+
+export async function deleteContestantAction(formData: FormData) {
+  await requireAdminUser();
+
+  const parsed = contestantDeleteSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (!parsed.success) {
+    redirectWithMessage("error", "Invalid contestant id.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("contestants").delete().eq("id", parsed.data.id);
+
+  if (error) {
+    redirectWithMessage("error", getReadableDatabaseError(error));
+  }
+
+  revalidatePath("/admin");
+  redirectWithMessage("message", "Contestant deleted.");
+}
