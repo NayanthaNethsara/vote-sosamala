@@ -1,5 +1,5 @@
 import { User, UserRole } from './user';
-import { Contestant } from './contestant';
+import { Contestant, ContestantCategory } from './contestant';
 import { Vote } from './vote';
 
 // Database interface for use with Supabase Client
@@ -35,6 +35,7 @@ export type Database = {
     };
     Enums: {
       user_role: UserRole;
+      contestant_category: ContestantCategory;
     };
   };
 };
