@@ -5,6 +5,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TopNavbar } from "@/components/top-navbar";
 import { AuruduBackdrop } from "@/components/background/aurudu-backdrop";
+import { HomeNavbar } from "@/components/home-navbar";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -77,7 +78,7 @@ export default async function RootLayout({
       >
         <div className="relative isolate min-h-dvh overflow-x-clip bg-[linear-gradient(160deg,#24080f_0%,#40101a_45%,#27080f_100%)]">
           <AuruduBackdrop />
-          <TopNavbar />
+          <HomeNavbar />
           <main className="relative z-10">{children}</main>
         </div>
       </body>

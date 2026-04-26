@@ -82,7 +82,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
     <motion.div
       animate={{
         boxShadow: visible
-          ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
+          ? "0 0 24px rgba(136, 19, 55, 0.16), 0 1px 1px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(190, 24, 93, 0.2), 0 0 4px rgba(136, 19, 55, 0.24), 0 16px 68px rgba(76, 5, 25, 0.2), 0 1px 0 rgba(255, 228, 230, 0.12) inset"
           : "none",
         width: visible ? "40%" : "100%",
         y: visible ? 20 : 0,
@@ -98,7 +98,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
       className={cn(
         "relative z-60 mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
         visible &&
-          "border border-black-900/45 bg-black/45 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-black/40 dark:border-black-800/50 dark:bg-black-950/60 dark:supports-backdrop-filter:bg-black-950/55",
+          "border border-[#be123c]/35 bg-[#2b0d15]/55 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-[#2b0d15]/50 dark:border-[#be123c]/40 dark:bg-[#14070b]/70 dark:supports-backdrop-filter:bg-[#14070b]/65",
         className,
       )}
     >
@@ -114,7 +114,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-foreground/70 transition duration-200 hover:text-foreground lg:flex lg:space-x-2 pointer-events-none",
+        "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-rose-100/80 transition duration-200 hover:text-rose-50 lg:flex lg:space-x-2 pointer-events-none",
         className,
       )}
     >
@@ -122,7 +122,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
         <a
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
-          className="relative px-4 py-2 text-foreground/75 pointer-events-auto"
+          className="relative px-4 py-2 text-rose-100/90 pointer-events-auto"
           key={`link-${idx}`}
           href={item.link}
         >
@@ -144,7 +144,7 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
     <motion.div
       animate={{
         boxShadow: visible
-          ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
+          ? "0 0 24px rgba(136, 19, 55, 0.16), 0 1px 1px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(190, 24, 93, 0.2), 0 0 4px rgba(136, 19, 55, 0.24), 0 16px 68px rgba(76, 5, 25, 0.2), 0 1px 0 rgba(255, 228, 230, 0.12) inset"
           : "none",
         width: visible ? "90%" : "100%",
         paddingRight: visible ? "12px" : "0px",
@@ -160,7 +160,7 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
       className={cn(
         "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden",
         visible &&
-          "border border-black-900/45 bg-black/45 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-black/40 dark:border-black-800/50 dark:bg-black-950/60 dark:supports-backdrop-filter:bg-black-950/55",
+          "border border-[#be123c]/35 bg-[#2b0d15]/55 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-[#2b0d15]/50 dark:border-[#be123c]/40 dark:bg-[#14070b]/70 dark:supports-backdrop-filter:bg-[#14070b]/65",
         className,
       )}
     >
@@ -217,9 +217,9 @@ export const MobileNavToggle = ({
   onClick: () => void;
 }) => {
   return isOpen ? (
-    <IconX className="text-black dark:text-white" onClick={onClick} />
+    <IconX className="text-rose-50" onClick={onClick} />
   ) : (
-    <IconMenu2 className="text-black dark:text-white" onClick={onClick} />
+    <IconMenu2 className="text-rose-50" onClick={onClick} />
   );
 };
 
@@ -227,7 +227,7 @@ export const NavbarLogo = () => {
   return (
     <a
       href="#"
-      className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
+      className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-rose-50"
     >
       <Image
         src="https://assets.aceternity.com/logo-dark.png"
@@ -235,7 +235,7 @@ export const NavbarLogo = () => {
         width={30}
         height={30}
       />
-      <span className="font-medium text-black dark:text-white">Startup</span>
+      <span className="font-medium text-rose-50">Startup</span>
     </a>
   );
 };

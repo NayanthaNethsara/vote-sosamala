@@ -25,6 +25,8 @@ type LoginModalProps = {
     | "ghost"
     | "destructive";
   triggerSize?: "default" | "sm" | "lg" | "icon";
+  className?: string;
+  onClick?: () => void;
 };
 
 export function LoginModal({
@@ -32,6 +34,8 @@ export function LoginModal({
   triggerLabel = "Login to vote",
   triggerVariant = "default",
   triggerSize = "sm",
+  className,
+  onClick,
 }: LoginModalProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -49,7 +53,12 @@ export function LoginModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={triggerVariant} size={triggerSize}>
+        <Button
+          variant={triggerVariant}
+          size={triggerSize}
+          className={className}
+          onClick={onClick}
+        >
           {triggerLabel}
         </Button>
       </DialogTrigger>
