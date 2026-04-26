@@ -4,7 +4,10 @@ import { unstable_cache } from "next/cache";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 import { env } from "@/config/env";
-import { CONTESTANTS_CACHE_TAG, type PublicContestant } from "@/lib/contestants";
+import {
+  CONTESTANTS_CACHE_TAG,
+  type PublicContestant,
+} from "@/lib/contestants";
 import type { ContestantCategory } from "@/types";
 import type { Database } from "@/types/supabase";
 
@@ -75,7 +78,9 @@ const getContestantByCategoryAndSlugCached = unstable_cache(
   },
 );
 
-export async function getContestantsByCategoryAction(category: ContestantCategory) {
+export async function getContestantsByCategoryAction(
+  category: ContestantCategory,
+) {
   return getContestantsByCategoryCached(category);
 }
 
@@ -103,7 +108,9 @@ export async function getContestantVoteCountAction(contestantId: string) {
   return contestant?.vote_count ?? 0;
 }
 
-function buildContestantVoteStats(rows: VoteRow[]): Record<string, ContestantVoteStats> {
+function buildContestantVoteStats(
+  rows: VoteRow[],
+): Record<string, ContestantVoteStats> {
   let previousVoteCount: number | null = null;
   let currentRank = 0;
   let currentPosition = 0;

@@ -1,4 +1,4 @@
-export type UserRole = 'guest' | 'admin';
+export type UserRole = "guest" | "admin";
 
 export type User = {
   id: string; // Matches auth.users(id)
