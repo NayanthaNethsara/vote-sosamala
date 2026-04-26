@@ -1,3 +1,5 @@
+export type ContestantCategory = 'male' | 'female';
+
 export type Contestant = {
   id: string;
   name: string;
@@ -8,6 +10,8 @@ export type Contestant = {
   image_url: string;
   active: boolean;
   vote_count: number;
+  category: ContestantCategory;
+  slug: string;
   created_at: string;
   updated_at: string;
 };
