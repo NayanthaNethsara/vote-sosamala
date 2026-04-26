@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { PencilLine, Trash2 } from "lucide-react";
+import { PencilLine, Plus, Trash2 } from "lucide-react";
 
 import {
+  contestantAcademicYears,
   contestantCategories,
+  contestantFaculties,
   contestantCategoryLabels,
+  contestantFacultyLabels,
 } from "@/config/contestants";
 import type { Contestant } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -111,13 +114,19 @@ function ContestantForm({
           <Label htmlFor={contestant ? `faculty-${contestant.id}` : "faculty"}>
             Faculty
           </Label>
-          <Input
+          <select
             id={contestant ? `faculty-${contestant.id}` : "faculty"}
             name="faculty"
-            defaultValue={contestant?.faculty}
-            placeholder="Faculty of Science"
+            defaultValue={contestant?.faculty ?? contestantFaculties[0]}
+            className="h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/20"
             required
-          />
+          >
+            {contestantFaculties.map((faculty) => (
+              <option key={faculty} value={faculty}>
+                {contestantFacultyLabels[faculty]}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid gap-2">
@@ -128,12 +137,19 @@ function ContestantForm({
           >
             Academic year
           </Label>
-          <Input
+          <select
             id={contestant ? `academic_year-${contestant.id}` : "academic_year"}
             name="academic_year"
             defaultValue={contestant?.academic_year ?? ""}
-            placeholder="Year 3"
-          />
+            className="h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/20"
+          >
+            <option value="">Not set</option>
+            {contestantAcademicYears.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid gap-2">
@@ -218,6 +234,37 @@ function EditContestantDialog({ contestant }: { contestant: Contestant }) {
   );
 }
 
+function CreateContestantDialog() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Add contestant
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Create contestant</DialogTitle>
+          <DialogDescription>
+            Add a new contestant. The slug is generated from the name and the
+            image URL is set to /slug.png.
+          </DialogDescription>
+        </DialogHeader>
+
+        <ContestantForm
+          action={createContestantAction}
+          submitLabel="Create contestant"
+        />
+
+        <DialogFooter />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function DeleteContestantButton({ contestant }: { contestant: Contestant }) {
   return (
     <form
@@ -241,22 +288,6 @@ export function ContestantManager({ contestants }: ContestantManagerProps) {
   return (
     <div className="grid gap-6">
       <Card className="border-white/10 bg-white/5 text-white shadow-2xl shadow-black/20 backdrop-blur">
-        <CardHeader>
-          <CardTitle className="text-xl">Create contestant</CardTitle>
-          <CardDescription className="text-white/60">
-            Add a new contestant. The slug is generated from the name and the
-            image URL is set to /slug.png.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ContestantForm
-            action={createContestantAction}
-            submitLabel="Create contestant"
-          />
-        </CardContent>
-      </Card>
-
-      <Card className="border-white/10 bg-white/5 text-white shadow-2xl shadow-black/20 backdrop-blur">
         <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
           <div>
             <CardTitle className="text-xl">Contestants</CardTitle>
@@ -264,12 +295,15 @@ export function ContestantManager({ contestants }: ContestantManagerProps) {
               Manage the current contestant list in a single table.
             </CardDescription>
           </div>
-          <Badge
-            variant="secondary"
-            className="border-white/10 bg-white/10 text-white"
-          >
-            {contestants.length} total
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge
+              variant="secondary"
+              className="border-white/10 bg-white/10 text-white"
+            >
+              {contestants.length} total
+            </Badge>
+            <CreateContestantDialog />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-hidden rounded-2xl border border-white/10">

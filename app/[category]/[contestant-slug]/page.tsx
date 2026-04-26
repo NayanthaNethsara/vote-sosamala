@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,89 @@ import {
 } from "@/app/actions/public/contestant-actions";
 import { voteForContestantAction } from "@/app/actions/public/vote-actions";
 import { isContestantCategory } from "@/lib/contestants";
+
+function buildContestantMetaDescription(input: {
+  faculty: string;
+  academicYear: string | null;
+  bio: string | null;
+}) {
+  const summary = input.bio?.trim() || "View profile and cast your vote.";
+  const yearLabel = input.academicYear ? `, ${input.academicYear}` : "";
+
+  return `${input.faculty}${yearLabel}. ${summary}`;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string; "contestant-slug": string }>;
+}): Promise<Metadata> {
+  const routeParams = await params;
+  const category = routeParams.category;
+  const contestantSlug = routeParams["contestant-slug"];
+
+  if (!isContestantCategory(category)) {
+    return {
+      title: "Contestant Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const contestant = await getContestantByCategoryAndSlugAction(
+    category,
+    contestantSlug,
+  );
+
+  if (!contestant) {
+    return {
+      title: "Contestant Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const profilePath = `/${category}/${contestant.slug}`;
+  const description = buildContestantMetaDescription({
+    faculty: contestant.faculty,
+    academicYear: contestant.academic_year,
+    bio: contestant.bio,
+  });
+  const title = `${contestant.name} | Sosamala Voting`;
+  const ogImagePath = `/${category}/${contestant.slug}/opengraph-image?v=${encodeURIComponent(contestant.updated_at)}`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: profilePath,
+    },
+    openGraph: {
+      title,
+      description,
+      url: profilePath,
+      type: "profile",
+      images: [
+        {
+          url: ogImagePath,
+          width: 1200,
+          height: 630,
+          alt: contestant.name,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImagePath],
+    },
+  };
+}
 
 export default async function ContestantPage({
   params,
