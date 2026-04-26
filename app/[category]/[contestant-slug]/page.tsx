@@ -9,14 +9,18 @@ import {
   getContestantByCategoryAndSlugAction,
   getContestantVoteStatsAction,
 } from "@/app/actions/public/contestant-actions";
+import { voteForContestantAction } from "@/app/actions/public/vote-actions";
 import { isContestantCategory } from "@/lib/contestants";
 
 export default async function ContestantPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ category: string; "contestant-slug": string }>;
+  searchParams: Promise<{ message?: string; error?: string }>;
 }) {
   const routeParams = await params;
+  const queryParams = await searchParams;
   const category = routeParams.category;
   const contestantSlug = routeParams["contestant-slug"];
 
@@ -38,6 +42,18 @@ export default async function ContestantPage({
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.14),transparent_30%),linear-gradient(180deg,#020617_0%,#020617_60%,#0f172a_100%)] px-4 py-10 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
+        {(queryParams.message || queryParams.error) && (
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm backdrop-blur ${
+              queryParams.error
+                ? "border-red-500/30 bg-red-500/10 text-red-200"
+                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
+            }`}
+          >
+            {queryParams.error ?? queryParams.message}
+          </div>
+        )}
+
         <Button asChild variant="secondary" className="w-fit">
           <Link href={`/${category}`}>Back to {category}</Link>
         </Button>
@@ -83,6 +99,29 @@ export default async function ContestantPage({
               <p className="max-w-3xl text-base leading-7 text-white/75">
                 {contestant.bio}
               </p>
+
+              <form
+                action={voteForContestantAction}
+                className="flex flex-wrap gap-3"
+              >
+                <input
+                  type="hidden"
+                  name="contestantId"
+                  value={contestant.id}
+                />
+                <input
+                  type="hidden"
+                  name="contestantSlug"
+                  value={contestant.slug}
+                />
+                <input type="hidden" name="category" value={category} />
+                <input
+                  type="hidden"
+                  name="returnTo"
+                  value={`/${category}/${contestant.slug}`}
+                />
+                <Button type="submit">Vote for {contestant.name}</Button>
+              </form>
 
               <div className="grid gap-4 rounded-3xl border border-white/10 bg-black/20 p-5 sm:grid-cols-2">
                 <div>

@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { contestantCategories } from "@/config/contestants";
 
 export const contestantSchema = z.object({
   name: z.string().min(1).max(100),
   bio: z.string().min(1).max(500),
-  category: z.enum(["cuta", "cutie"]),
+  category: z.enum(contestantCategories),
   faculty: z.enum(["herbivores", "carnivores", "omnivores"]),
   image_url: z
     .instanceof(File)

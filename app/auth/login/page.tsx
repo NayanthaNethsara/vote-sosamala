@@ -14,7 +14,7 @@ export default async function LoginPage({
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-sm space-y-8 px-4">
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-green-400 via-yellow-400 to-pink-400">
+          <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-green-400 via-yellow-400 to-pink-400">
             Sosamala Voting
           </h1>
           <p className="mt-3 text-sm text-neutral-400">
@@ -32,6 +32,7 @@ export default async function LoginPage({
         )}
 
         <form action={signInWithGoogle}>
+          <input type="hidden" name="next" value={params.next ?? "/"} />
           <button
             type="submit"
             id="google-sign-in-button"

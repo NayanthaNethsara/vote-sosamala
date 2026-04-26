@@ -10,9 +10,11 @@ ALTER TABLE public.contestants
   ALTER COLUMN slug DROP DEFAULT;
 
 DROP POLICY IF EXISTS "Users can read own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
 DROP POLICY IF EXISTS "Public can read active contestants" ON public.contestants;
 DROP POLICY IF EXISTS "Admins can manage contestants" ON public.contestants;
+DROP POLICY IF EXISTS "Users can insert own vote" ON public.votes;
 DROP POLICY IF EXISTS "Users can read own votes" ON public.votes;
 DROP POLICY IF EXISTS "Admins can manage votes" ON public.votes;
 

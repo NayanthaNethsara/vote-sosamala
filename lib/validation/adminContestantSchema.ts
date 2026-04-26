@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { contestantCategories } from "@/config/contestants";
 
 const contestantBaseSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -6,7 +7,7 @@ const contestantBaseSchema = z.object({
   bio: z.string().trim().min(1, "Bio is required").max(500),
   faculty: z.string().trim().min(1, "Faculty is required").max(100),
   academic_year: z.string().trim().max(50).optional().or(z.literal("")),
-  category: z.enum(["male", "female"]),
+  category: z.enum(contestantCategories),
   active: z.enum(["true", "false"]),
 });
 

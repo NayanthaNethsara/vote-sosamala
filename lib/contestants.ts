@@ -1,5 +1,10 @@
-import type { Contestant, ContestantCategory } from "@/types";
-export const contestantCategories = ["male", "female"] as const;
+import {
+  contestantCategories,
+  type ContestantCategory,
+} from "@/config/contestants";
+import type { Contestant } from "@/types";
+
+export { contestantCategories };
 export const CONTESTANTS_CACHE_TAG = "contestants";
 
 export type PublicContestant = Omit<Contestant, "vote_count">;
