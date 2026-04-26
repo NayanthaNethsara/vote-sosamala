@@ -1,24 +1,12 @@
 import { z } from "zod";
-
-function isSafeRedirectPath(path: string): boolean {
-  if (
-    path.startsWith("//") ||
-    path.includes("://") ||
-    path.includes("\\") ||
-    /[\r\n]/.test(path)
-  ) {
-    return false;
-  }
-
-  return path.startsWith("/");
-}
+import { isSafeRelativePath } from "@/lib/security/redirect";
 
 export const authCallbackSchema = z.object({
   code: z.string().min(1, "Authorization code is required"),
   next: z
     .string()
     .default("/")
-    .refine(isSafeRedirectPath, "Invalid redirect path"),
+    .refine(isSafeRelativePath, "Invalid redirect path"),
 });
 
 export const authErrorSchema = z.object({

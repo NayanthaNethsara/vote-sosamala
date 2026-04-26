@@ -5,22 +5,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { CONTESTANTS_CACHE_TAG, isContestantCategory } from "@/lib/contestants";
+import { isSafeRelativePath } from "@/lib/security/redirect";
 import { applyArcjetProtection } from "@/lib/security/arcjet";
 import { createClient } from "@/lib/supabase/server";
 import type { ContestantCategory } from "@/types";
-
-function isSafeRelativePath(path: string): boolean {
-  if (
-    path.startsWith("//") ||
-    path.includes("://") ||
-    path.includes("\\") ||
-    /[\r\n]/.test(path)
-  ) {
-    return false;
-  }
-
-  return path.startsWith("/");
-}
 
 function buildRedirectUrl(
   returnTo: string,

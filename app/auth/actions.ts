@@ -1,16 +1,9 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { isSafeRelativePath } from "@/lib/security/redirect";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-
-function isSafeRelativePath(path: string): boolean {
-  if (path.startsWith("//") || path.includes("://")) {
-    return false;
-  }
-
-  return path.startsWith("/");
-}
 
 export async function signInWithGoogle(formData: FormData): Promise<void> {
   const supabase = await createClient();
@@ -53,8 +46,12 @@ export async function signInWithGoogle(formData: FormData): Promise<void> {
   });
 
   if (error || !data.url) {
+    if (error) {
+      console.error("Failed to initiate Google sign-in", error);
+    }
+
     redirect(
-      `/auth/login?error=oauth_init&message=${encodeURIComponent(error?.message ?? "Failed to initiate Google sign-in")}`,
+      `/auth/login?error=oauth_init&message=${encodeURIComponent("Unable to start Google sign-in. Please try again.")}`,
     );
   }
 
@@ -66,8 +63,9 @@ export async function signOut(): Promise<void> {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
+    console.error("Failed to sign out", error);
     redirect(
-      `/auth/login?error=signout_error&message=${encodeURIComponent(error.message)}`,
+      `/auth/login?error=signout_error&message=${encodeURIComponent("Unable to sign out right now.")}`,
     );
   }
 

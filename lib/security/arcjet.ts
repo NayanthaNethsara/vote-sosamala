@@ -1,9 +1,10 @@
 import arcjet, { shield, detectBot, tokenBucket } from "@arcjet/next";
 import { isSpoofedBot } from "@arcjet/inspect";
 import { NextResponse } from "next/server";
+import { env } from "@/config/env";
 
 const aj = arcjet({
-  key: process.env.ARCJET_KEY!,
+  key: env.ARCJET_KEY,
   rules: [
     shield({ mode: "LIVE" }),
     detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE"] }),
