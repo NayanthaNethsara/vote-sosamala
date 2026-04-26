@@ -13,6 +13,6 @@ export const contestantSchema = z.object({
     })
     .refine(
       (file) => ["image/png", "image/jpeg", "image/webp"].includes(file.type),
-      { message: "Invalid image format" }
+      { message: "Invalid image format" },
     ),
 });
