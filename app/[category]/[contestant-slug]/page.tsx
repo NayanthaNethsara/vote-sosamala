@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { LoginModal } from "@/components/auth/login-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { VoteSubmitButton } from "../../../components/votes/vote-submit-button";
 import {
   getContestantByCategoryAndSlugAction,
   getContestantVoteStatsAction,
@@ -125,22 +126,12 @@ export default async function ContestantPage({
 
   const voteStats = await getContestantVoteStatsAction(category, contestant.id);
   const user = await getAuthenticatedUser();
+  const feedbackMessage = queryParams.error ?? queryParams.message;
+  const isErrorFeedback = Boolean(queryParams.error);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.14),transparent_30%),linear-gradient(180deg,#020617_0%,#020617_60%,#0f172a_100%)] px-4 py-10 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        {(queryParams.message || queryParams.error) && (
-          <div
-            className={`rounded-2xl border px-4 py-3 text-sm backdrop-blur ${
-              queryParams.error
-                ? "border-red-500/30 bg-red-500/10 text-red-200"
-                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
-            }`}
-          >
-            {queryParams.error ?? queryParams.message}
-          </div>
-        )}
-
         <Button asChild variant="secondary" className="w-fit">
           <Link href={`/${category}`}>Back to {category}</Link>
         </Button>
@@ -188,28 +179,46 @@ export default async function ContestantPage({
               </p>
 
               {user ? (
-                <form
-                  action={voteForContestantAction}
-                  className="flex flex-wrap gap-3"
-                >
-                  <input
-                    type="hidden"
-                    name="contestantId"
-                    value={contestant.id}
-                  />
-                  <input
-                    type="hidden"
-                    name="contestantSlug"
-                    value={contestant.slug}
-                  />
-                  <input type="hidden" name="category" value={category} />
-                  <input
-                    type="hidden"
-                    name="returnTo"
-                    value={`/${category}/${contestant.slug}`}
-                  />
-                  <Button type="submit">Vote for {contestant.name}</Button>
-                </form>
+                <div className="space-y-3">
+                  <form
+                    action={voteForContestantAction}
+                    className="flex flex-wrap gap-3"
+                  >
+                    <input
+                      type="hidden"
+                      name="contestantId"
+                      value={contestant.id}
+                    />
+                    <input
+                      type="hidden"
+                      name="contestantSlug"
+                      value={contestant.slug}
+                    />
+                    <input type="hidden" name="category" value={category} />
+                    <input
+                      type="hidden"
+                      name="returnTo"
+                      value={`/${category}/${contestant.slug}`}
+                    />
+                    <VoteSubmitButton contestantName={contestant.name} />
+                  </form>
+
+                  <div className="min-h-11">
+                    {feedbackMessage ? (
+                      <div
+                        className={`rounded-xl border px-4 py-3 text-sm backdrop-blur ${
+                          isErrorFeedback
+                            ? "border-red-500/30 bg-red-500/10 text-red-200"
+                            : "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
+                        }`}
+                        role="status"
+                        aria-live="polite"
+                      >
+                        {feedbackMessage}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
               ) : (
                 <LoginModal
                   nextPath={`/${category}/${contestant.slug}`}
