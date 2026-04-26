@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { VoteCountBadge } from "@/components/votes/vote-count-badge";
-import { getContestantByCategoryAndSlugAction } from "@/app/actions/public/contestant-actions";
+import {
+  getContestantByCategoryAndSlugAction,
+  getContestantVoteStatsAction,
+} from "@/app/actions/public/contestant-actions";
 import { isContestantCategory } from "@/lib/contestants";
 
 export default async function ContestantPage({
@@ -30,6 +32,8 @@ export default async function ContestantPage({
   if (!contestant) {
     notFound();
   }
+
+  const voteStats = await getContestantVoteStatsAction(category, contestant.id);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.14),transparent_30%),linear-gradient(180deg,#020617_0%,#020617_60%,#0f172a_100%)] px-4 py-10 text-white sm:px-6 lg:px-8">
@@ -58,7 +62,12 @@ export default async function ContestantPage({
                   <Badge className="bg-white/10 text-white">
                     {contestant.category}
                   </Badge>
-                  <VoteCountBadge contestantId={contestant.id} />
+                  <Badge className="bg-emerald-500 text-white">
+                    {voteStats.voteCount} votes
+                  </Badge>
+                  <Badge className="bg-white/10 text-white">
+                    {voteStats.rank > 0 ? `#${voteStats.rank}` : "-"}
+                  </Badge>
                 </div>
 
                 <div className="space-y-2">

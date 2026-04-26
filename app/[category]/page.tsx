@@ -5,11 +5,14 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { VoteCountBadge } from "@/components/votes/vote-count-badge";
-import { getContestantsByCategoryAction } from "@/app/actions/public/contestant-actions";
+import {
+  getCategoryVoteStatsAction,
+  getContestantsByCategoryAction,
+} from "@/app/actions/public/contestant-actions";
 import { contestantCategories, isContestantCategory } from "@/lib/contestants";
 
 export const dynamicParams = true;
+export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
   return contestantCategories.map((category) => ({ category }));
@@ -27,6 +30,18 @@ export default async function CategoryPage({
   }
 
   const contestants = await getContestantsByCategoryAction(category);
+  const contestantVoteStats = await getCategoryVoteStatsAction(category);
+
+  const rankedContestants = [...contestants].sort((left, right) => {
+    const leftVotes = contestantVoteStats[left.id]?.voteCount ?? 0;
+    const rightVotes = contestantVoteStats[right.id]?.voteCount ?? 0;
+
+    if (leftVotes !== rightVotes) {
+      return rightVotes - leftVotes;
+    }
+
+    return left.name.localeCompare(right.name);
+  });
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.14),transparent_30%),linear-gradient(180deg,#020617_0%,#020617_60%,#0f172a_100%)] px-4 py-10 text-white sm:px-6 lg:px-8">
@@ -58,7 +73,12 @@ export default async function CategoryPage({
           </Card>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {contestants.map((contestant, index) => {
+            {rankedContestants.map((contestant, index) => {
+              const stats = contestantVoteStats[contestant.id] ?? {
+                voteCount: 0,
+                rank: 0,
+              };
+
               return (
                 <Card
                   key={contestant.id}
@@ -83,7 +103,12 @@ export default async function CategoryPage({
                         <Badge className="bg-black/55 text-white">
                           {contestant.category}
                         </Badge>
-                        <VoteCountBadge contestantId={contestant.id} />
+                        <Badge className="bg-emerald-500 text-white">
+                          {stats.voteCount} votes
+                        </Badge>
+                        <Badge className="bg-white/10 text-white">
+                          {stats.rank > 0 ? `#${stats.rank}` : "-"}
+                        </Badge>
                       </div>
                     </div>
 

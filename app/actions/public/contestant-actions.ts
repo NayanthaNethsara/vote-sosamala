@@ -8,6 +8,16 @@ import { CONTESTANTS_CACHE_TAG, type PublicContestant } from "@/lib/contestants"
 import type { ContestantCategory } from "@/types";
 import type { Database } from "@/types/supabase";
 
+type VoteRow = {
+  id: string;
+  vote_count: number;
+};
+
+export type ContestantVoteStats = {
+  voteCount: number;
+  rank: number;
+};
+
 function createPublicServerClient() {
   return createSupabaseClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
@@ -91,4 +101,59 @@ export async function getContestantVoteCountAction(contestantId: string) {
   const contestant = data as { vote_count: number } | null;
 
   return contestant?.vote_count ?? 0;
+}
+
+function buildContestantVoteStats(rows: VoteRow[]): Record<string, ContestantVoteStats> {
+  let previousVoteCount: number | null = null;
+  let currentRank = 0;
+  let currentPosition = 0;
+
+  const stats: Record<string, ContestantVoteStats> = {};
+
+  for (const row of rows) {
+    currentPosition += 1;
+
+    if (previousVoteCount === null || row.vote_count !== previousVoteCount) {
+      currentRank = currentPosition;
+      previousVoteCount = row.vote_count;
+    }
+
+    stats[row.id] = {
+      voteCount: row.vote_count,
+      rank: currentRank,
+    };
+  }
+
+  return stats;
+}
+
+export async function getCategoryVoteStatsAction(category: ContestantCategory) {
+  const supabase = createPublicServerClient();
+  const { data, error } = await supabase
+    .from("contestants")
+    .select("id, vote_count")
+    .eq("category", category)
+    .eq("active", true)
+    .order("vote_count", { ascending: false })
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return buildContestantVoteStats((data ?? []) as VoteRow[]);
+}
+
+export async function getContestantVoteStatsAction(
+  category: ContestantCategory,
+  contestantId: string,
+) {
+  const categoryStats = await getCategoryVoteStatsAction(category);
+
+  return (
+    categoryStats[contestantId] ?? {
+      voteCount: 0,
+      rank: 0,
+    }
+  );
 }
