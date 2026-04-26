@@ -4,15 +4,29 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
-export async function signInWithGoogle(): Promise<void> {
+function isSafeRelativePath(path: string): boolean {
+  if (path.startsWith("//") || path.includes("://")) {
+    return false;
+  }
+
+  return path.startsWith("/");
+}
+
+export async function signInWithGoogle(formData: FormData): Promise<void> {
   const supabase = await createClient();
   const headerStore = await headers();
-  const origin = headerStore.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL;
+  const origin =
+    headerStore.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const nextPath = String(formData.get("next") ?? "/");
+  const safeNextPath = isSafeRelativePath(nextPath) ? nextPath : "/";
+  const callbackUrl = new URL("/auth/callback", origin);
+
+  callbackUrl.searchParams.set("next", safeNextPath);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: callbackUrl.toString(),
       queryParams: {
         access_type: "offline",
         prompt: "consent",
