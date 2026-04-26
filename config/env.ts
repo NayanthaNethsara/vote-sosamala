@@ -2,14 +2,17 @@ import { z } from "zod";
 
 const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url("Must be a valid Supabase URL"),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z
     .string()
-    .min(1, "Supabase ANON key is required"),
+    .min(1, "Supabase publishable key is required"),
+  NEXT_PUBLIC_SITE_URL: z.string().url("Must be a valid site URL").optional(),
 });
 
 const parsedEnv = envSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
 });
 
 if (!parsedEnv.success) {
