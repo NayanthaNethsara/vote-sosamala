@@ -3,10 +3,12 @@ import type { Viewport } from "next";
 import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { LoginDialogProvider } from "@/context/LoginDialogContext";
 import { cn } from "@/lib/utils";
 
-const jetbrainsMono = JetBrains_Mono({subsets:['latin'],variable:'--font-mono'});
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,9 +74,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-gray-950 via-gray-900 to-black`}
       >
-        <main>
-          <LoginDialogProvider>{children}</LoginDialogProvider>
-        </main>
+        <main>{children}</main>
         <Toaster />
       </body>
     </html>
