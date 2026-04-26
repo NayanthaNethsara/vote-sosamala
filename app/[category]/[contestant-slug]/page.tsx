@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { AuruduBackdrop } from "@/components/public/aurudu-backdrop";
 import { Badge } from "@/components/ui/badge";
 import { LoginModal } from "@/components/auth/login-modal";
 import { Button } from "@/components/ui/button";
@@ -130,15 +131,20 @@ export default async function ContestantPage({
   const isErrorFeedback = Boolean(queryParams.error);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.14),transparent_30%),linear-gradient(180deg,#020617_0%,#020617_60%,#0f172a_100%)] px-4 py-10 text-white sm:px-6 lg:px-8">
+    <div className="relative isolate min-h-screen overflow-hidden bg-[linear-gradient(160deg,#24080f_0%,#40101a_45%,#27080f_100%)] px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
+      <AuruduBackdrop />
       <div className="mx-auto max-w-6xl space-y-6">
-        <Button asChild variant="secondary" className="w-fit">
+        <Button
+          asChild
+          variant="secondary"
+          className="w-fit border border-amber-200/25 bg-amber-100/10 text-amber-50 hover:bg-amber-100/20"
+        >
           <Link href={`/${category}`}>Back to {category}</Link>
         </Button>
 
-        <Card className="overflow-hidden border-white/10 bg-white/5 text-white shadow-2xl shadow-black/20 backdrop-blur">
+        <Card className="overflow-hidden border-amber-200/20 bg-amber-50/6 text-amber-50 shadow-2xl shadow-black/25 backdrop-blur">
           <div className="grid gap-0 lg:grid-cols-[minmax(0,420px)_1fr]">
-            <div className="relative min-h-105 bg-slate-900/80">
+            <div className="relative min-h-105 bg-[#2d0f15]/80">
               <Image
                 src={contestant.image_url}
                 alt={contestant.name}
@@ -153,13 +159,13 @@ export default async function ContestantPage({
             <CardContent className="space-y-6 p-6 sm:p-8">
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  <Badge className="bg-white/10 text-white">
+                  <Badge className="bg-amber-100/15 text-amber-100">
                     {contestant.category}
                   </Badge>
-                  <Badge className="bg-emerald-500 text-white">
+                  <Badge className="bg-[#a16207] text-amber-50">
                     {voteStats.voteCount} votes
                   </Badge>
-                  <Badge className="bg-white/10 text-white">
+                  <Badge className="bg-amber-100/15 text-amber-100">
                     {voteStats.rank > 0 ? `#${voteStats.rank}` : "-"}
                   </Badge>
                 </div>
@@ -168,13 +174,13 @@ export default async function ContestantPage({
                   <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
                     {contestant.name}
                   </h1>
-                  <p className="text-sm text-white/65 sm:text-base">
+                  <p className="text-sm text-amber-100/75 sm:text-base">
                     {contestant.faculty}
                   </p>
                 </div>
               </div>
 
-              <p className="max-w-3xl text-base leading-7 text-white/75">
+              <p className="max-w-3xl text-base leading-7 text-amber-100/80">
                 {contestant.bio}
               </p>
 
@@ -209,7 +215,7 @@ export default async function ContestantPage({
                         className={`rounded-xl border px-4 py-3 text-sm backdrop-blur ${
                           isErrorFeedback
                             ? "border-red-500/30 bg-red-500/10 text-red-200"
-                            : "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
+                            : "border-amber-300/40 bg-amber-200/10 text-amber-100"
                         }`}
                         role="status"
                         aria-live="polite"
@@ -227,36 +233,36 @@ export default async function ContestantPage({
                 />
               )}
 
-              <div className="grid gap-4 rounded-3xl border border-white/10 bg-black/20 p-5 sm:grid-cols-2">
+              <div className="grid gap-4 rounded-3xl border border-amber-200/15 bg-[#1f0b11]/35 p-5 sm:grid-cols-2">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/45">
+                  <p className="text-xs uppercase tracking-[0.3em] text-amber-100/60">
                     Student ID
                   </p>
-                  <p className="mt-2 text-sm text-white">
+                  <p className="mt-2 text-sm text-amber-50">
                     {contestant.student_id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/45">
+                  <p className="text-xs uppercase tracking-[0.3em] text-amber-100/60">
                     Academic year
                   </p>
-                  <p className="mt-2 text-sm text-white">
+                  <p className="mt-2 text-sm text-amber-50">
                     {contestant.academic_year ?? "Not set"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/45">
+                  <p className="text-xs uppercase tracking-[0.3em] text-amber-100/60">
                     Slug
                   </p>
-                  <p className="mt-2 font-mono text-sm text-emerald-200">
+                  <p className="mt-2 font-mono text-sm text-amber-200">
                     {contestant.slug}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/45">
+                  <p className="text-xs uppercase tracking-[0.3em] text-amber-100/60">
                     Public image
                   </p>
-                  <p className="mt-2 font-mono text-sm text-emerald-200">
+                  <p className="mt-2 font-mono text-sm text-amber-200">
                     {contestant.image_url}
                   </p>
                 </div>

@@ -18,16 +18,19 @@ export async function TopNavbar() {
   const user = await getAuthenticatedUser();
 
   return (
-    <header className="border-b border-white/10 bg-black/35 backdrop-blur">
+    <header className="border-b border-amber-200/20 bg-[#2a0c13]/75 text-amber-50 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="text-sm font-semibold tracking-wide text-white">
+        <Link
+          href="/"
+          className="text-sm font-semibold tracking-wide text-amber-100"
+        >
           Sosamala Voting
         </Link>
 
         {user ? (
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-white/85">
-              <UserCircle2 className="h-4 w-4 text-emerald-300" />
+            <div className="flex items-center gap-2 rounded-full border border-amber-200/25 bg-amber-50/8 px-3 py-1.5 text-sm text-amber-100/90">
+              <UserCircle2 className="h-4 w-4 text-amber-300" />
               <span>{getDisplayName(user.email)}</span>
             </div>
 

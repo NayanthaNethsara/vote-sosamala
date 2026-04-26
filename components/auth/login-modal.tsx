@@ -18,7 +18,12 @@ import {
 type LoginModalProps = {
   nextPath?: string;
   triggerLabel?: string;
-  triggerVariant?: "default" | "secondary" | "outline" | "ghost" | "destructive";
+  triggerVariant?:
+    | "default"
+    | "secondary"
+    | "outline"
+    | "ghost"
+    | "destructive";
   triggerSize?: "default" | "sm" | "lg" | "icon";
 };
 
@@ -48,7 +53,7 @@ export function LoginModal({
           {triggerLabel}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md border-white/15 bg-slate-950/95">
+      <DialogContent className="max-w-md border-amber-200/20 bg-[#210b11]/95">
         <DialogHeader>
           <DialogTitle className="text-xl">Sign in to vote</DialogTitle>
           <DialogDescription>
@@ -61,7 +66,7 @@ export function LoginModal({
           <button
             type="submit"
             id="google-sign-in-modal-button"
-            className="group relative flex w-full items-center justify-center gap-3 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
+            className="group relative flex w-full items-center justify-center gap-3 rounded-lg border border-amber-200/20 bg-amber-50/6 px-4 py-3 text-sm font-medium text-amber-50 transition-all duration-200 hover:border-amber-200/35 hover:bg-amber-100/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#210b11]"
           >
             <GoogleIcon className="h-5 w-5" />
             <span>Continue with Google</span>

@@ -5,22 +5,22 @@
 @custom-variant dark (&:is(.dark *));
 
 *::-webkit-scrollbar {
-  width: 5px;
+  width: 2px;
 }
 
 *::-webkit-scrollbar-track {
-  background: var(--background);
-  border-radius: 5px;
+  background: #2a0c13;
+  border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: var(--background);
-  border-radius: 14px;
-  border: 3px solid var(--primary);
+  background-color: #d7a94f;
+  border-radius: 999px;
+  border: 2px solid #2a0c13;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-green-200);
+  background-color: #f2c879;
 }
 
 @theme inline {
