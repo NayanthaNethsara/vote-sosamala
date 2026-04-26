@@ -2,6 +2,7 @@ import Link from "next/link";
 import { UserCircle2 } from "lucide-react";
 
 import { signOut } from "@/app/auth/actions";
+import { LoginModal } from "@/components/auth/login-modal";
 import { Button } from "@/components/ui/button";
 import { getAuthenticatedUser } from "@/lib/supabase/auth";
 
@@ -37,9 +38,7 @@ export async function TopNavbar() {
             </form>
           </div>
         ) : (
-          <Button asChild size="sm">
-            <Link href="/auth/login">Login to vote</Link>
-          </Button>
+          <LoginModal />
         )}
       </div>
     </header>
