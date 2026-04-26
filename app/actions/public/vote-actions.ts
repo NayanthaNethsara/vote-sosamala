@@ -86,7 +86,7 @@ export async function voteForContestantAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/auth/login?next=${encodeURIComponent(safeReturnTo)}`);
+    redirect(buildRedirectUrl(safeReturnTo, "error", "Please login to vote."));
   }
 
   const { data: contestant, error: contestantError } = await supabase

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { LoginModal } from "@/components/auth/login-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/app/actions/public/contestant-actions";
 import { voteForContestantAction } from "@/app/actions/public/vote-actions";
 import { isContestantCategory } from "@/lib/contestants";
+import { getAuthenticatedUser } from "@/lib/supabase/auth";
 
 function buildContestantMetaDescription(input: {
   faculty: string;
@@ -122,6 +124,7 @@ export default async function ContestantPage({
   }
 
   const voteStats = await getContestantVoteStatsAction(category, contestant.id);
+  const user = await getAuthenticatedUser();
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.14),transparent_30%),linear-gradient(180deg,#020617_0%,#020617_60%,#0f172a_100%)] px-4 py-10 text-white sm:px-6 lg:px-8">
@@ -184,28 +187,36 @@ export default async function ContestantPage({
                 {contestant.bio}
               </p>
 
-              <form
-                action={voteForContestantAction}
-                className="flex flex-wrap gap-3"
-              >
-                <input
-                  type="hidden"
-                  name="contestantId"
-                  value={contestant.id}
+              {user ? (
+                <form
+                  action={voteForContestantAction}
+                  className="flex flex-wrap gap-3"
+                >
+                  <input
+                    type="hidden"
+                    name="contestantId"
+                    value={contestant.id}
+                  />
+                  <input
+                    type="hidden"
+                    name="contestantSlug"
+                    value={contestant.slug}
+                  />
+                  <input type="hidden" name="category" value={category} />
+                  <input
+                    type="hidden"
+                    name="returnTo"
+                    value={`/${category}/${contestant.slug}`}
+                  />
+                  <Button type="submit">Vote for {contestant.name}</Button>
+                </form>
+              ) : (
+                <LoginModal
+                  nextPath={`/${category}/${contestant.slug}`}
+                  triggerLabel="Vote to login"
+                  triggerSize="default"
                 />
-                <input
-                  type="hidden"
-                  name="contestantSlug"
-                  value={contestant.slug}
-                />
-                <input type="hidden" name="category" value={category} />
-                <input
-                  type="hidden"
-                  name="returnTo"
-                  value={`/${category}/${contestant.slug}`}
-                />
-                <Button type="submit">Vote for {contestant.name}</Button>
-              </form>
+              )}
 
               <div className="grid gap-4 rounded-3xl border border-white/10 bg-black/20 p-5 sm:grid-cols-2">
                 <div>

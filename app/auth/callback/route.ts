@@ -14,12 +14,7 @@ export async function GET(request: Request) {
   });
 
   if (errorResult.success && errorResult.data.error) {
-    const redirectUrl = new URL("/auth/login", request.url);
-    redirectUrl.searchParams.set("error", "auth_callback_error");
-    redirectUrl.searchParams.set(
-      "message",
-      errorResult.data.error_description ?? "Authentication failed",
-    );
+    const redirectUrl = new URL("/", request.url);
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -29,9 +24,7 @@ export async function GET(request: Request) {
   });
 
   if (!callbackResult.success) {
-    const redirectUrl = new URL("/auth/login", request.url);
-    redirectUrl.searchParams.set("error", "invalid_callback");
-    redirectUrl.searchParams.set("message", "Invalid authentication callback");
+    const redirectUrl = new URL("/", request.url);
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -41,12 +34,7 @@ export async function GET(request: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    const redirectUrl = new URL("/auth/login", request.url);
-    redirectUrl.searchParams.set("error", "code_exchange_error");
-    redirectUrl.searchParams.set(
-      "message",
-      "Failed to complete authentication",
-    );
+    const redirectUrl = new URL("/", request.url);
     return NextResponse.redirect(redirectUrl);
   }
 
