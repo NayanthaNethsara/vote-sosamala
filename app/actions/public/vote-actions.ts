@@ -3,12 +3,17 @@
 import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { CONTESTANTS_CACHE_TAG } from "@/lib/contestants";
+import { CONTESTANTS_CACHE_TAG, isContestantCategory } from "@/lib/contestants";
 import { createClient } from "@/lib/supabase/server";
 import type { ContestantCategory } from "@/types";
 
 function isSafeRelativePath(path: string): boolean {
-  if (path.startsWith("//") || path.includes("://")) {
+  if (
+    path.startsWith("//") ||
+    path.includes("://") ||
+    path.includes("\\") ||
+    /[\r\n]/.test(path)
+  ) {
     return false;
   }
 
@@ -31,10 +36,14 @@ function buildRedirectUrl(
 export async function voteForContestantAction(formData: FormData) {
   const contestantId = String(formData.get("contestantId") ?? "").trim();
   const contestantSlug = String(formData.get("contestantSlug") ?? "").trim();
-  const category = String(
-    formData.get("category") ?? "",
-  ).trim() as ContestantCategory;
+  const categoryInput = String(formData.get("category") ?? "").trim();
   const returnTo = String(formData.get("returnTo") ?? "").trim();
+
+  if (!isContestantCategory(categoryInput)) {
+    redirect(buildRedirectUrl("/", "error", "Invalid category."));
+  }
+
+  const category: ContestantCategory = categoryInput;
 
   const safeReturnTo = isSafeRelativePath(returnTo)
     ? returnTo

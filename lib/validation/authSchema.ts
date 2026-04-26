@@ -1,9 +1,12 @@
 import { z } from "zod";
 
-const ALLOWED_REDIRECT_PATHS = ["/", "/cutie", "/cuta"] as const;
-
 function isSafeRedirectPath(path: string): boolean {
-  if (path.startsWith("//") || path.includes("://")) {
+  if (
+    path.startsWith("//") ||
+    path.includes("://") ||
+    path.includes("\\") ||
+    /[\r\n]/.test(path)
+  ) {
     return false;
   }
 

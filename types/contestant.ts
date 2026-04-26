@@ -1,4 +1,6 @@
-export type ContestantCategory = 'male' | 'female';
+import type { ContestantCategory } from "@/config/contestants";
+
+export type { ContestantCategory };
 
 export type Contestant = {
   id: string;

@@ -15,11 +15,29 @@ function isSafeRelativePath(path: string): boolean {
 export async function signInWithGoogle(formData: FormData): Promise<void> {
   const supabase = await createClient();
   const headerStore = await headers();
-  const origin =
-    headerStore.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const forwardedHost = headerStore.get("x-forwarded-host");
+  const host = forwardedHost ?? headerStore.get("host");
+  const proto = headerStore.get("x-forwarded-proto") ?? "https";
+  const requestOrigin = host ? `${proto}://${host}` : undefined;
+  const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? requestOrigin;
   const nextPath = String(formData.get("next") ?? "/");
   const safeNextPath = isSafeRelativePath(nextPath) ? nextPath : "/";
-  const callbackUrl = new URL("/auth/callback", origin);
+
+  if (!siteOrigin) {
+    redirect(
+      `/auth/login?error=oauth_init&message=${encodeURIComponent("Missing application origin configuration")}`,
+    );
+  }
+
+  let callbackUrl: URL;
+
+  try {
+    callbackUrl = new URL("/auth/callback", siteOrigin);
+  } catch {
+    redirect(
+      `/auth/login?error=oauth_init&message=${encodeURIComponent("Invalid application origin configuration")}`,
+    );
+  }
 
   callbackUrl.searchParams.set("next", safeNextPath);
 

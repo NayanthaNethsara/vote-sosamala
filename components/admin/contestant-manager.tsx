@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { PencilLine, Trash2 } from "lucide-react";
 
+import {
+  contestantCategories,
+  contestantCategoryLabels,
+} from "@/config/contestants";
 import type { Contestant } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -141,11 +145,14 @@ function ContestantForm({
           <select
             id={contestant ? `category-${contestant.id}` : "category"}
             name="category"
-            defaultValue={contestant?.category ?? "male"}
+            defaultValue={contestant?.category ?? contestantCategories[0]}
             className="h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/20"
           >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
+            {contestantCategories.map((category) => (
+              <option key={category} value={category}>
+                {contestantCategoryLabels[category]}
+              </option>
+            ))}
           </select>
         </div>
 
