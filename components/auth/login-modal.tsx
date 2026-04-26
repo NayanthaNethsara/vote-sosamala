@@ -15,20 +15,38 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export function LoginModal() {
+type LoginModalProps = {
+  nextPath?: string;
+  triggerLabel?: string;
+  triggerVariant?: "default" | "secondary" | "outline" | "ghost" | "destructive";
+  triggerSize?: "default" | "sm" | "lg" | "icon";
+};
+
+export function LoginModal({
+  nextPath,
+  triggerLabel = "Login to vote",
+  triggerVariant = "default",
+  triggerSize = "sm",
+}: LoginModalProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const nextPath = useMemo(() => {
+  const resolvedNextPath = useMemo(() => {
+    if (nextPath) {
+      return nextPath;
+    }
+
     const search = searchParams.toString();
     return search ? `${pathname}?${search}` : pathname;
-  }, [pathname, searchParams]);
+  }, [nextPath, pathname, searchParams]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">Login to vote</Button>
+        <Button variant={triggerVariant} size={triggerSize}>
+          {triggerLabel}
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md border-white/15 bg-slate-950/95">
         <DialogHeader>
@@ -39,7 +57,7 @@ export function LoginModal() {
         </DialogHeader>
 
         <form action={signInWithGoogle} className="mt-2">
-          <input type="hidden" name="next" value={nextPath || "/"} />
+          <input type="hidden" name="next" value={resolvedNextPath || "/"} />
           <button
             type="submit"
             id="google-sign-in-modal-button"

@@ -17,9 +17,7 @@ export async function signInWithGoogle(formData: FormData): Promise<void> {
   const safeNextPath = isSafeRelativePath(nextPath) ? nextPath : "/";
 
   if (!siteOrigin) {
-    redirect(
-      `/auth/login?error=oauth_init&message=${encodeURIComponent("Missing application origin configuration")}`,
-    );
+    redirect("/");
   }
 
   let callbackUrl: URL;
@@ -27,9 +25,7 @@ export async function signInWithGoogle(formData: FormData): Promise<void> {
   try {
     callbackUrl = new URL("/auth/callback", siteOrigin);
   } catch {
-    redirect(
-      `/auth/login?error=oauth_init&message=${encodeURIComponent("Invalid application origin configuration")}`,
-    );
+    redirect("/");
   }
 
   callbackUrl.searchParams.set("next", safeNextPath);
@@ -50,9 +46,7 @@ export async function signInWithGoogle(formData: FormData): Promise<void> {
       console.error("Failed to initiate Google sign-in", error);
     }
 
-    redirect(
-      `/auth/login?error=oauth_init&message=${encodeURIComponent("Unable to start Google sign-in. Please try again.")}`,
-    );
+    redirect("/");
   }
 
   redirect(data.url);
@@ -64,9 +58,7 @@ export async function signOut(): Promise<void> {
 
   if (error) {
     console.error("Failed to sign out", error);
-    redirect(
-      `/auth/login?error=signout_error&message=${encodeURIComponent("Unable to sign out right now.")}`,
-    );
+    redirect("/");
   }
 
   redirect("/");
