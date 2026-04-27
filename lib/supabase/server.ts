@@ -1,5 +1,9 @@
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+
+import { env } from "@/config/env";
+import type { Database } from "@/types/supabase";
 
 /**
  * If using Fluid compute: Don't put this client in a global variable. Always create a new client within each
@@ -27,6 +31,19 @@ export async function createClient() {
             // user sessions.
           }
         },
+      },
+    },
+  );
+}
+
+export function createAdminClient() {
+  return createSupabaseClient<Database>(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
       },
     },
   );

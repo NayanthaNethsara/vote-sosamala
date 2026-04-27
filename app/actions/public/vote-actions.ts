@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { CONTESTANTS_CACHE_TAG, isContestantCategory } from "@/lib/contestants";
 import { isSafeRelativePath } from "@/lib/security/redirect";
 import { applyArcjetProtection } from "@/lib/security/arcjet";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import type { ContestantCategory } from "@/types";
 
 function buildRedirectUrl(
@@ -112,7 +112,8 @@ export async function voteForContestantAction(formData: FormData) {
     );
   }
 
-  const { error } = await supabase.from("votes").insert({
+  const adminSupabase = createAdminClient();
+  const { error } = await adminSupabase.from("votes").insert({
     user_id: user.id,
     contestant_id: contestant.id,
     category,

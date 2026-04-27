@@ -13,6 +13,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Omit<User, "id" | "created_at" | "updated_at">>;
+        Relationships: [];
       };
       contestants: {
         Row: Contestant;
@@ -26,6 +27,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Omit<Contestant, "id" | "created_at" | "updated_at">>;
+        Relationships: [];
       };
       votes: {
         Row: Vote;
@@ -34,6 +36,7 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Omit<Vote, "id" | "created_at">>;
+        Relationships: [];
       };
     };
     Views: {
