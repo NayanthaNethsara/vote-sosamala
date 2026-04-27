@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { signInWithGoogle } from "@/app/auth/actions";
 import { GoogleIcon } from "@/components/icons/google-icon";
@@ -50,6 +50,8 @@ export function LoginModal({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const shouldReduceMotion = useReducedMotion();
+
   const resolvedNextPath = useMemo(() => {
     if (nextPath) {
       return nextPath;
@@ -58,6 +60,15 @@ export function LoginModal({
     const search = searchParams.toString();
     return search ? `${pathname}?${search}` : pathname;
   }, [nextPath, pathname, searchParams]);
+
+  const spinTransition = useMemo(
+    () => ({
+      duration: 360,
+      repeat: Infinity,
+      ease: "linear" as const,
+    }),
+    []
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -77,28 +88,30 @@ export function LoginModal({
         {/* Background Mandala Decoration */}
         <div className="pointer-events-none absolute inset-0 z-0 select-none">
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-            className="absolute -right-20 -top-20 w-64 blur-[0.5px]"
+            animate={shouldReduceMotion ? undefined : { rotate: 360 }}
+            transition={spinTransition}
+            className="absolute -right-20 -top-20 w-64 blur-[0.5px] will-change-transform"
           >
             <Image
               src="/mandala/mandala-gold.svg"
               alt=""
               width={300}
               height={300}
+              loading="lazy"
               className="h-full w-full opacity-40"
             />
           </motion.div>
           <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-            className="absolute -bottom-20 -left-20 w-64 blur-[0.5px]"
+            animate={shouldReduceMotion ? undefined : { rotate: -360 }}
+            transition={spinTransition}
+            className="absolute -bottom-20 -left-20 w-64 blur-[0.5px] will-change-transform"
           >
             <Image
               src="/mandala/mandala-gold.svg"
               alt=""
               width={300}
               height={300}
+              loading="lazy"
               className="h-full w-full opacity-20"
             />
           </motion.div>
