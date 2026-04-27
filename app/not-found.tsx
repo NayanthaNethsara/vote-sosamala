@@ -17,7 +17,10 @@ export default function NotFound() {
           The page you are looking for does not exist or may have moved.
         </p>
         <div className="mt-6 flex justify-center">
-          <Button asChild className="bg-[#7f1d2d] text-amber-50 hover:bg-[#97233a]">
+          <Button
+            asChild
+            className="bg-[#7f1d2d] text-amber-50 hover:bg-[#97233a]"
+          >
             <Link href="/">Go to home</Link>
           </Button>
         </div>

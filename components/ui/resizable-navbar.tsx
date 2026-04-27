@@ -82,7 +82,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
     <motion.div
       animate={{
         boxShadow: visible
-          ? "0 0 24px rgba(136, 19, 55, 0.16), 0 1px 1px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(190, 24, 93, 0.2), 0 0 4px rgba(136, 19, 55, 0.24), 0 16px 68px rgba(76, 5, 25, 0.2), 0 1px 0 rgba(255, 228, 230, 0.12) inset"
+          ? "0 0 24px rgba(212, 175, 55, 0.05), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(212, 175, 55, 0.05), 0 0 4px rgba(212, 175, 55, 0.05), 0 16px 68px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(212, 175, 55, 0.05) inset"
           : "none",
         width: visible ? "40%" : "100%",
         y: visible ? 20 : 0,
@@ -98,7 +98,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
       className={cn(
         "relative z-60 mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
         visible &&
-          "border border-[#be123c]/35 bg-[#2b0d15]/55 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-[#2b0d15]/50 dark:border-[#be123c]/40 dark:bg-[#14070b]/70 dark:supports-backdrop-filter:bg-[#14070b]/65",
+          "border border-[#d4af37]/5 bg-black/20 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-black/20 dark:border-[#d4af37]/5 dark:bg-black/40 dark:supports-backdrop-filter:bg-black/30",
         className,
       )}
     >
@@ -144,7 +144,7 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
     <motion.div
       animate={{
         boxShadow: visible
-          ? "0 0 24px rgba(136, 19, 55, 0.16), 0 1px 1px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(190, 24, 93, 0.2), 0 0 4px rgba(136, 19, 55, 0.24), 0 16px 68px rgba(76, 5, 25, 0.2), 0 1px 0 rgba(255, 228, 230, 0.12) inset"
+          ? "0 0 24px rgba(212, 175, 55, 0.05), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(212, 175, 55, 0.05), 0 0 4px rgba(212, 175, 55, 0.05), 0 16px 68px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(212, 175, 55, 0.05) inset"
           : "none",
         width: visible ? "90%" : "100%",
         paddingRight: visible ? "12px" : "0px",
@@ -160,7 +160,7 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
       className={cn(
         "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden",
         visible &&
-          "border border-[#be123c]/35 bg-[#2b0d15]/55 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-[#2b0d15]/50 dark:border-[#be123c]/40 dark:bg-[#14070b]/70 dark:supports-backdrop-filter:bg-[#14070b]/65",
+          "border border-[#d4af37]/5 bg-black/20 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-black/20 dark:border-[#d4af37]/5 dark:bg-black/40 dark:supports-backdrop-filter:bg-black/30",
         className,
       )}
     >

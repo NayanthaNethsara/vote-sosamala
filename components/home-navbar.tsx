@@ -86,12 +86,12 @@ export function HomeNavbar() {
           <div className="relative z-20 flex items-center space-x-3">
             {user ? (
               <div className="flex items-center space-x-3">
-                <span className="hidden text-xs font-medium text-rose-100/70 lg:block">
+                <span className="hidden text-xs font-medium text-rose-100 lg:block">
                   {user.user_metadata?.full_name || user.email}
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="text-rose-100/85 transition-colors hover:text-rose-200 p-1.5 rounded-full hover:bg-rose-500/10"
+                  className="text-rose-100 transition-colors hover:text-rose-200 p-1.5 rounded-full hover:bg-rose-500/10"
                   aria-label="Logout"
                 >
                   <IconLogout className="h-5 w-5" />
@@ -101,7 +101,7 @@ export function HomeNavbar() {
               <LoginModal
                 triggerLabel="Login to Vote"
                 triggerVariant="ghost"
-                className="h-8 rounded-full bg-rose-500/10 px-3 text-xs font-bold text-rose-100 border border-rose-500/30 hover:bg-rose-500/20 hover:text-white"
+                className="h-8 rounded-full bg-white/10 px-3 text-xs font-bold text-white border border-white/20 hover:bg-white/20"
               />
             )}
           </div>
@@ -149,7 +149,7 @@ export function HomeNavbar() {
         <MobileMenuSocialLinks>
           {user ? (
             <div className="flex flex-col items-center gap-4">
-              <span className="text-sm font-medium text-rose-100/70">
+              <span className="text-sm font-medium text-rose-100">
                 {user.user_metadata?.full_name || user.email}
               </span>
               <button
@@ -157,7 +157,7 @@ export function HomeNavbar() {
                   handleLogout();
                   closeMobileMenu();
                 }}
-                className="text-rose-100/85 transition-colors hover:text-rose-200 flex flex-col items-center gap-1"
+                className="text-rose-100 transition-colors hover:text-rose-200 flex flex-col items-center gap-1"
                 aria-label="Logout"
               >
                 <IconLogout className="h-6 w-6" />
@@ -169,8 +169,8 @@ export function HomeNavbar() {
           ) : (
             <LoginModal
               triggerLabel="Login to Vote"
-              triggerVariant="secondary"
-              className="h-10 rounded-full px-6 text-sm font-bold"
+              triggerVariant="outline"
+              className="h-10 rounded-full px-6 text-sm font-bold bg-white/10 text-white border-white/20 hover:bg-white/20"
               onClick={closeMobileMenu}
             />
           )}
