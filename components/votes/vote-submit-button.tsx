@@ -2,13 +2,18 @@
 
 import { useFormStatus } from "react-dom";
 
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 type VoteSubmitButtonProps = {
   contestantName: string;
+  className?: string;
 };
 
-export function VoteSubmitButton({ contestantName }: VoteSubmitButtonProps) {
+export function VoteSubmitButton({
+  contestantName,
+  className,
+}: VoteSubmitButtonProps) {
   const { pending } = useFormStatus();
 
   return (
@@ -17,7 +22,10 @@ export function VoteSubmitButton({ contestantName }: VoteSubmitButtonProps) {
       disabled={pending}
       aria-disabled={pending}
       aria-busy={pending}
-      className="min-w-52 bg-[#7f1d2d] text-amber-50 hover:bg-[#97233a]"
+      className={cn(
+        "min-w-52 border border-amber-700/50 bg-amber-900 text-amber-50 hover:bg-amber-800 backdrop-blur-xl transition-all",
+        className,
+      )}
     >
       {pending ? (
         <>

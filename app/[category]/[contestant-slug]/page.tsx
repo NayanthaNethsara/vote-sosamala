@@ -6,6 +6,9 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { LoginButton } from "@/components/auth/login-button";
 import { Button } from "@/components/ui/button";
+import { ContestantShareButton } from "@/components/public/contestant-share-button";
+import { FeedbackToast } from "@/components/public/feedback-toast";
+import { SpinningMandala } from "@/components/background/spinning-mandala";
 import { Card, CardContent } from "@/components/ui/card";
 import { VoteSubmitButton } from "../../../components/votes/vote-submit-button";
 import {
@@ -25,6 +28,29 @@ function buildContestantMetaDescription(input: {
   const yearLabel = input.academicYear ? `, ${input.academicYear}` : "";
 
   return `${input.faculty}${yearLabel}. ${summary}`;
+}
+
+function getOrdinalYear(value: string | null): string {
+  if (!value) return "";
+  const year = Number.parseInt(value, 10);
+  if (Number.isNaN(year)) return value;
+  const suffix =
+    year % 100 >= 11 && year % 100 <= 13
+      ? "th"
+      : (["th", "st", "nd", "rd"][year % 10] ?? "th");
+  return `${year}${suffix}`;
+}
+
+function generateFirstPersonBio(contestant: {
+  name: string;
+  faculty: string;
+  academic_year: string | null;
+  category: string;
+}) {
+  const yearLabel = getOrdinalYear(contestant.academic_year);
+  const yearStr = yearLabel ? `a ${yearLabel}-year student` : "a student";
+
+  return `Ayubowan! I'm ${contestant.name}, ${yearStr} from the ${contestant.faculty}, and it’s that time of the year again. I’m competing for the ${contestant.category} title at this year's Wasantha Muwadura. Whether we've worked together, crammed for exams, or just crossed paths on campus, I'd love your support. Cast your vote for me below, and let’s celebrate the New Year!`;
 }
 
 export async function generateMetadata({
@@ -130,145 +156,107 @@ export default async function ContestantPage({
   const isErrorFeedback = Boolean(queryParams.error);
 
   return (
-    <div className="relative min-h-screen px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <Button
-          asChild
-          variant="secondary"
-          className="w-fit border border-amber-200/25 bg-amber-100/10 text-amber-50 hover:bg-amber-100/20"
-        >
-          <Link href={`/${category}`}>Back to {category}</Link>
-        </Button>
-
-        <Card className="overflow-hidden border-amber-200/20 bg-amber-50/6 text-amber-50 shadow-2xl shadow-black/25 backdrop-blur">
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,420px)_1fr]">
-            <div className="relative min-h-105 bg-[#2d0f15]/80">
-              <Image
-                src={contestant.image_url}
-                alt={contestant.name}
-                width={840}
-                height={840}
-                sizes="(min-width: 1024px) 420px, 100vw"
-                loading="eager"
-                className="h-full w-full object-cover"
-              />
-            </div>
-
-            <CardContent className="space-y-6 p-6 sm:p-8">
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="bg-amber-100/15 text-amber-100">
-                    {contestant.category}
-                  </Badge>
-                  <Badge className="bg-[#a16207] text-amber-50">
-                    {voteStats.voteCount} votes
-                  </Badge>
-                  <Badge className="bg-amber-100/15 text-amber-100">
-                    {voteStats.rank > 0 ? `#${voteStats.rank}` : "-"}
-                  </Badge>
-                </div>
-
-                <div className="space-y-2">
-                  <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                    {contestant.name}
-                  </h1>
-                  <p className="text-sm text-amber-100/75 sm:text-base">
-                    {contestant.faculty}
-                  </p>
-                </div>
-              </div>
-
-              <p className="max-w-3xl text-base leading-7 text-amber-100/80">
-                {contestant.bio}
-              </p>
-
-              {user ? (
-                <div className="space-y-3">
-                  <form
-                    action={voteForContestantAction}
-                    className="flex flex-wrap gap-3"
-                  >
-                    <input
-                      type="hidden"
-                      name="contestantId"
-                      value={contestant.id}
-                    />
-                    <input
-                      type="hidden"
-                      name="contestantSlug"
-                      value={contestant.slug}
-                    />
-                    <input type="hidden" name="category" value={category} />
-                    <input
-                      type="hidden"
-                      name="returnTo"
-                      value={`/${category}/${contestant.slug}`}
-                    />
-                    <VoteSubmitButton contestantName={contestant.name} />
-                  </form>
-
-                  <div className="min-h-11">
-                    {feedbackMessage ? (
-                      <div
-                        className={`rounded-xl border px-4 py-3 text-sm backdrop-blur ${
-                          isErrorFeedback
-                            ? "border-red-500/30 bg-red-500/10 text-red-200"
-                            : "border-amber-300/40 bg-amber-200/10 text-amber-100"
-                        }`}
-                        role="status"
-                        aria-live="polite"
-                      >
-                        {feedbackMessage}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ) : (
-                <LoginButton
-                  nextPath={`/${category}/${contestant.slug}`}
-                  label="Login to vote"
-                  size="default"
+    <div className="vote-shell relative px-4 py-10 sm:px-6 lg:px-8">
+      <FeedbackToast error={queryParams.error} message={queryParams.message} />
+      <section className="relative z-10 container mx-auto max-w-5xl">
+        <div className="grid gap-3 lg:grid-cols-2 lg:items-stretch">
+          {/* Left: Image Panel */}
+          <div className="mx-auto w-full max-w-sm lg:mx-0 lg:max-w-none">
+            <div className="vote-panel aspect-square p-2 transition-all hover:bg-amber-50/10">
+              <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#2d0f15]/80">
+                <Image
+                  src={contestant.image_url}
+                  alt={contestant.name}
+                  fill
+                  sizes="(max-width: 1024px) 384px, 540px"
+                  className="object-cover object-top"
+                  priority
                 />
-              )}
-
-              <div className="grid gap-4 rounded-3xl border border-amber-200/15 bg-[#1f0b11]/35 p-5 sm:grid-cols-2">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-amber-100/60">
-                    Student ID
-                  </p>
-                  <p className="mt-2 text-sm text-amber-50">
-                    {contestant.student_id}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-amber-100/60">
-                    Academic year
-                  </p>
-                  <p className="mt-2 text-sm text-amber-50">
-                    {contestant.academic_year ?? "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-amber-100/60">
-                    Slug
-                  </p>
-                  <p className="mt-2 font-mono text-sm text-amber-200">
-                    {contestant.slug}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-amber-100/60">
-                    Public image
-                  </p>
-                  <p className="mt-2 font-mono text-sm text-amber-200">
-                    {contestant.image_url}
-                  </p>
-                </div>
               </div>
-            </CardContent>
+            </div>
           </div>
-        </Card>
-      </div>
+
+          {/* Right: Details Panel */}
+          <article className="vote-panel-strong relative overflow-hidden p-5 sm:p-7 lg:aspect-square">
+            <SpinningMandala />
+            <div className="relative z-10 flex h-full flex-col space-y-6 lg:space-y-5">
+              <div className="flex flex-wrap items-center gap-3">
+                {voteStats.rank > 0 && (
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] backdrop-blur-xl ${
+                      voteStats.rank === 1
+                        ? "border-yellow-400/50 bg-yellow-400/20 text-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.3)]"
+                        : voteStats.rank === 2
+                          ? "border-slate-300/50 bg-slate-300/20 text-slate-200 shadow-[0_0_15px_rgba(203,213,225,0.2)]"
+                          : voteStats.rank === 3
+                            ? "border-amber-600/50 bg-amber-600/20 text-amber-400 shadow-[0_0_15px_rgba(217,119,6,0.2)]"
+                            : "border-amber-200/15 bg-amber-50/10 text-amber-50"
+                    }`}
+                  >
+                    Rank #{voteStats.rank}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#a16207]/40 bg-[#a16207]/20 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-amber-200 backdrop-blur-xl">
+                  {voteStats.voteCount} Votes
+                </span>
+              </div>
+
+              <div className="space-y-4 flex-1">
+                <h1 className="vote-heading text-balance text-2xl leading-tight text-amber-50 sm:text-4xl">
+                  {contestant.name}
+                </h1>
+                <p className="max-w-3xl text-sm leading-relaxed text-amber-100/80 sm:text-base">
+                  {generateFirstPersonBio(contestant)}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 items-start gap-3 pt-1 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <div className="w-full">
+                  {user ? (
+                    <form
+                      action={voteForContestantAction}
+                      className="flex flex-wrap gap-3"
+                    >
+                      <input
+                        type="hidden"
+                        name="contestantId"
+                        value={contestant.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="contestantSlug"
+                        value={contestant.slug}
+                      />
+                      <input type="hidden" name="category" value={category} />
+                      <input
+                        type="hidden"
+                        name="returnTo"
+                        value={`/${category}/${contestant.slug}`}
+                      />
+                      <VoteSubmitButton
+                        contestantName={contestant.name}
+                        className="h-12 w-full text-base font-semibold"
+                      />
+                    </form>
+                  ) : (
+                    <LoginButton
+                      nextPath={`/${category}/${contestant.slug}`}
+                      label="Login to vote"
+                      size="default"
+                      className="h-12 w-full text-base font-semibold border border-amber-200/20 bg-amber-50/10 text-amber-50 hover:bg-amber-50/20 backdrop-blur-xl transition-all"
+                    />
+                  )}
+                </div>
+                <ContestantShareButton
+                  name={contestant.name}
+                  path={`/${category}/${contestant.slug}`}
+                  className="h-12 w-full sm:w-auto sm:min-w-36"
+                />
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { AuruduBackdrop } from "@/components/background/aurudu-backdrop";
 import { HomeNavbar } from "@/components/home-navbar";
 import { LoginModalProvider } from "@/hooks/use-login-modal";
+import { Toaster } from "@/components/ui/sonner";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -82,6 +83,7 @@ export default async function RootLayout({
             <AuruduBackdrop />
             <HomeNavbar />
             <main className="relative z-10 pt-24">{children}</main>
+            <Toaster />
           </div>
         </LoginModalProvider>
       </body>

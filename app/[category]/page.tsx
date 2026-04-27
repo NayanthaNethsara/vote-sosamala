@@ -61,14 +61,6 @@ export default async function CategoryPage({
               </p>
             </div>
           </div>
-
-          <Button
-            asChild
-            variant="secondary"
-            className="w-fit border border-amber-200/25 bg-amber-100/10 text-amber-50 hover:bg-amber-100/20"
-          >
-            <Link href="/">Back home</Link>
-          </Button>
         </header>
 
         {contestants.length === 0 ? (
