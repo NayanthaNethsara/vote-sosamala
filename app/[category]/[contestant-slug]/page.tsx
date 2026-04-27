@@ -135,9 +135,9 @@ export default async function ContestantPage({
   const isVoteUiDisabled = userVotedInCategory || hasDeviceVoteCookie;
 
   const voteDisabledLabel = userVotedInCategory
-    ? "You already voted in this category"
+    ? "Already Voted"
     : hasDeviceVoteCookie
-      ? "Voting already used on this device"
+      ? "Device Voted"
       : undefined;
 
   return (
