@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { CONTESTANTS_CACHE_TAG, isContestantCategory } from "@/lib/contestants";
@@ -116,6 +117,15 @@ export async function voteForContestantAction(formData: FormData) {
   if (voteResult !== "success") {
     redirect(buildRedirectUrl(safeReturnTo, "error", "Failed to submit vote."));
   }
+
+  const cookieStore = await cookies();
+  cookieStore.set(`vote_device_${category}`, "1", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
 
   revalidateTag(CONTESTANTS_CACHE_TAG, "max");
   redirect(

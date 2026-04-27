@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
+import type { ContestantCategory } from "@/types";
 
 export async function getAuthenticatedUser(): Promise<User | null> {
   const supabase = await createClient();
@@ -67,4 +68,28 @@ export async function requireAdminUser(): Promise<User> {
   }
 
   return user;
+}
+
+export async function hasAuthenticatedUserVotedInCategory(
+  category: ContestantCategory,
+): Promise<boolean> {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return false;
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("votes")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("category", category)
+    .maybeSingle();
+
+  if (error) {
+    return false;
+  }
+
+  return Boolean(data);
 }

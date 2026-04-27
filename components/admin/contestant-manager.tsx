@@ -64,7 +64,7 @@ function ContestantForm({
   action,
 }: ContestantFormProps) {
   return (
-    <form action={action} className="grid gap-4">
+    <form action={action} encType="multipart/form-data" className="grid gap-4">
       {contestant ? (
         <input type="hidden" name="id" value={contestant.id} />
       ) : null}
@@ -187,12 +187,30 @@ function ContestantForm({
             <option value="false">Inactive</option>
           </select>
         </div>
+
+        <div className="grid gap-2 md:col-span-2">
+          <Label
+            htmlFor={contestant ? `image_file-${contestant.id}` : "image_file"}
+          >
+            Contestant image
+          </Label>
+          <Input
+            id={contestant ? `image_file-${contestant.id}` : "image_file"}
+            name="image_file"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            required={!contestant}
+          />
+          <p className="text-xs text-white/55">
+            Upload PNG, JPEG, or WEBP (max 4MB). New upload replaces current
+            image.
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65">
         <span>
-          Image URL will be generated as the slug path, for example
-          /john-doe.png.
+          Images are uploaded to Supabase Storage and delivered from CDN.
         </span>
         <Button type="submit" className="shrink-0">
           {submitLabel}
@@ -217,8 +235,8 @@ function EditContestantDialog({ contestant }: { contestant: Contestant }) {
         <DialogHeader>
           <DialogTitle>Edit contestant</DialogTitle>
           <DialogDescription>
-            Update the contestant details. The slug and image path will be
-            regenerated from the name.
+            Update contestant details. Upload a new image only if you want to
+            replace the current one.
           </DialogDescription>
         </DialogHeader>
 
@@ -250,8 +268,8 @@ function CreateContestantDialog() {
         <DialogHeader>
           <DialogTitle>Create contestant</DialogTitle>
           <DialogDescription>
-            Add a new contestant. The slug is generated from the name and the
-            image URL is set to /slug.png.
+            Add a new contestant. The slug is generated from the name and image
+            is uploaded to Supabase Storage.
           </DialogDescription>
         </DialogHeader>
 

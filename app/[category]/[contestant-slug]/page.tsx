@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 
 import { LoginButton } from "@/components/auth/login-button";
 import { ContestantShareButton } from "@/components/public/contestant-share-button";
@@ -13,7 +14,10 @@ import {
 } from "@/app/actions/public/contestant-actions";
 import { voteForContestantAction } from "@/app/actions/public/vote-actions";
 import { isContestantCategory } from "@/lib/contestants";
-import { getAuthenticatedUser } from "@/lib/supabase/auth";
+import {
+  getAuthenticatedUser,
+  hasAuthenticatedUserVotedInCategory,
+} from "@/lib/supabase/auth";
 import { siteConfig } from "@/config/site-config";
 
 function getOrdinalYear(value: string | null): string {
@@ -120,6 +124,21 @@ export default async function ContestantPage({
 
   const voteStats = await getContestantVoteStatsAction(category, contestant.id);
   const user = await getAuthenticatedUser();
+  const cookieStore = await cookies();
+  const hasDeviceVoteCookie = Boolean(
+    cookieStore.get(`vote_device_${category}`)?.value,
+  );
+  const userVotedInCategory =
+    user && !hasDeviceVoteCookie
+      ? await hasAuthenticatedUserVotedInCategory(category)
+      : false;
+  const isVoteUiDisabled = userVotedInCategory || hasDeviceVoteCookie;
+
+  const voteDisabledLabel = userVotedInCategory
+    ? "You already voted in this category"
+    : hasDeviceVoteCookie
+      ? "Voting already used on this device"
+      : undefined;
 
   return (
     <div className="vote-shell relative px-4 py-10 sm:px-6 lg:px-8">
@@ -202,6 +221,8 @@ export default async function ContestantPage({
                       <VoteSubmitButton
                         contestantName={contestant.name}
                         className="h-12 w-full text-base font-semibold"
+                        disabled={isVoteUiDisabled}
+                        disabledLabel={voteDisabledLabel}
                       />
                     </form>
                   ) : (

@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV === "development";
+const contestantsBucket =
+  process.env.SUPABASE_CONTESTANTS_BUCKET ?? "contestants";
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -67,12 +69,14 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
       {
         protocol: "https",
         hostname: "zrnzvzwtqwtqdxwvlrlu.supabase.co",
         port: "",
-        pathname: "/storage/v1/object/public/contestants/**",
+        pathname: `/storage/v1/object/public/${contestantsBucket}/**`,
       },
     ],
   },
