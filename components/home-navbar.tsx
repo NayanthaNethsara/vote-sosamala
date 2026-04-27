@@ -21,7 +21,7 @@ import { siteConfig } from "@/config/site-config";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { User } from "@supabase/supabase-js";
-import { LoginModal } from "@/components/auth/login-modal";
+import { useLoginModal } from "@/hooks/use-login-modal";
 
 const navItems = [
   { name: "Home", link: "/", icon: <IconHome className="h-5 w-5" /> },
@@ -39,6 +39,7 @@ const navItems = [
 
 export function HomeNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { openModal: openLoginModal } = useLoginModal();
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -98,38 +99,41 @@ export function HomeNavbar() {
                 </button>
               </div>
             ) : (
-              <LoginModal
-                triggerLabel="Login to Vote"
-                triggerVariant="ghost"
-                className="h-8 rounded-full bg-white/10 px-3 text-xs font-bold text-white border border-white/20 hover:bg-white/20"
-              />
+              <button
+                onClick={() => openLoginModal()}
+                className="h-8 rounded-full bg-white/10 px-3 text-xs font-bold text-white border border-white/20 hover:bg-white/20 transition-all"
+              >
+                Login to Vote
+              </button>
             )}
           </div>
         </NavBody>
 
-        <MobileNav>
-          <MobileNavHeader>
-            <Link
-              href="/"
-              className="flex items-center space-x-2 px-3 py-1.5 text-base font-semibold text-rose-50 font-mono"
-            >
-              <span className="drop-shadow-[0_0_8px_rgba(128,0,32,0.4)]">
-                {siteConfig.name}
-              </span>
-            </Link>
-            <button
-              aria-label="Toggle menu"
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              className="z-50 rounded-lg p-2 transition-colors hover:bg-[#881337]/15"
-            >
-              {isMobileMenuOpen ? (
-                <IconX className="h-6 w-6 text-rose-50" />
-              ) : (
-                <IconMenu2 className="h-6 w-6 text-rose-50" />
-              )}
-            </button>
-          </MobileNavHeader>
-        </MobileNav>
+        <MobileNavHeader className="lg:hidden">
+          <MobileNav>
+            <MobileNavHeader>
+              <Link
+                href="/"
+                className="flex items-center space-x-2 px-3 py-1.5 text-base font-semibold text-rose-50 font-mono"
+              >
+                <span className="drop-shadow-[0_0_8px_rgba(128,0,32,0.4)]">
+                  {siteConfig.name}
+                </span>
+              </Link>
+              <button
+                aria-label="Toggle menu"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                className="z-50 rounded-lg p-2 transition-colors hover:bg-[#881337]/15"
+              >
+                {isMobileMenuOpen ? (
+                  <IconX className="h-6 w-6 text-rose-50" />
+                ) : (
+                  <IconMenu2 className="h-6 w-6 text-rose-50" />
+                )}
+              </button>
+            </MobileNavHeader>
+          </MobileNav>
+        </MobileNavHeader>
       </Navbar>
 
       {/* Animated mobile menu */}
@@ -167,12 +171,15 @@ export function HomeNavbar() {
               </button>
             </div>
           ) : (
-            <LoginModal
-              triggerLabel="Login to Vote"
-              triggerVariant="outline"
-              className="h-10 rounded-full px-6 text-sm font-bold bg-white/10 text-white border-white/20 hover:bg-white/20"
-              onClick={closeMobileMenu}
-            />
+            <button
+              onClick={() => {
+                openLoginModal();
+                closeMobileMenu();
+              }}
+              className="h-10 rounded-full px-8 text-sm font-bold bg-white text-black hover:bg-white/90 transition-all shadow-lg"
+            >
+              Login to Vote
+            </button>
           )}
         </MobileMenuSocialLinks>
       </MobileAnimatedMenu>

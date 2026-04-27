@@ -27,6 +27,8 @@ type LoginModalProps = {
   triggerSize?: "default" | "sm" | "lg" | "icon";
   className?: string;
   onClick?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export function LoginModal({
@@ -36,8 +38,13 @@ export function LoginModal({
   triggerSize = "sm",
   className,
   onClick,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
 }: LoginModalProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen =
+    setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -52,16 +59,18 @@ export function LoginModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant={triggerVariant}
-          size={triggerSize}
-          className={className}
-          onClick={onClick}
-        >
-          {triggerLabel}
-        </Button>
-      </DialogTrigger>
+      {triggerLabel && (
+        <DialogTrigger asChild>
+          <Button
+            variant={triggerVariant}
+            size={triggerSize}
+            className={className}
+            onClick={onClick}
+          >
+            {triggerLabel}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-md border-amber-200/20 bg-[#210b11]/95">
         <DialogHeader>
           <DialogTitle className="text-xl">Sign in to vote</DialogTitle>

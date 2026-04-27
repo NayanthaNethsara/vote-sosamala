@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
-import { LoginModal } from "@/components/auth/login-modal";
+import { LoginButton } from "@/components/auth/login-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { VoteSubmitButton } from "../../../components/votes/vote-submit-button";
@@ -224,10 +224,10 @@ export default async function ContestantPage({
                   </div>
                 </div>
               ) : (
-                <LoginModal
+                <LoginButton
                   nextPath={`/${category}/${contestant.slug}`}
-                  triggerLabel="Vote to login"
-                  triggerSize="default"
+                  label="Login to vote"
+                  size="default"
                 />
               )}
 
