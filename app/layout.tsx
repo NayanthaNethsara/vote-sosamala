@@ -25,10 +25,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { siteConfig } from "@/config/site-config";
+
 export const metadata: Metadata = {
-  title: "Sosamala Voting App",
+  title: `${siteConfig.name} 2026`,
   description:
-    "Sosamala Voting is a secure, modern, and self-hostable online voting platform built for small-scale beauty contests and public competitions.",
+    "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumara and Kumariya contestants.",
   metadataBase: new URL("https://vote-sosamala.vercel.app"),
   robots: {
     index: true,
@@ -37,28 +39,27 @@ export const metadata: Metadata = {
   },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
   openGraph: {
-    title: "Sosamala Voting App",
+    title: `${siteConfig.name} 2026`,
     description:
-      "Sosamala Voting is a secure, modern, and self-hostable online voting platform built for small-scale beauty contests and public competitions.",
+      "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumaraya and Kumari contestants.",
     url: "https://vote-sosamala.vercel.app",
-    siteName: "Sosamala Voting",
+    siteName: siteConfig.name,
     images: [
       {
         url: "https://vote-sosamala.vercel.app/ss1.png",
         width: 1200,
         height: 630,
-        alt: "Sosamala Voting App",
+        alt: siteConfig.name,
       },
     ],
     locale: "en_US",
     type: "website",
   },
-  // Twitter card
   twitter: {
     card: "summary_large_image",
-    title: "Sosamala Voting App",
+    title: `${siteConfig.name} 2026`,
     description:
-      "Sosamala Voting is a secure, modern, and self-hostable online voting platform built for small-scale beauty contests and public competitions.",
+      "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumaraya and Kumari contestants.",
     images: ["https://vote-sosamala.vercel.app/ss1.png"],
   },
 };

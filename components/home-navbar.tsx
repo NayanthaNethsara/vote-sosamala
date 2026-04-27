@@ -26,15 +26,21 @@ import { useLoginModal } from "@/hooks/use-login-modal";
 const navItems = [
   { name: "Home", link: "/", icon: <IconHome className="h-5 w-5" /> },
   {
-    name: "Kumaraya",
+    name: "Kumara",
     link: "/male",
     icon: <IconUser className="h-5 w-5" />,
   },
   {
-    name: "Kumari",
+    name: "Kumariya",
     link: "/female",
     icon: <IconUser className="h-5 w-5" />,
   },
+];
+
+const mobileNavItems = [
+  ...navItems,
+  { name: "Privacy Policy", link: "/support#privacy-policy" },
+  { name: "Support", link: "/support#technical-support" },
 ];
 
 export function HomeNavbar() {
@@ -139,7 +145,7 @@ export function HomeNavbar() {
       {/* Animated mobile menu */}
       <MobileAnimatedMenu isOpen={isMobileMenuOpen} onClose={closeMobileMenu}>
         <MobileMenuItems>
-          {navItems.map((item) => (
+          {mobileNavItems.map((item) => (
             <MobileMenuItem
               key={item.link}
               href={item.link}

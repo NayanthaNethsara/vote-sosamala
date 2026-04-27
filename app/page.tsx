@@ -4,18 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+import { siteConfig } from "@/config/site-config";
+
 const publicCategories = [
   {
     href: "/male",
-    title: "Male",
+    title: "Aurudu Kumara",
     description:
-      "Browse the current male contestant list and open each profile.",
+      "Vote for your favorite contestant for the Aurudu Kumara title. Support their journey to become the pride of the season.",
   },
   {
     href: "/female",
-    title: "Female",
+    title: "Aurudu Kumariya",
     description:
-      "Browse the current female contestant list and open each profile.",
+      "Choose the most graceful Aurudu Kumariya contestant and cast your vote to help her win the crown.",
   },
 ];
 
@@ -25,14 +27,14 @@ export default function HomePage() {
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <header className="space-y-4 text-center">
           <Badge className="w-fit self-center border border-amber-200/30 bg-amber-100/10 text-amber-100">
-            Sosamala Voting
+            {siteConfig.name} 2026
           </Badge>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">
-            Pick a category and explore the contestants.
+            Pick a category and vote for your favorites.
           </h1>
           <p className="mx-auto max-w-2xl text-sm text-amber-100/75 sm:text-base">
-            Public contestant pages are cached for speed, while vote counts are
-            refreshed on each page load.
+            Celebrate the spirit of the season by supporting our talented contestants. 
+            Real-time voting counts are updated on every page load to ensure accuracy.
           </p>
         </header>
 

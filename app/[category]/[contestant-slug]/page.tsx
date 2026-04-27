@@ -18,6 +18,7 @@ import {
 import { voteForContestantAction } from "@/app/actions/public/vote-actions";
 import { isContestantCategory } from "@/lib/contestants";
 import { getAuthenticatedUser } from "@/lib/supabase/auth";
+import { siteConfig } from "@/config/site-config";
 
 function buildContestantMetaDescription(input: {
   faculty: string;
@@ -50,7 +51,7 @@ function generateFirstPersonBio(contestant: {
   const yearLabel = getOrdinalYear(contestant.academic_year);
   const yearStr = yearLabel ? `a ${yearLabel}-year student` : "a student";
 
-  return `Ayubowan! I'm ${contestant.name}, ${yearStr} from the ${contestant.faculty}, and it’s that time of the year again. I’m competing for the ${contestant.category} title at this year's Wasantha Muwadura. Whether we've worked together, crammed for exams, or just crossed paths on campus, I'd love your support. Cast your vote for me below, and let’s celebrate the New Year!`;
+  return `Ayubowan! I'm ${contestant.name}, ${yearStr} from the ${contestant.faculty}, and it’s that time of the year again. I’m competing for the Aurudu ${contestant.category === "male" ? "Kumara" : "Kumariya"} title at this year's Wasantha Muwadura. Whether we've worked together, crammed for exams, or just crossed paths on campus, I'd love your support. Cast your vote for me below, and let’s celebrate the New Year!`;
 }
 
 export async function generateMetadata({
@@ -93,7 +94,7 @@ export async function generateMetadata({
     academicYear: contestant.academic_year,
     bio: contestant.bio,
   });
-  const title = `${contestant.name} | Sosamala Voting`;
+  const title = `${contestant.name} | ${siteConfig.name} 2026`;
   const ogImagePath = `/${category}/${contestant.slug}/opengraph-image?v=${encodeURIComponent(contestant.updated_at)}`;
 
   return {

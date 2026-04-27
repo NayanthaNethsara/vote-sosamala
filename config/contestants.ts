@@ -21,8 +21,8 @@ export const contestantAcademicYears = [
 export type ContestantAcademicYear = (typeof contestantAcademicYears)[number];
 
 export const contestantCategoryLabels: Record<ContestantCategory, string> = {
-  male: "Male",
-  female: "Female",
+  male: "Aurudu Kumara",
+  female: "Aurudu Kumariya",
 };
 
 export const contestantFacultyLabels: Record<ContestantFaculty, string> = {

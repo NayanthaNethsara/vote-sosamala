@@ -127,7 +127,7 @@ export function LoginModal({
               <p className="text-left">
                 <strong>Important:</strong> You can only vote for{" "}
                 <span className="text-amber-300">one contestant</span> in each
-                category (Aurudu Kumaraya & Kumari).
+                category (Aurudu Kumara & Kumariya).
               </p>
             </div>
           </div>

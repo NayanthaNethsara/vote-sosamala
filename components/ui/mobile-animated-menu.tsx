@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { IconX } from "@tabler/icons-react";
+import { SpinningMandala } from "@/components/background/spinning-mandala";
 
 interface MobileAnimatedMenuProps {
   isOpen: boolean;
@@ -27,6 +28,23 @@ export const MobileAnimatedMenu = ({
   className,
 }: MobileAnimatedMenuProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [isOpen]);
 
   const menuVariants: Variants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -66,7 +84,7 @@ export const MobileAnimatedMenu = ({
       {isOpen && (
         <div
           ref={containerRef}
-          className={cn("fixed inset-0 z-50 lg:hidden", className)}
+          className={cn("fixed inset-0 z-50 overflow-hidden overscroll-none lg:hidden", className)}
         >
           {/* Overlay - Clickable to close */}
           <motion.div
@@ -84,8 +102,10 @@ export const MobileAnimatedMenu = ({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="absolute inset-0 flex h-full w-full flex-col items-center justify-center overflow-hidden bg-[#14070b]"
+            className="absolute inset-0 flex h-full w-full flex-col items-center justify-center overflow-hidden overscroll-none bg-[#14070b]"
           >
+            <SpinningMandala />
+
             {/* Close button */}
             <motion.button
               onClick={onClose}

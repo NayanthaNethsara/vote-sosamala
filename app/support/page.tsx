@@ -21,7 +21,7 @@ export default function SupportPage() {
         </div>
 
         {/* Privacy Policy Section */}
-        <section className="space-y-10">
+        <section id="privacy-policy" className="scroll-mt-24 space-y-10">
           <div className="flex items-center gap-6">
             <div className="h-px flex-1 bg-linear-to-r from-transparent to-amber-200/10" />
             <h2 className="text-2xl font-bold tracking-tight text-amber-100">
@@ -86,7 +86,7 @@ export default function SupportPage() {
         </section>
 
         {/* Support Section */}
-        <section className="space-y-10">
+        <section id="technical-support" className="scroll-mt-24 space-y-10">
           <div className="flex items-center gap-6">
             <div className="h-px flex-1 bg-linear-to-r from-transparent to-amber-200/10" />
             <h2 className="text-2xl font-bold tracking-tight text-amber-100">

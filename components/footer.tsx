@@ -7,7 +7,7 @@ export function Footer() {
       <footer className="relative mt-0 w-full overflow-hidden rounded-none border-x-0 border-b-0 border-t border-amber-200/10 bg-amber-50/5 px-5 py-4 backdrop-blur-xl sm:px-7 sm:py-5">
         <div className="relative z-20 flex items-center justify-between gap-6">
           <div className="flex flex-col items-center gap-4 text-[10px] uppercase tracking-[0.2em] text-amber-100/40 sm:flex-row sm:gap-6 sm:text-[11px]">
-            <p>© {new Date().getFullYear()} Wasantha Udanaya</p>
+            <p>© {new Date().getFullYear()} {siteConfig.name}</p>
             <div className="hidden h-3 w-px bg-amber-200/10 sm:block" />
             <div className="flex gap-6">
               <Link

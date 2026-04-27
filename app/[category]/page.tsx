@@ -43,7 +43,7 @@ export default async function CategoryPage({
     return left.name.localeCompare(right.name);
   });
 
-  const displayCategory = category === "male" ? "Kumaraya" : "Kumariya";
+  const displayCategory = category === "male" ? "Kumara" : "Kumariya";
 
   return (
     <div className="relative min-h-screen px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
