@@ -82,7 +82,7 @@ export default async function RootLayout({
           <div className="relative isolate min-h-dvh overflow-x-clip bg-[linear-gradient(160deg,#24080f_0%,#40101a_45%,#27080f_100%)]">
             <AuruduBackdrop />
             <HomeNavbar />
-            <main className="relative z-10 pt-24">{children}</main>
+            <main className="relative z-10 pt-22">{children}</main>
             <Toaster />
           </div>
         </LoginModalProvider>
