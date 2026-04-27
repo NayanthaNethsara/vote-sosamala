@@ -55,22 +55,31 @@ export async function uploadContestantImage(
   const bucket = getBucketName();
   const objectPath = buildStorageObjectPath(slug, file);
 
-  const { error: uploadError } = await supabase.storage
+  console.log(`Uploading to bucket: ${bucket}, path: ${objectPath}`);
+
+  const arrayBuffer = await file.arrayBuffer();
+
+  const { data, error: uploadError } = await supabase.storage
     .from(bucket)
-    .upload(objectPath, file, {
+    .upload(objectPath, arrayBuffer, {
       cacheControl: "31536000",
       upsert: false,
       contentType: file.type,
     });
 
   if (uploadError) {
+    console.error("Supabase storage upload error:", uploadError);
     throw new Error(uploadError.message || "Failed to upload image.");
   }
 
-  const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
+  console.log("Upload successful, data:", data);
+
+  const { data: publicUrlData } = supabase.storage
+    .from(bucket)
+    .getPublicUrl(objectPath);
 
   return {
-    publicUrl: data.publicUrl,
+    publicUrl: publicUrlData.publicUrl,
     objectPath,
   };
 }

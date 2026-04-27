@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -59,13 +58,14 @@ type ContestantFormProps = {
   contestant?: Contestant;
   submitLabel: string;
   action: (formData: FormData) => Promise<void>;
+  onSuccess?: () => void;
 };
-
 
 function ContestantForm({
   contestant,
   submitLabel,
   action,
+  onSuccess,
 }: ContestantFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -86,9 +86,15 @@ function ContestantForm({
       }
 
       await action(formData);
-      // The action itself usually handles redirects, so we don't need to do much here
-      // unless there's an error.
+      onSuccess?.();
+      toast.success("Contestant saved successfully");
     } catch (error) {
+      // Ignore NEXT_REDIRECT errors as they are expected behavior for server actions
+      if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
+        onSuccess?.();
+        return;
+      }
+
       console.error("Form submission failed", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to save contestant",
@@ -99,7 +105,11 @@ function ContestantForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} encType="multipart/form-data" className="grid gap-4">
+    <form
+      onSubmit={handleSubmit}
+      encType="multipart/form-data"
+      className="grid gap-4"
+    >
       {contestant ? (
         <input type="hidden" name="id" value={contestant.id} />
       ) : null}
@@ -134,20 +144,7 @@ function ContestantForm({
           />
         </div>
 
-        <div className="grid gap-2 md:col-span-2">
-          <Label htmlFor={contestant ? `bio-${contestant.id}` : "bio"}>
-            Bio
-          </Label>
-          <Textarea
-            id={contestant ? `bio-${contestant.id}` : "bio"}
-            name="bio"
-            defaultValue={contestant?.bio ?? ""}
-            placeholder="Short contestant bio"
-            rows={4}
-            required
-            disabled={isSubmitting}
-          />
-        </div>
+        <input type="hidden" name="bio" value={contestant?.bio ?? "Ayubowan"} />
 
         <div className="grid gap-2">
           <Label htmlFor={contestant ? `faculty-${contestant.id}` : "faculty"}>
@@ -157,7 +154,7 @@ function ContestantForm({
             id={contestant ? `faculty-${contestant.id}` : "faculty"}
             name="faculty"
             defaultValue={contestant?.faculty ?? contestantFaculties[0]}
-            className="h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/20 disabled:opacity-50"
+            className="h-10 rounded-md border border-amber-200/20 bg-amber-50/5 px-3 text-sm text-amber-50 outline-none transition focus:border-amber-400/70 focus:ring-2 focus:ring-amber-400/20 disabled:opacity-50"
             required
             disabled={isSubmitting}
           >
@@ -181,7 +178,7 @@ function ContestantForm({
             id={contestant ? `academic_year-${contestant.id}` : "academic_year"}
             name="academic_year"
             defaultValue={contestant?.academic_year ?? ""}
-            className="h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/20 disabled:opacity-50"
+            className="h-10 rounded-md border border-amber-200/20 bg-amber-50/5 px-3 text-sm text-amber-50 outline-none transition focus:border-amber-400/70 focus:ring-2 focus:ring-amber-400/20 disabled:opacity-50"
             disabled={isSubmitting}
           >
             <option value="">Not set</option>
@@ -203,7 +200,7 @@ function ContestantForm({
             id={contestant ? `category-${contestant.id}` : "category"}
             name="category"
             defaultValue={contestant?.category ?? contestantCategories[0]}
-            className="h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/20 disabled:opacity-50"
+            className="h-10 rounded-md border border-amber-200/20 bg-amber-50/5 px-3 text-sm text-amber-50 outline-none transition focus:border-amber-400/70 focus:ring-2 focus:ring-amber-400/20 disabled:opacity-50"
             disabled={isSubmitting}
           >
             {contestantCategories.map((category) => (
@@ -222,7 +219,7 @@ function ContestantForm({
             id={contestant ? `active-${contestant.id}` : "active"}
             name="active"
             defaultValue={contestant ? String(contestant.active) : "true"}
-            className="h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/20 disabled:opacity-50"
+            className="h-10 rounded-md border border-amber-200/20 bg-amber-50/5 px-3 text-sm text-amber-50 outline-none transition focus:border-amber-400/70 focus:ring-2 focus:ring-amber-400/20 disabled:opacity-50"
             disabled={isSubmitting}
           >
             <option value="true">Active</option>
@@ -244,18 +241,22 @@ function ContestantForm({
             required={!contestant}
             disabled={isSubmitting}
           />
-          <p className="text-xs text-white/55">
+          <p className="text-xs text-amber-100/55">
             Upload PNG, JPEG, or WEBP (max 4MB). Large images will be resized
             automatically.
           </p>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200/20 bg-amber-50/5 px-4 py-3 text-sm text-amber-100/65">
         <span>
           Images are compressed and then uploaded to Supabase Storage.
         </span>
-        <Button type="submit" className="shrink-0" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="shrink-0 border border-amber-200/20 bg-amber-100/10 text-amber-50 hover:bg-amber-100/20"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "Processing..." : submitLabel}
         </Button>
       </div>
@@ -269,7 +270,10 @@ function EditContestantDialog({ contestant }: { contestant: Contestant }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" size="sm">
+        <Button
+          className="border border-amber-200/20 bg-amber-100/10 text-amber-50 hover:bg-amber-100/20"
+          size="sm"
+        >
           <PencilLine className="mr-2 h-4 w-4" />
           Edit
         </Button>
@@ -288,6 +292,7 @@ function EditContestantDialog({ contestant }: { contestant: Contestant }) {
           contestant={contestant}
           submitLabel="Save changes"
           action={updateContestantAction}
+          onSuccess={() => setOpen(false)}
         />
 
         <DialogFooter />
@@ -302,7 +307,7 @@ function CreateContestantDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="border border-amber-200/20 bg-amber-100/10 text-amber-50 hover:bg-amber-100/20">
           <Plus className="mr-2 h-4 w-4" />
           Add contestant
         </Button>
@@ -319,6 +324,7 @@ function CreateContestantDialog() {
         <ContestantForm
           action={createContestantAction}
           submitLabel="Create contestant"
+          onSuccess={() => setOpen(false)}
         />
 
         <DialogFooter />
@@ -338,9 +344,14 @@ function DeleteContestantButton({ contestant }: { contestant: Contestant }) {
       }}
     >
       <input type="hidden" name="id" value={contestant.id} />
-      <Button type="submit" variant="destructive" size="sm">
+      <Button
+        type="submit"
+        variant="outline"
+        size="sm"
+        className="border-amber-200/10 bg-transparent text-amber-100/60 hover:bg-amber-500/10 hover:text-amber-200 hover:border-amber-500/30 transition-all"
+      >
         <Trash2 className="mr-2 h-4 w-4" />
-        Delete
+        Remove
       </Button>
     </form>
   );
@@ -349,7 +360,7 @@ function DeleteContestantButton({ contestant }: { contestant: Contestant }) {
 export function ContestantManager({ contestants }: ContestantManagerProps) {
   return (
     <div className="grid gap-6">
-      <Card className="border-white/10 bg-white/5 text-white shadow-2xl shadow-black/20 backdrop-blur">
+      <Card className="border-amber-200/20 bg-amber-50/5 text-amber-50 shadow-2xl shadow-black/25 backdrop-blur">
         <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
           <div>
             <CardTitle className="text-xl">Contestants</CardTitle>
@@ -359,13 +370,16 @@ export function ContestantManager({ contestants }: ContestantManagerProps) {
           </div>
           <div className="flex items-center gap-3">
             <form action={recalculateVoteCountsAction}>
-              <Button type="submit" variant="secondary">
+              <Button
+                type="submit"
+                className="border border-amber-200/20 bg-amber-100/10 text-amber-50 hover:bg-amber-100/20"
+              >
                 Recalculate vote counts
               </Button>
             </form>
             <Badge
               variant="secondary"
-              className="border-white/10 bg-white/10 text-white"
+              className="border-amber-200/20 bg-amber-50/10 text-amber-50"
             >
               {contestants.length} total
             </Badge>
@@ -373,10 +387,10 @@ export function ContestantManager({ contestants }: ContestantManagerProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-hidden rounded-2xl border border-white/10">
+          <div className="overflow-hidden rounded-2xl border border-amber-200/20">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10 hover:bg-white/5">
+                <TableRow className="border-amber-200/10 hover:bg-amber-50/5">
                   <TableHead>Name</TableHead>
                   <TableHead>Slug</TableHead>
                   <TableHead>Student ID</TableHead>
@@ -388,7 +402,7 @@ export function ContestantManager({ contestants }: ContestantManagerProps) {
               </TableHeader>
               <TableBody>
                 {contestants.length === 0 ? (
-                  <TableRow className="border-white/10 hover:bg-transparent">
+                  <TableRow className="border-amber-200/10 hover:bg-transparent">
                     <TableCell
                       colSpan={7}
                       className="py-10 text-center text-white/55"
@@ -400,7 +414,7 @@ export function ContestantManager({ contestants }: ContestantManagerProps) {
                   contestants.map((contestant) => (
                     <TableRow
                       key={contestant.id}
-                      className="border-white/10 hover:bg-white/5"
+                      className="border-amber-200/10 hover:bg-amber-50/5"
                     >
                       <TableCell>
                         <div className="space-y-1">
@@ -412,7 +426,7 @@ export function ContestantManager({ contestants }: ContestantManagerProps) {
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono text-sm text-emerald-200">
+                      <TableCell className="font-mono text-sm text-amber-200">
                         {contestant.slug}
                       </TableCell>
                       <TableCell>{contestant.student_id}</TableCell>
@@ -424,8 +438,8 @@ export function ContestantManager({ contestants }: ContestantManagerProps) {
                           variant={contestant.active ? "default" : "secondary"}
                           className={
                             contestant.active
-                              ? "bg-emerald-500 text-white"
-                              : "bg-white/10 text-white"
+                              ? "bg-amber-600/80 text-white border-none backdrop-blur-md"
+                              : "bg-amber-50/10 text-amber-100/60 border border-amber-200/10"
                           }
                         >
                           {contestant.active ? "Active" : "Inactive"}

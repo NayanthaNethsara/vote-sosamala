@@ -147,7 +147,7 @@ export default async function ContestantPage({
         <div className="grid gap-3 lg:grid-cols-2 lg:items-stretch">
           {/* Left: Image Panel */}
           <div className="mx-auto w-full max-w-sm lg:mx-0 lg:max-w-none">
-            <div className="vote-panel aspect-square p-2 transition-all hover:bg-amber-50/10">
+            <div className="vote-panel aspect-[4/5] p-2 transition-all hover:bg-amber-50/10">
               <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#2d0f15]/80">
                 <Image
                   src={contestant.image_url}
@@ -162,7 +162,7 @@ export default async function ContestantPage({
           </div>
 
           {/* Right: Details Panel */}
-          <article className="vote-panel-strong relative overflow-hidden p-5 sm:p-7 lg:aspect-square">
+          <article className="vote-panel-strong relative overflow-hidden p-5 sm:p-7 lg:aspect-[4/5]">
             <SpinningMandala />
             <div className="relative z-10 flex h-full flex-col space-y-6 lg:space-y-5">
               <div className="flex flex-wrap items-center gap-3">

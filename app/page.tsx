@@ -33,7 +33,8 @@ export default function HomePage() {
             Choose your winners for Wasantha Muwadora.
           </h1>
           <p className="mx-auto max-w-2xl text-sm text-amber-100/75 sm:text-base">
-            Be a part of the tradition. Cast your vote for the contestants who best embody the spirit and grace of the season.
+            Be a part of the tradition. Cast your vote for the contestants who
+            best embody the spirit and grace of the season.
           </p>
         </header>
 

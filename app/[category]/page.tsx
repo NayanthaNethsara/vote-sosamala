@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   getCategoryVoteStatsAction,
@@ -85,7 +84,7 @@ export default async function CategoryPage({
                     href={`/${category}/${contestant.slug}`}
                     className="block h-full"
                   >
-                    <div className="relative aspect-square overflow-hidden bg-[#2d0f15]/80">
+                    <div className="relative aspect-[4/5] overflow-hidden bg-[#2d0f15]/80">
                       <Image
                         src={contestant.image_url}
                         alt={contestant.name}
@@ -107,16 +106,6 @@ export default async function CategoryPage({
                         <Badge className="border-none bg-black/40 text-amber-100 backdrop-blur-md shadow-lg">
                           {stats.rank > 0 ? `Rank #${stats.rank}` : "-"}
                         </Badge>
-                      </div>
-
-                      {/* Bottom Info Overlay */}
-                      <div className="absolute bottom-0 left-0 w-full p-6 pt-20">
-                        <h2 className="text-2xl font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-amber-200">
-                          {contestant.name}
-                        </h2>
-                        <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.25em] text-amber-200/60 transition-colors duration-300 group-hover:text-amber-200/90">
-                          {contestant.faculty}
-                        </p>
                       </div>
                     </div>
                   </Link>
