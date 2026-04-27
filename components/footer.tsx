@@ -16,6 +16,14 @@ export function Footer() {
             <div className="h-3 w-px bg-amber-200/10" />
             <div className="flex items-center gap-4 sm:gap-6">
               <Link
+                href={siteConfig.links.rules}
+                className="transition-colors hover:text-amber-200"
+                title="Rules & Guidelines"
+              >
+                <span className="hidden sm:inline">Rules</span>
+                <LifeBuoy className="h-4 w-4 sm:hidden" />
+              </Link>
+              <Link
                 href="/support"
                 className="transition-colors hover:text-amber-200"
                 title="Privacy Policy"

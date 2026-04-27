@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
@@ -134,13 +133,16 @@ export default async function ContestantPage({
     user && !hasDeviceVoteCookie
       ? await hasAuthenticatedUserVotedInCategory(category)
       : false;
-  const isVoteUiDisabled = userVotedInCategory || hasDeviceVoteCookie;
+  const isVoteUiDisabled =
+    siteConfig.votingPaused || userVotedInCategory || hasDeviceVoteCookie;
 
-  const voteDisabledLabel = userVotedInCategory
-    ? "Already Voted"
-    : hasDeviceVoteCookie
-      ? "Device Voted"
-      : undefined;
+  const voteDisabledLabel = siteConfig.votingPaused
+    ? "Voting Paused"
+    : userVotedInCategory
+      ? "Already Voted"
+      : hasDeviceVoteCookie
+        ? "Device Voted"
+        : undefined;
 
   return (
     <div className="vote-shell relative px-4 py-10 sm:px-6 lg:px-8">
@@ -229,8 +231,13 @@ export default async function ContestantPage({
                   ) : (
                     <LoginButton
                       nextPath={`/${category}/${contestant.slug}`}
-                      label="Login to vote"
+                      label={
+                        siteConfig.votingPaused
+                          ? "Voting Paused"
+                          : "Login to vote"
+                      }
                       size="default"
+                      disabled={siteConfig.votingPaused}
                       className="h-12 w-full text-base font-semibold border border-amber-200/20 bg-amber-50/10 text-amber-50 hover:bg-amber-50/20 backdrop-blur-xl transition-all"
                     />
                   )}

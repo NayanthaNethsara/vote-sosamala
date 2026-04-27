@@ -20,6 +20,151 @@ export default function SupportPage() {
           </p>
         </div>
 
+        {/* Rules & Guidelines Section */}
+        <section id="rules-guidelines" className="scroll-mt-24 space-y-10">
+          <div className="flex items-center gap-6">
+            <div className="h-px flex-1 bg-linear-to-r from-transparent to-amber-200/10" />
+            <h2 className="text-2xl font-bold tracking-tight text-amber-100">
+              Rules & Guidelines
+            </h2>
+            <div className="h-px flex-1 bg-linear-to-r from-amber-200/10 to-transparent" />
+          </div>
+
+          <Card className="border-amber-200/10 bg-amber-50/5 shadow-2xl backdrop-blur-2xl">
+            <CardContent className="grid gap-8 p-8 text-sm leading-7 text-amber-100/70 sm:p-12 sm:text-base md:grid-cols-2">
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-amber-50">
+                  1. Eligibility to Vote
+                </h3>
+                <p>
+                  Voting is open to everyone with a valid Google account.
+                  Authentication is required to participate in the voting
+                  process to ensure authenticity and prevent automated
+                  manipulation.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-amber-50">
+                  2. Voting Limits
+                </h3>
+                <p>
+                  Each registered user can cast exactly{" "}
+                  <strong>one vote</strong> in each category: one for Aurudu
+                  Kumara and one for Aurudu Kumariya. Once a vote is cast, it is
+                  recorded securely in the system.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-amber-50">
+                  3. Validation & Monitoring
+                </h3>
+                <p>
+                  Live votes are monitored <strong>hourly</strong> to verify and
+                  validate authenticity. The technical team reserves the right
+                  to cancel or adjust votes that are found to be fraudulent or
+                  generated through system manipulation.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-amber-50">
+                  4. Fair Play & DQ
+                </h3>
+                <p>
+                  Any attempt to manipulate the voting system (multiple
+                  accounts, automated scripts, or botting) will lead to the
+                  immediate disqualification of those votes and potentially the
+                  associated contestants.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-amber-50">
+                  5. Final Decision
+                </h3>
+                <p>
+                  Final results are based on <strong>validated votes</strong>.
+                  The Wasantha Udanaya Organizing Committee reserves the right
+                  to make the final decision. The final reveal will happen in
+                  the presence of all contestants to ensure complete
+                  transparency and address any concerns.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-amber-50">6. Disputes</h3>
+                <p>
+                  In the event of a technical discrepancy or dispute, the
+                  Committee’s decision shall be final. Contestants will have the
+                  opportunity to discuss concerns during the final validation
+                  session.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Voting Logic Section */}
+        <section id="voting-logic" className="scroll-mt-24 space-y-10">
+          <div className="flex items-center gap-6">
+            <div className="h-px flex-1 bg-linear-to-r from-transparent to-amber-200/10" />
+            <h2 className="text-2xl font-bold tracking-tight text-amber-100">
+              Voting Fairness Logic
+            </h2>
+            <div className="h-px flex-1 bg-linear-to-r from-amber-200/10 to-transparent" />
+          </div>
+
+          <Card className="border-amber-200/10 bg-amber-50/5 shadow-2xl backdrop-blur-2xl">
+            <CardContent className="p-8 sm:p-12">
+              <p className="mb-8 text-sm leading-7 text-amber-100/70 sm:text-base">
+                For complete transparency, we have outlined the core logic used
+                to process every vote. This ensures that the system remains fair
+                and unmanipulated.
+              </p>
+
+              <div className="overflow-hidden rounded-xl border border-amber-200/10 bg-black/40">
+                <div className="flex items-center justify-between border-b border-amber-200/10 bg-white/5 px-4 py-2">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-amber-200/50">
+                    PostgreSQL Security Function
+                  </span>
+                </div>
+                <pre className="overflow-x-auto p-6 text-[11px] font-mono leading-relaxed text-amber-100/90 sm:text-xs">
+                  {`CREATE OR REPLACE FUNCTION secure_vote_verification_v2(
+  p_user_identity uuid,
+  p_contestant_id uuid,
+  p_category category_type
+)
+RETURNS text AS $$
+BEGIN
+  -- 1. Verify contestant integrity (active status & category match)
+  IF NOT EXISTS (
+    SELECT 1 FROM contestants c
+    WHERE c.id = p_contestant_id AND c.active = true AND c.category = p_category
+  ) THEN
+    RETURN 'invalid_contestant';
+  END IF;
+
+  -- 2. Enforce atomic participation (one vote per category per user)
+  -- This relies on a unique index on (user_identity, category)
+  BEGIN
+    INSERT INTO participation_records (user_identity, contestant_id, category)
+    VALUES (p_user_identity, p_contestant_id, p_category);
+  EXCEPTION
+    WHEN unique_violation THEN
+      RETURN 'already_participated';
+  END;
+
+  RETURN 'success';
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;`}
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
         {/* Privacy Policy Section */}
         <section id="privacy-policy" className="scroll-mt-24 space-y-10">
           <div className="flex items-center gap-6">

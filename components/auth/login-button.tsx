@@ -9,6 +9,7 @@ interface LoginButtonProps {
   className?: string;
   variant?: "default" | "secondary" | "outline" | "ghost" | "destructive";
   size?: "default" | "sm" | "lg" | "icon";
+  disabled?: boolean;
 }
 
 export function LoginButton({
@@ -17,6 +18,7 @@ export function LoginButton({
   className,
   variant = "default",
   size = "sm",
+  disabled = false,
 }: LoginButtonProps) {
   const { openModal } = useLoginModal();
 
@@ -25,6 +27,7 @@ export function LoginButton({
       variant={variant}
       size={size}
       className={className}
+      disabled={disabled}
       onClick={() => openModal(nextPath)}
     >
       {label}

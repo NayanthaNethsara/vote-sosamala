@@ -8,6 +8,7 @@ import { CONTESTANTS_CACHE_TAG, isContestantCategory } from "@/lib/contestants";
 import { isSafeRelativePath } from "@/lib/security/redirect";
 import { enforceServerActionRateLimit } from "@/lib/security/server-action-rate-limit";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { siteConfig } from "@/config/site-config";
 import type { ContestantCategory } from "@/types";
 
 function buildRedirectUrl(
@@ -28,10 +29,21 @@ async function enforceVoteRateLimit(returnTo: string) {
 }
 
 export async function voteForContestantAction(formData: FormData) {
+  const returnTo = String(formData.get("returnTo") ?? "").trim();
+
+  if (siteConfig.votingPaused) {
+    redirect(
+      buildRedirectUrl(
+        returnTo || "/",
+        "error",
+        "Voting is currently paused. Please try again later.",
+      ),
+    );
+  }
+
   const contestantId = String(formData.get("contestantId") ?? "").trim();
   const contestantSlug = String(formData.get("contestantSlug") ?? "").trim();
   const categoryInput = String(formData.get("category") ?? "").trim();
-  const returnTo = String(formData.get("returnTo") ?? "").trim();
 
   if (!isContestantCategory(categoryInput)) {
     redirect(buildRedirectUrl("/", "error", "Invalid category."));
