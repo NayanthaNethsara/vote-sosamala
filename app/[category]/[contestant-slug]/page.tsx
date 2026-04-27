@@ -14,17 +14,22 @@ import {
 import { voteForContestantAction } from "@/app/actions/public/vote-actions";
 import { isContestantCategory } from "@/lib/contestants";
 import { getAuthenticatedUser } from "@/lib/supabase/auth";
-import { siteConfig } from "@/config/site-config";
 
 function buildContestantMetaDescription(input: {
   faculty: string;
   academicYear: string | null;
   bio: string | null;
+  name: string;
+  category: string;
 }) {
-  const summary = input.bio?.trim() || "View profile and cast your vote.";
+  const summary =
+    input.bio?.trim() ||
+    `${input.name} is competing this season. View the profile and cast your vote now.`;
   const yearLabel = input.academicYear ? `, ${input.academicYear}` : "";
+  const titleLabel = input.category === "male" ? "Aurudu Kumara" : "Aurudu Kumariya";
+  const cta = "Vote now and support your favorite contestant today.";
 
-  return `${input.faculty}${yearLabel}. ${summary}`;
+  return `${input.name} is contesting for ${titleLabel} 2026 from ${input.faculty}${yearLabel}. ${summary} ${cta}`;
 }
 
 function getOrdinalYear(value: string | null): string {
@@ -86,11 +91,13 @@ export async function generateMetadata({
 
   const profilePath = `/${category}/${contestant.slug}`;
   const description = buildContestantMetaDescription({
+    name: contestant.name,
     faculty: contestant.faculty,
     academicYear: contestant.academic_year,
     bio: contestant.bio,
+    category,
   });
-  const title = `${contestant.name} | ${siteConfig.name} 2026`;
+  const title = `${contestant.name} | Vote for Aurudu ${category === "male" ? "Kumara" : "Kumariya"} 2026`;
   const ogImagePath = `/${category}/${contestant.slug}/opengraph-image?v=${encodeURIComponent(contestant.updated_at)}`;
 
   return {

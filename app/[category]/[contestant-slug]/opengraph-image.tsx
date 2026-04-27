@@ -1,11 +1,11 @@
 import { ImageResponse } from "next/og";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-import { isContestantCategory } from "@/lib/contestants";
+import {
+  getContestantByCategoryAndSlugAction,
+  getContestantsByCategoryAction,
+} from "@/app/actions/public/contestant-actions";
+import { contestantCategories, isContestantCategory } from "@/lib/contestants";
 import { siteConfig } from "@/config/site-config";
-import type { Database } from "@/types/supabase";
-
-export const runtime = "edge";
 
 export const size = {
   width: 1200,
@@ -14,47 +14,24 @@ export const size = {
 
 export const contentType = "image/png";
 
-type ContestantOgData = {
-  name: string;
-  faculty: string;
-  academic_year: string | null;
-  bio: string | null;
-  image_url: string;
-  slug: string;
-  category: string;
-};
+export const dynamic = "force-static";
 
 const siteUrl = siteConfig.url;
 const siteHost = new URL(siteUrl).host;
 
-function createPublicServerClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabasePublishableKey =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+export async function generateStaticParams() {
+  const params = await Promise.all(
+    contestantCategories.map(async (category) => {
+      const contestants = await getContestantsByCategoryAction(category);
 
-  if (!supabaseUrl || !supabasePublishableKey) {
-    return null;
-  }
+      return contestants.map((contestant) => ({
+        category,
+        "contestant-slug": contestant.slug,
+      }));
+    }),
+  );
 
-  return createSupabaseClient<Database>(supabaseUrl, supabasePublishableKey);
-}
-
-async function getContestantOgData(category: string, slug: string) {
-  const supabase = createPublicServerClient();
-
-  if (!supabase) {
-    return null;
-  }
-
-  const { data } = await supabase
-    .from("contestants")
-    .select("name, faculty, academic_year, bio, image_url, slug, category")
-    .eq("category", category)
-    .eq("slug", slug)
-    .eq("active", true)
-    .maybeSingle();
-
-  return (data ?? null) as ContestantOgData | null;
+  return params.flat();
 }
 
 function buildDescription(input: {
@@ -111,7 +88,10 @@ export default async function OpenGraphImage({
     return fallbackImage();
   }
 
-  const contestant = await getContestantOgData(category, contestantSlug);
+  const contestant = await getContestantByCategoryAndSlugAction(
+    category,
+    contestantSlug,
+  );
 
   if (!contestant) {
     return fallbackImage();
@@ -187,6 +167,22 @@ export default async function OpenGraphImage({
             {description.length > 160
               ? `${description.slice(0, 157)}...`
               : description}
+          </div>
+
+          <div
+            style={{
+              display: "inline-flex",
+              width: "fit-content",
+              padding: "10px 22px",
+              borderRadius: "999px",
+              border: "1px solid rgba(255,255,255,0.35)",
+              background: "rgba(255,255,255,0.12)",
+              fontSize: 24,
+              fontWeight: 700,
+              letterSpacing: 0.5,
+            }}
+          >
+            Cast Your Vote Today
           </div>
         </div>
 
