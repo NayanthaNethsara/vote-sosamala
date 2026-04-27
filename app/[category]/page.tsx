@@ -55,7 +55,8 @@ export default async function CategoryPage({
                 Aurudu {displayCategory} 2026
               </h1>
               <p className="mt-3 max-w-2xl text-sm text-amber-100/75 sm:text-base">
-                All active Aurudu {displayCategory} for SLIIT Wasantha Udanaya 2026. Support your favorites by casting your vote below!
+                All active Aurudu {displayCategory} for SLIIT Wasantha Udanaya
+                2026. Support your favorites by casting your vote below!
               </p>
             </div>
           </div>

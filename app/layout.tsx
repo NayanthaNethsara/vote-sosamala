@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 import { AuruduBackdrop } from "@/components/background/aurudu-backdrop";
 import { HomeNavbar } from "@/components/home-navbar";
+import { Footer } from "@/components/footer";
 import { LoginModalProvider } from "@/hooks/use-login-modal";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -83,6 +84,7 @@ export default async function RootLayout({
             <AuruduBackdrop />
             <HomeNavbar />
             <main className="relative z-10 pt-22">{children}</main>
+            <Footer />
             <Toaster />
           </div>
         </LoginModalProvider>
