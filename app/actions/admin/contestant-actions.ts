@@ -148,3 +148,18 @@ export async function deleteContestantAction(formData: FormData) {
   revalidatePath("/admin");
   redirectWithMessage("message", "Contestant deleted.");
 }
+
+export async function recalculateVoteCountsAction() {
+  await requireAdminUser();
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("recalculate_vote_counts");
+
+  if (error) {
+    redirectWithMessage("error", "Failed to recalculate vote counts.");
+  }
+
+  revalidateTag(CONTESTANTS_CACHE_TAG, "max");
+  revalidatePath("/admin");
+  redirectWithMessage("message", "Vote counts recalculated successfully.");
+}
