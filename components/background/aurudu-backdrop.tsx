@@ -1,9 +1,10 @@
 "use client";
 
+import { memo } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 
-export function AuruduBackdrop() {
+function AuruduBackdropComponent() {
   const shouldReduceMotion = useReducedMotion();
 
   const spinTransition = {
@@ -134,3 +135,5 @@ export function AuruduBackdrop() {
     </div>
   );
 }
+
+export const AuruduBackdrop = memo(AuruduBackdropComponent);

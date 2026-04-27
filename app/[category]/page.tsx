@@ -10,6 +10,8 @@ import {
 } from "@/app/actions/public/contestant-actions";
 import { contestantCategories, isContestantCategory } from "@/lib/contestants";
 
+import { ProtectedImage } from "@/components/public/protected-image";
+
 export const dynamicParams = true;
 export const dynamic = "force-dynamic";
 
@@ -84,17 +86,16 @@ export default async function CategoryPage({
                     href={`/${category}/${contestant.slug}`}
                     className="block h-full"
                   >
-                    <div className="relative aspect-[4/5] overflow-hidden bg-[#2d0f15]/80">
-                      <Image
-                        src={contestant.image_url}
-                        alt={contestant.name}
-                        width={800}
-                        height={800}
-                        sizes="(min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw"
-                        loading={index === 0 ? "eager" : "lazy"}
-                        className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-                      />
-
+                    <ProtectedImage
+                      src={contestant.image_url}
+                      alt={contestant.name}
+                      width={800}
+                      height={800}
+                      containerClassName="aspect-[4/5] bg-[#2d0f15]/80"
+                      sizes="(min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+                    >
                       {/* Gradient Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent transition-opacity duration-500 group-hover:from-black/70" />
 
@@ -107,7 +108,7 @@ export default async function CategoryPage({
                           {stats.rank > 0 ? `Rank #${stats.rank}` : "-"}
                         </Badge>
                       </div>
-                    </div>
+                    </ProtectedImage>
                   </Link>
                 </Card>
               );
