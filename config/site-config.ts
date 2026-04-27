@@ -1,10 +1,10 @@
 export const siteConfig = {
-  name: "Sosamala",
+  name: "Wasantha Muwadora",
   links: {
     leaderboard: "/",
-    github: "https://github.com/sliitcssc",
-    instagram: "https://www.instagram.com/sliit.cssc",
-    gmail: "mailto:helo@scoresync.live",
+    github: "https://github.com/NayanthaNethsara/vote-sosamala",
+    instagram: "https://www.instagram.com/nayaa.gg",
+    gmail: "mailto:helo@nayantha.me",
     support: "/support",
   },
 };
