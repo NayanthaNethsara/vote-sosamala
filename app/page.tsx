@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { IconArrowRight } from "@tabler/icons-react";
-
+import { Card } from "@/components/ui/card";
 import { SplashIntro } from "@/components/splash-intro";
 
 const publicCategories = [
@@ -27,69 +27,73 @@ export default function HomePage() {
     <>
       <SplashIntro />
 
-      <div className="relative px-4 py-12 text-amber-50 sm:px-6 sm:py-16 lg:px-8">
-        <div className="mx-auto flex max-w-4xl flex-col gap-10">
+      <div className="relative px-4 py-16 text-amber-50 sm:px-6 sm:py-24 lg:px-8">
+        <div className="mx-auto flex max-w-4xl flex-col gap-14">
           {/* Hero / Title */}
-          <header className="flex flex-col items-center gap-5 text-center">
-            <h1 className="text-balance font-mono text-3xl font-semibold leading-[1.15] tracking-tight sm:text-4xl md:text-5xl">
-              <span className="block text-[0.72em] uppercase tracking-[0.32em] text-amber-100/80">
+          <header className="flex flex-col items-center gap-6 text-center">
+            <h1 className="text-balance font-mono text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl">
+              <span className="block text-[0.65em] uppercase tracking-[0.35em] text-amber-200/60">
                 Wasantha Muwadora
               </span>
-              <span className="mt-3 block bg-gradient-to-b from-amber-100 via-amber-200 to-amber-400 bg-clip-text font-semibold normal-case tracking-tight text-transparent">
+              <span className="mt-4 block bg-gradient-to-b from-amber-50 via-amber-200 to-amber-500 bg-clip-text font-bold normal-case tracking-tighter text-transparent">
                 Aurudu Kumara &amp; Kumariya
               </span>
             </h1>
 
-            <p className="max-w-xl text-pretty text-sm leading-relaxed text-amber-100/65 sm:text-base">
+            <p className="max-w-2xl text-pretty text-sm leading-relaxed text-amber-100/70 sm:text-base md:text-lg">
               A celebration of culture, tradition and the bright spirit of the
               Sinhala &amp; Tamil New Year. Meet our contestants, learn their
               stories, and cast your vote for the prince and princess of Aurudu.
             </p>
 
-            <div className="mt-1 flex items-center gap-3 text-[10px] uppercase tracking-[0.4em] text-amber-200/55">
-              <span className="h-px w-10 bg-amber-200/30" />
+            <div className="mt-2 flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.5em] text-amber-200/40">
+              <span className="h-px w-12 bg-linear-to-r from-transparent to-amber-200/20" />
               <span>Ayubowan</span>
-              <span className="h-px w-10 bg-amber-200/30" />
+              <span className="h-px w-12 bg-linear-to-l from-transparent to-amber-200/20" />
             </div>
           </header>
 
           {/* Categories */}
           <section
             aria-label="Categories"
-            className="grid gap-4 sm:grid-cols-2"
+            className="grid gap-6 sm:grid-cols-2"
           >
             {publicCategories.map((category) => (
-              <Link
+              <Card
                 key={category.href}
-                href={category.href}
-                className="group flex flex-col gap-3 rounded-2xl border border-amber-200/15 bg-[#2a0a12]/70 p-5 transition-all hover:-translate-y-0.5 hover:border-amber-300/50 hover:bg-[#350c16]/80"
+                className="group overflow-hidden border-amber-200/10 bg-amber-50/5 shadow-2xl shadow-black/40 backdrop-blur-2xl transition-all duration-500 hover:-translate-y-1 hover:border-amber-300/40 hover:bg-amber-50/8"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-semibold uppercase tracking-[0.4em] text-amber-200/75">
-                      {category.eyebrow}
-                    </span>
-                    <span className="font-mono text-lg font-semibold leading-tight text-amber-50 sm:text-xl">
-                      {category.title}
-                    </span>
-                    <span className="font-mono text-xs text-amber-200/60">
-                      {category.sinhala}
+                <Link
+                  href={category.href}
+                  className="flex flex-col gap-4 p-6 sm:p-8"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-amber-200/50">
+                        {category.eyebrow}
+                      </span>
+                      <h2 className="font-mono text-2xl font-bold leading-tight text-white sm:text-3xl">
+                        {category.title}
+                      </h2>
+                      <span className="font-mono text-[13px] font-medium tracking-wide text-amber-200/40">
+                        {category.sinhala}
+                      </span>
+                    </div>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-amber-200/20 bg-amber-200/5 text-amber-200/70 transition-all duration-500 group-hover:border-amber-300/50 group-hover:bg-amber-300/10 group-hover:text-amber-100">
+                      <IconArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
                     </span>
                   </div>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-amber-200/25 text-amber-200/85 transition-all group-hover:border-amber-300/60 group-hover:text-amber-100">
-                    <IconArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </span>
-                </div>
 
-                <p className="text-pretty text-xs leading-relaxed text-amber-100/65 sm:text-[13px]">
-                  {category.description}
-                </p>
+                  <p className="text-pretty text-sm leading-relaxed text-amber-100/60">
+                    {category.description}
+                  </p>
 
-                <div className="mt-1 flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-amber-200/55">
-                  <span className="h-px w-6 bg-amber-200/30" />
-                  <span>View Contestants</span>
-                </div>
-              </Link>
+                  <div className="mt-2 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-amber-200/40 transition-colors group-hover:text-amber-200/60">
+                    <span className="h-px w-8 bg-amber-200/20 transition-colors group-hover:bg-amber-200/40" />
+                    <span>Explore Contestants</span>
+                  </div>
+                </Link>
+              </Card>
             ))}
           </section>
         </div>
