@@ -3,7 +3,9 @@ import { isSpoofedBot } from "@arcjet/inspect";
 import { NextResponse } from "next/server";
 import { env } from "@/config/env";
 
-const aj = arcjet({
+type ArcjetProfile = "default" | "auth" | "vote" | "admin";
+
+const defaultAj = arcjet({
   key: env.ARCJET_KEY,
   rules: [
     shield({ mode: "LIVE" }),
@@ -12,7 +14,55 @@ const aj = arcjet({
   ],
 });
 
-export async function applyArcjetProtection(req: Request, tokens = 1) {
+const authAj = arcjet({
+  key: env.ARCJET_KEY,
+  rules: [
+    shield({ mode: "LIVE" }),
+    detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE"] }),
+    tokenBucket({ mode: "LIVE", refillRate: 2, interval: 10, capacity: 4 }),
+  ],
+});
+
+const voteAj = arcjet({
+  key: env.ARCJET_KEY,
+  rules: [
+    shield({ mode: "LIVE" }),
+    detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE"] }),
+    tokenBucket({ mode: "LIVE", refillRate: 3, interval: 10, capacity: 6 }),
+  ],
+});
+
+const adminAj = arcjet({
+  key: env.ARCJET_KEY,
+  rules: [
+    shield({ mode: "LIVE" }),
+    detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE"] }),
+    tokenBucket({ mode: "LIVE", refillRate: 2, interval: 10, capacity: 4 }),
+  ],
+});
+
+function getArcjetByProfile(profile: ArcjetProfile) {
+  if (profile === "auth") {
+    return authAj;
+  }
+
+  if (profile === "vote") {
+    return voteAj;
+  }
+
+  if (profile === "admin") {
+    return adminAj;
+  }
+
+  return defaultAj;
+}
+
+export async function applyArcjetProtection(
+  req: Request,
+  tokens = 1,
+  profile: ArcjetProfile = "default",
+) {
+  const aj = getArcjetByProfile(profile);
   const decision = await aj.protect(req, { requested: tokens });
 
   if (decision.isDenied()) {

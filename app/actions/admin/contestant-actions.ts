@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { CONTESTANTS_CACHE_TAG } from "@/lib/contestants";
+import { enforceServerActionRateLimit } from "@/lib/security/server-action-rate-limit";
 import { requireAdminUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -41,6 +42,15 @@ function redirectWithMessage(
 }
 
 export async function createContestantAction(formData: FormData) {
+  const protectionResponse = await enforceServerActionRateLimit(
+    "/admin",
+    2,
+    "admin",
+  );
+  if (protectionResponse) {
+    redirectWithMessage("error", "Too many requests. Please try again soon.");
+  }
+
   await requireAdminUser();
 
   const parsed = contestantCreateSchema.safeParse(
@@ -79,6 +89,15 @@ export async function createContestantAction(formData: FormData) {
 }
 
 export async function updateContestantAction(formData: FormData) {
+  const protectionResponse = await enforceServerActionRateLimit(
+    "/admin",
+    2,
+    "admin",
+  );
+  if (protectionResponse) {
+    redirectWithMessage("error", "Too many requests. Please try again soon.");
+  }
+
   await requireAdminUser();
 
   const parsed = contestantUpdateSchema.safeParse(
@@ -124,6 +143,15 @@ export async function updateContestantAction(formData: FormData) {
 }
 
 export async function deleteContestantAction(formData: FormData) {
+  const protectionResponse = await enforceServerActionRateLimit(
+    "/admin",
+    2,
+    "admin",
+  );
+  if (protectionResponse) {
+    redirectWithMessage("error", "Too many requests. Please try again soon.");
+  }
+
   await requireAdminUser();
 
   const parsed = contestantDeleteSchema.safeParse(
@@ -150,6 +178,15 @@ export async function deleteContestantAction(formData: FormData) {
 }
 
 export async function recalculateVoteCountsAction() {
+  const protectionResponse = await enforceServerActionRateLimit(
+    "/admin",
+    3,
+    "admin",
+  );
+  if (protectionResponse) {
+    redirectWithMessage("error", "Too many requests. Please try again soon.");
+  }
+
   await requireAdminUser();
 
   const supabase = await createClient();

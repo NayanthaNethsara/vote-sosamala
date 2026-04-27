@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { isSafeRelativePath } from "@/lib/security/redirect";
+import { enforceServerActionRateLimit } from "@/lib/security/server-action-rate-limit";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
@@ -15,6 +16,16 @@ export async function signInWithGoogle(formData: FormData): Promise<void> {
   const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? requestOrigin;
   const nextPath = String(formData.get("next") ?? "/");
   const safeNextPath = isSafeRelativePath(nextPath) ? nextPath : "/";
+
+  const protectionResponse = await enforceServerActionRateLimit(
+    "/auth",
+    1,
+    "auth",
+  );
+
+  if (protectionResponse) {
+    redirect("/");
+  }
 
   if (!siteOrigin) {
     redirect("/");

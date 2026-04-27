@@ -43,6 +43,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      cast_vote: {
+        Args: {
+          p_user_id: string;
+          p_contestant_id: string;
+          p_category: ContestantCategory;
+        };
+        Returns: string;
+      };
       recalculate_vote_counts: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
