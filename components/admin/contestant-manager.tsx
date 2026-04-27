@@ -44,6 +44,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   createContestantAction,
   deleteContestantAction,
+  recalculateVoteCountsAction,
   updateContestantAction,
 } from "../../app/actions/admin/contestant-actions";
 
@@ -296,6 +297,11 @@ export function ContestantManager({ contestants }: ContestantManagerProps) {
             </CardDescription>
           </div>
           <div className="flex items-center gap-3">
+            <form action={recalculateVoteCountsAction}>
+              <Button type="submit" variant="secondary">
+                Recalculate vote counts
+              </Button>
+            </form>
             <Badge
               variant="secondary"
               className="border-white/10 bg-white/10 text-white"

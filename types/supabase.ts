@@ -13,6 +13,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Omit<User, "id" | "created_at" | "updated_at">>;
+        Relationships: [];
       };
       contestants: {
         Row: Contestant;
@@ -26,6 +27,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Omit<Contestant, "id" | "created_at" | "updated_at">>;
+        Relationships: [];
       };
       votes: {
         Row: Vote;
@@ -34,13 +36,25 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Omit<Vote, "id" | "created_at">>;
+        Relationships: [];
       };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      cast_vote: {
+        Args: {
+          p_user_id: string;
+          p_contestant_id: string;
+          p_category: ContestantCategory;
+        };
+        Returns: string;
+      };
+      recalculate_vote_counts: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
     };
     Enums: {
       user_role: UserRole;

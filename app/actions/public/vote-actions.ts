@@ -1,13 +1,12 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { CONTESTANTS_CACHE_TAG, isContestantCategory } from "@/lib/contestants";
 import { isSafeRelativePath } from "@/lib/security/redirect";
-import { applyArcjetProtection } from "@/lib/security/arcjet";
-import { createClient } from "@/lib/supabase/server";
+import { enforceServerActionRateLimit } from "@/lib/security/server-action-rate-limit";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import type { ContestantCategory } from "@/types";
 
 function buildRedirectUrl(
@@ -24,26 +23,7 @@ function buildRedirectUrl(
 }
 
 async function enforceVoteRateLimit(returnTo: string) {
-  const headerStore = await headers();
-  const forwardedHost = headerStore.get("x-forwarded-host");
-  const host = forwardedHost ?? headerStore.get("host");
-  const proto = headerStore.get("x-forwarded-proto") ?? "https";
-  const origin = host ? `${proto}://${host}` : "https://localhost";
-
-  const requestHeaders = new Headers();
-  for (const [name, value] of headerStore.entries()) {
-    requestHeaders.set(name, value);
-  }
-
-  const protectionResponse = await applyArcjetProtection(
-    new Request(new URL(returnTo, origin).toString(), {
-      method: "POST",
-      headers: requestHeaders,
-    }),
-    2,
-  );
-
-  return protectionResponse;
+  return enforceServerActionRateLimit(returnTo, 2, "vote");
 }
 
 export async function voteForContestantAction(formData: FormData) {
@@ -112,13 +92,14 @@ export async function voteForContestantAction(formData: FormData) {
     );
   }
 
-  const { error } = await supabase.from("votes").insert({
-    user_id: user.id,
-    contestant_id: contestant.id,
-    category,
+  const adminSupabase = createAdminClient();
+  const { data: voteResult, error } = await adminSupabase.rpc("cast_vote", {
+    p_user_id: user.id,
+    p_contestant_id: contestant.id,
+    p_category: category,
   });
 
-  if (error?.code === "23505") {
+  if (voteResult === "already_voted") {
     redirect(
       buildRedirectUrl(
         safeReturnTo,
@@ -129,6 +110,10 @@ export async function voteForContestantAction(formData: FormData) {
   }
 
   if (error) {
+    redirect(buildRedirectUrl(safeReturnTo, "error", "Failed to submit vote."));
+  }
+
+  if (voteResult !== "success") {
     redirect(buildRedirectUrl(safeReturnTo, "error", "Failed to submit vote."));
   }
 

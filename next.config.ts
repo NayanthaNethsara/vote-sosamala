@@ -16,6 +16,14 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  productionBrowserSourceMaps: false,
+  compiler: {
+    removeConsole: isDevelopment
+      ? false
+      : {
+          exclude: ["error", "warn"],
+        },
+  },
   async headers() {
     return [
       {
