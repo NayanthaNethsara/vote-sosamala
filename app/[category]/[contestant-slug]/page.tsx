@@ -16,32 +16,6 @@ import { isContestantCategory } from "@/lib/contestants";
 import { getAuthenticatedUser } from "@/lib/supabase/auth";
 import { siteConfig } from "@/config/site-config";
 
-const FALLBACK_CONTESTANT_IMAGE = "/avatar-fallback.png";
-
-function resolveContestantImageUrl(imageUrl: string | null | undefined) {
-  const normalizedImageUrl = imageUrl?.trim();
-
-  if (!normalizedImageUrl) {
-    return FALLBACK_CONTESTANT_IMAGE;
-  }
-
-  if (
-    normalizedImageUrl.startsWith("http://") ||
-    normalizedImageUrl.startsWith("https://")
-  ) {
-    return normalizedImageUrl;
-  }
-
-  if (
-    normalizedImageUrl.startsWith("/contestants/") ||
-    normalizedImageUrl.startsWith("/landing-page/")
-  ) {
-    return normalizedImageUrl;
-  }
-
-  return FALLBACK_CONTESTANT_IMAGE;
-}
-
 function buildContestantMetaDescription(input: {
   faculty: string;
   academicYear: string | null;
@@ -175,7 +149,6 @@ export default async function ContestantPage({
 
   const voteStats = await getContestantVoteStatsAction(category, contestant.id);
   const user = await getAuthenticatedUser();
-  const contestantImageUrl = resolveContestantImageUrl(contestant.image_url);
 
   return (
     <div className="vote-shell relative px-4 py-10 sm:px-6 lg:px-8">
@@ -187,7 +160,7 @@ export default async function ContestantPage({
             <div className="vote-panel aspect-square p-2 transition-all hover:bg-amber-50/10">
               <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#2d0f15]/80">
                 <Image
-                  src={contestantImageUrl}
+                  src={contestant.image_url}
                   alt={contestant.name}
                   fill
                   sizes="(max-width: 1024px) 384px, 540px"
