@@ -97,6 +97,8 @@ export async function generateMetadata({
   };
 }
 
+import { ProtectedImage } from "@/components/public/protected-image";
+
 export default async function ContestantPage({
   params,
   searchParams,
@@ -148,16 +150,15 @@ export default async function ContestantPage({
           {/* Left: Image Panel */}
           <div className="mx-auto w-full max-w-sm lg:mx-0 lg:max-w-none">
             <div className="vote-panel aspect-[4/5] p-2 transition-all hover:bg-amber-50/10">
-              <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#2d0f15]/80">
-                <Image
-                  src={contestant.image_url}
-                  alt={contestant.name}
-                  fill
-                  sizes="(max-width: 1024px) 384px, 540px"
-                  className="object-cover object-top"
-                  priority
-                />
-              </div>
+              <ProtectedImage
+                src={contestant.image_url}
+                alt={contestant.name}
+                fill
+                containerClassName="rounded-2xl bg-[#2d0f15]/80"
+                sizes="(max-width: 1024px) 384px, 540px"
+                className="object-cover object-top"
+                priority
+              />
             </div>
           </div>
 
