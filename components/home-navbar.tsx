@@ -7,6 +7,7 @@ import {
   IconX,
   IconLogout,
   IconUser,
+  IconFileText,
 } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
 import { Navbar, NavBody, NavItems } from "@/components/ui/resizable-navbar";
@@ -34,6 +35,11 @@ const navItems = [
     name: "Kumariya",
     link: "/female",
     icon: <IconUser className="h-5 w-5" />,
+  },
+  {
+    name: "Rules",
+    link: siteConfig.links.rules,
+    icon: <IconFileText className="h-5 w-5" />,
   },
 ];
 
@@ -106,10 +112,11 @@ export function HomeNavbar() {
               </div>
             ) : (
               <button
-                onClick={() => openLoginModal()}
-                className="h-8 rounded-full bg-white/10 px-3 text-xs font-bold text-white border border-white/20 hover:bg-white/20 transition-all"
+                onClick={() => !siteConfig.votingPaused && openLoginModal()}
+                disabled={siteConfig.votingPaused}
+                className="h-8 rounded-full bg-white/10 px-3 text-xs font-bold text-white border border-white/20 hover:bg-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Login to Vote
+                {siteConfig.votingPaused ? "Voting Paused" : "Login to Vote"}
               </button>
             )}
           </div>
@@ -179,12 +186,15 @@ export function HomeNavbar() {
           ) : (
             <button
               onClick={() => {
-                openLoginModal();
-                closeMobileMenu();
+                if (!siteConfig.votingPaused) {
+                  openLoginModal();
+                  closeMobileMenu();
+                }
               }}
-              className="h-10 rounded-full px-8 text-sm font-bold bg-white text-black hover:bg-white/90 transition-all shadow-lg"
+              disabled={siteConfig.votingPaused}
+              className="h-10 rounded-full px-8 text-sm font-bold bg-white text-black hover:bg-white/90 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login to Vote
+              {siteConfig.votingPaused ? "Voting Paused" : "Login to Vote"}
             </button>
           )}
         </MobileMenuSocialLinks>

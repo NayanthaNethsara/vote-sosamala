@@ -7,8 +7,10 @@ const normalizedSiteUrl = rawSiteUrl.endsWith("/")
 export const siteConfig = {
   name: "Wasantha Muwadora",
   url: normalizedSiteUrl,
+  votingPaused: process.env.NEXT_PUBLIC_VOTE_PAUSE === "true",
   links: {
     leaderboard: "/",
+    rules: "/support#rules-guidelines",
     github: "https://github.com/NayanthaNethsara/vote-sosamala",
     instagram: "https://www.instagram.com/nayaa.gg",
     gmail: "mailto:helo@nayantha.me",

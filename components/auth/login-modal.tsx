@@ -67,7 +67,7 @@ export function LoginModal({
       repeat: Infinity,
       ease: "linear" as const,
     }),
-    []
+    [],
   );
 
   return (

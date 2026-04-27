@@ -4,16 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { isSafeRelativePath } from "@/lib/security/redirect";
 import { enforceServerActionRateLimit } from "@/lib/security/server-action-rate-limit";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 
 export async function signInWithGoogle(formData: FormData): Promise<void> {
   const supabase = await createClient();
-  const headerStore = await headers();
-  const forwardedHost = headerStore.get("x-forwarded-host");
-  const host = forwardedHost ?? headerStore.get("host");
-  const proto = headerStore.get("x-forwarded-proto") ?? "https";
-  const requestOrigin = host ? `${proto}://${host}` : undefined;
-  const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? requestOrigin;
+  const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL;
   const nextPath = String(formData.get("next") ?? "/");
   const safeNextPath = isSafeRelativePath(nextPath) ? nextPath : "/";
 
@@ -28,6 +22,7 @@ export async function signInWithGoogle(formData: FormData): Promise<void> {
   }
 
   if (!siteOrigin) {
+    console.error("NEXT_PUBLIC_SITE_URL is not configured.");
     redirect("/");
   }
 

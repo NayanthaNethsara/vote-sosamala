@@ -26,7 +26,6 @@ const RELEASE_DELAY = 140;
 
 export function SplashIntro() {
   const [isOpen, setIsOpen] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
   // `progress` is the raw target driven by gestures (0 = open, 1 = closed).
@@ -46,8 +45,6 @@ export function SplashIntro() {
   const releaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const animRef = useRef<ReturnType<typeof animate> | null>(null);
   const lastTouchYRef = useRef(0);
-
-  useEffect(() => setIsMounted(true), []);
 
   const snapTo = useCallback(
     (target: 0 | 1) => {
@@ -93,7 +90,6 @@ export function SplashIntro() {
 
   // Lock body scroll & flag when splash is open.
   useEffect(() => {
-    if (!isMounted) return;
     if (isOpen) {
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
@@ -108,12 +104,10 @@ export function SplashIntro() {
       document.documentElement.style.overflow = "";
       delete document.body.dataset.splashOpen;
     };
-  }, [isOpen, isMounted]);
+  }, [isOpen]);
 
   // Gesture handlers — wheel, touch, keyboard.
   useEffect(() => {
-    if (!isMounted) return;
-
     const updateBy = (deltaPx: number) => {
       const vh = window.innerHeight || 800;
       const v = progress.get();
@@ -199,7 +193,7 @@ export function SplashIntro() {
       if (releaseTimerRef.current) clearTimeout(releaseTimerRef.current);
       if (animRef.current) animRef.current.stop();
     };
-  }, [isMounted, progress, beginDrag, scheduleRelease, snapTo]);
+  }, [progress, beginDrag, scheduleRelease, snapTo]);
 
   return (
     <motion.div
@@ -207,7 +201,7 @@ export function SplashIntro() {
       aria-label="Welcome to Wasantha Muwadora"
       aria-hidden={!isOpen}
       style={{ y: yPercent }}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-[linear-gradient(165deg,#1f060c_0%,#3d0e18_45%,#220910_100%)] text-amber-50"
+      className="fixed inset-0 z-100 flex flex-col items-center justify-center overflow-hidden bg-[linear-gradient(165deg,#1f060c_0%,#3d0e18_45%,#220910_100%)] text-amber-50"
     >
       {/* Soft radial vignette */}
       <div
@@ -220,7 +214,7 @@ export function SplashIntro() {
         aria-hidden
         animate={shouldReduceMotion ? undefined : { rotate: 360 }}
         transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute left-1/2 top-1/2 w-[100vmin] max-w-[640px] -translate-x-1/2 -translate-y-1/2 opacity-40 will-change-transform"
+        className="pointer-events-none absolute left-1/2 top-1/2 w-[100vmin] max-w-160 -translate-x-1/2 -translate-y-1/2 opacity-40 will-change-transform"
       >
         <Image
           src="/mandala/mandala-light-gold.svg"
@@ -236,7 +230,7 @@ export function SplashIntro() {
         aria-hidden
         animate={shouldReduceMotion ? undefined : { rotate: -360 }}
         transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute left-1/2 top-1/2 w-[42vmin] max-w-[380px] -translate-x-1/2 -translate-y-1/2 opacity-[0.18] will-change-transform"
+        className="pointer-events-none absolute left-1/2 top-1/2 w-[42vmin] max-w-95 -translate-x-1/2 -translate-y-1/2 opacity-[0.18] will-change-transform"
       >
         <Image
           src="/mandala/mandala-light-gold.svg"
@@ -288,7 +282,7 @@ export function SplashIntro() {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/30 bg-black/20 px-4 py-1 text-[9px] font-semibold uppercase tracking-[0.4em] text-amber-100/85">
             <span className="h-1 w-1 rounded-full bg-amber-300" />
-            <span className="-mr-[0.4em]">
+            <span className="mr-[-0.4em]">
               Sinhala &amp; Tamil New Year 2026
             </span>
             <span className="h-1 w-1 rounded-full bg-amber-300" />
@@ -300,11 +294,11 @@ export function SplashIntro() {
             optically centred rather than visually drifting left.
           */}
           <h1 className="mt-6 font-mono text-[3rem] font-semibold uppercase leading-none tracking-[0.16em] text-amber-100 drop-shadow-[0_0_28px_rgba(215,169,79,0.3)] sm:text-7xl lg:text-8xl">
-            <span className="inline-block -mr-[0.16em]">Ayubowan</span>
+            <span className="inline-block mr-[-0.16em]">Ayubowan</span>
           </h1>
 
           <p className="mt-4 font-mono text-xs uppercase tracking-[0.5em] text-amber-200/75 sm:text-sm">
-            <span className="inline-block -mr-[0.5em]">Wasantha Muwadora</span>
+            <span className="inline-block mr-[-0.5em]">Wasantha Muwadora</span>
           </p>
 
           <div

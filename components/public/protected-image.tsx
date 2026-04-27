@@ -12,14 +12,19 @@ export function ProtectedImage({
   containerClassName,
   className,
   children,
+  alt = "",
   ...props
 }: ProtectedImageProps) {
   return (
     <div
-      className={cn("relative h-full w-full overflow-hidden", containerClassName)}
+      className={cn(
+        "relative h-full w-full overflow-hidden",
+        containerClassName,
+      )}
       onContextMenu={(e) => e.preventDefault()}
     >
       <Image
+        alt={alt}
         {...props}
         draggable={false}
         className={cn("select-none", className)}
