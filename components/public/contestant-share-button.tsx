@@ -22,7 +22,7 @@ export function ContestantShareButton({
     // Construct the absolute URL
     const url =
       typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
-    const title = `Vote for ${name} - Sosamala`;
+    const title = `Vote for ${name} | Wasantha Muwadora`;
     const text = `Check out ${name}'s profile and vote for them!`;
 
     if (navigator.share) {
