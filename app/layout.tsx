@@ -27,11 +27,14 @@ const geistMono = Geist_Mono({
 
 import { siteConfig } from "@/config/site-config";
 
+const siteUrl = siteConfig.url;
+const socialPreviewImageUrl = new URL("/ss1.png", siteUrl).toString();
+
 export const metadata: Metadata = {
   title: `${siteConfig.name} 2026`,
   description:
     "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumara and Kumariya contestants.",
-  metadataBase: new URL("https://vote-sosamala.vercel.app"),
+  metadataBase: new URL(siteUrl),
   robots: {
     index: true,
     follow: true,
@@ -42,11 +45,11 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} 2026`,
     description:
       "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumaraya and Kumari contestants.",
-    url: "https://vote-sosamala.vercel.app",
+    url: siteUrl,
     siteName: siteConfig.name,
     images: [
       {
-        url: "https://vote-sosamala.vercel.app/ss1.png",
+        url: socialPreviewImageUrl,
         width: 1200,
         height: 630,
         alt: siteConfig.name,
@@ -60,7 +63,7 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} 2026`,
     description:
       "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumaraya and Kumari contestants.",
-    images: ["https://vote-sosamala.vercel.app/ss1.png"],
+    images: [socialPreviewImageUrl],
   },
 };
 
@@ -76,7 +79,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-mono", jetbrainsMono.variable)}>
+    <html
+      lang="en"
+      className={cn("font-mono", jetbrainsMono.variable)}
+      data-scroll-behavior="smooth"
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[#24080f] text-amber-50 antialiased`}
       >

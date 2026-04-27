@@ -37,8 +37,8 @@ export default function SupportPage() {
                   1. Data Collection
                 </h3>
                 <p>
-                  We prioritize your privacy above all else. When you use
-                  Sosamala to vote, we collect only the essential information
+                  We prioritize your privacy above all else. When you use this
+                  platform to vote, we collect only the essential information
                   required to ensure a fair and transparent voting process. This
                   primarily involves using your unique identifier from Google
                   Authentication to prevent duplicate voting.
@@ -75,10 +75,11 @@ export default function SupportPage() {
                   4. Disclaimer & Beta Release
                 </h3>
                 <p>
-                  Sosamala is currently in beta release. While we strive for
-                  maximum reliability, we provide this system "as-is" and do not
-                  assume any responsibility for technical discrepancies, vote
-                  count issues, or service interruptions.
+                  {siteConfig.name} is currently in beta release. While we
+                  strive for maximum reliability, we provide this system
+                  &quot;as-is&quot; and do not assume any responsibility for
+                  technical discrepancies, vote count issues, or service
+                  interruptions.
                 </p>
               </div>
             </CardContent>
@@ -103,7 +104,7 @@ export default function SupportPage() {
               </p>
 
               <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-amber-200/40">
-                Sosamala is open source — contributions are welcome.
+                The platform is open source — contributions are welcome.
               </p>
 
               <div className="mt-10 flex items-center justify-center gap-8">
@@ -153,7 +154,7 @@ export default function SupportPage() {
 
         <div className="space-y-2 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-amber-100/20">
-            Sosamala Team © 2026
+            {siteConfig.name} Team © 2026
           </p>
           <p className="text-[9px] uppercase tracking-[0.2em] text-amber-100/10">
             Last updated: April 27, 2026

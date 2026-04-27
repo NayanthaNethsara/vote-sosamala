@@ -30,11 +30,10 @@ export default function HomePage() {
             {siteConfig.name} 2026
           </Badge>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">
-            Pick a category and vote for your favorites.
+            Choose your winners for Wasantha Muwadora.
           </h1>
           <p className="mx-auto max-w-2xl text-sm text-amber-100/75 sm:text-base">
-            Celebrate the spirit of the season by supporting our talented contestants. 
-            Real-time voting counts are updated on every page load to ensure accuracy.
+            Be a part of the tradition. Cast your vote for the contestants who best embody the spirit and grace of the season.
           </p>
         </header>
 
@@ -44,23 +43,25 @@ export default function HomePage() {
               key={category.href}
               className="border-amber-200/20 bg-amber-50/6 text-amber-50 shadow-2xl shadow-black/25 backdrop-blur transition hover:-translate-y-1 hover:border-amber-300/50 hover:bg-amber-50/10"
             >
-              <CardContent className="space-y-4 p-6">
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.4em] text-amber-200/90">
-                    Category
+              <CardContent className="flex flex-col h-full space-y-6 p-6">
+                <div className="space-y-4 flex-1">
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.4em] text-amber-200/90">
+                      Competition
+                    </p>
+                    <h2 className="text-3xl font-semibold tracking-tight">
+                      {category.title}
+                    </h2>
+                  </div>
+                  <p className="text-sm leading-6 text-amber-100/75">
+                    {category.description}
                   </p>
-                  <h2 className="text-3xl font-semibold tracking-tight">
-                    {category.title}
-                  </h2>
                 </div>
-                <p className="text-sm leading-6 text-amber-100/75">
-                  {category.description}
-                </p>
                 <Button
                   asChild
-                  className="w-fit bg-[#7f1d2d] text-amber-50 hover:bg-[#97233a]"
+                  className="h-12 w-full border border-amber-200/20 bg-amber-50/10 text-amber-50 hover:bg-amber-50/20 backdrop-blur-xl transition-all font-semibold"
                 >
-                  <Link href={category.href}>Open category</Link>
+                  <Link href={category.href}>Open Category</Link>
                 </Button>
               </CardContent>
             </Card>

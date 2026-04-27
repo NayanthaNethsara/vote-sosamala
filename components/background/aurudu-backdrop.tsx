@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 
 export function AuruduBackdrop() {
   const spinTransition = {
@@ -122,6 +121,7 @@ export function AuruduBackdrop() {
           alt=""
           width={800}
           height={800}
+          loading="eager"
           className="h-full w-full"
         />
       </motion.div>
