@@ -29,10 +29,10 @@ export default async function AdminPage({
     <div className="space-y-6">
       {(params.message || params.error) && (
         <div
-          className={`rounded-2xl border px-4 py-3 text-sm backdrop-blur ${
+          className={`rounded-2xl border px-4 py-3 text-sm ${
             params.error
               ? "border-red-500/30 bg-red-500/10 text-red-200"
-              : "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
+              : "border-white/10 bg-neutral-900 text-neutral-200"
           }`}
         >
           {params.error ?? params.message}

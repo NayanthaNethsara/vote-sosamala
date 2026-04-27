@@ -4,35 +4,36 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+import { siteConfig } from "@/config/site-config";
+
 const publicCategories = [
   {
     href: "/male",
-    title: "Male",
+    title: "Aurudu Kumara",
     description:
-      "Browse the current male contestant list and open each profile.",
+      "Vote for your favorite contestant for the Aurudu Kumara title. Support their journey to become the pride of the season.",
   },
   {
     href: "/female",
-    title: "Female",
+    title: "Aurudu Kumariya",
     description:
-      "Browse the current female contestant list and open each profile.",
+      "Choose the most graceful Aurudu Kumariya contestant and cast your vote to help her win the crown.",
   },
 ];
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.16),transparent_28%),linear-gradient(180deg,#020617_0%,#020617_55%,#0f172a_100%)] px-4 py-10 text-white sm:px-6 lg:px-8">
+    <div className="relative min-h-screen px-4 py-10 text-amber-50 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <header className="space-y-4 text-center">
-          <Badge className="w-fit self-center bg-white/10 text-white">
-            Sosamala Voting
+          <Badge className="w-fit self-center border border-amber-200/30 bg-amber-100/10 text-amber-100">
+            {siteConfig.name} 2026
           </Badge>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">
-            Pick a category and explore the contestants.
+            Choose your winners for Wasantha Muwadora.
           </h1>
-          <p className="mx-auto max-w-2xl text-sm text-white/65 sm:text-base">
-            Public contestant pages are cached for speed, while vote counts are
-            refreshed on each page load.
+          <p className="mx-auto max-w-2xl text-sm text-amber-100/75 sm:text-base">
+            Be a part of the tradition. Cast your vote for the contestants who best embody the spirit and grace of the season.
           </p>
         </header>
 
@@ -40,22 +41,27 @@ export default function HomePage() {
           {publicCategories.map((category) => (
             <Card
               key={category.href}
-              className="border-white/10 bg-white/5 text-white shadow-2xl shadow-black/20 backdrop-blur transition hover:-translate-y-1 hover:border-emerald-400/30"
+              className="border-amber-200/20 bg-amber-50/6 text-amber-50 shadow-2xl shadow-black/25 backdrop-blur transition hover:-translate-y-1 hover:border-amber-300/50 hover:bg-amber-50/10"
             >
-              <CardContent className="space-y-4 p-6">
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.4em] text-emerald-300">
-                    Category
+              <CardContent className="flex flex-col h-full space-y-6 p-6">
+                <div className="space-y-4 flex-1">
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-[0.4em] text-amber-200/90">
+                      Competition
+                    </p>
+                    <h2 className="text-3xl font-semibold tracking-tight">
+                      {category.title}
+                    </h2>
+                  </div>
+                  <p className="text-sm leading-6 text-amber-100/75">
+                    {category.description}
                   </p>
-                  <h2 className="text-3xl font-semibold tracking-tight">
-                    {category.title}
-                  </h2>
                 </div>
-                <p className="text-sm leading-6 text-white/70">
-                  {category.description}
-                </p>
-                <Button asChild className="w-fit">
-                  <Link href={category.href}>Open category</Link>
+                <Button
+                  asChild
+                  className="h-12 w-full border border-amber-200/20 bg-amber-50/10 text-amber-50 hover:bg-amber-50/20 backdrop-blur-xl transition-all font-semibold"
+                >
+                  <Link href={category.href}>Open Category</Link>
                 </Button>
               </CardContent>
             </Card>

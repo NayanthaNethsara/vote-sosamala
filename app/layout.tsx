@@ -3,7 +3,12 @@ import type { Viewport } from "next";
 import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { TopNavbar } from "@/components/top-navbar";
+
+import { AuruduBackdrop } from "@/components/background/aurudu-backdrop";
+import { HomeNavbar } from "@/components/home-navbar";
+import { Footer } from "@/components/footer";
+import { LoginModalProvider } from "@/hooks/use-login-modal";
+import { Toaster } from "@/components/ui/sonner";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -20,11 +25,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { siteConfig } from "@/config/site-config";
+
+const siteUrl = siteConfig.url;
+const socialPreviewImageUrl = new URL("/ss1.png", siteUrl).toString();
+
 export const metadata: Metadata = {
-  title: "Sosamala Voting App",
+  title: `${siteConfig.name} 2026`,
   description:
-    "Sosamala Voting is a secure, modern, and self-hostable online voting platform built for small-scale beauty contests and public competitions.",
-  metadataBase: new URL("https://vote-sosamala.vercel.app"),
+    "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumara and Kumariya contestants.",
+  metadataBase: new URL(siteUrl),
   robots: {
     index: true,
     follow: true,
@@ -32,29 +42,28 @@ export const metadata: Metadata = {
   },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
   openGraph: {
-    title: "Sosamala Voting App",
+    title: `${siteConfig.name} 2026`,
     description:
-      "Sosamala Voting is a secure, modern, and self-hostable online voting platform built for small-scale beauty contests and public competitions.",
-    url: "https://vote-sosamala.vercel.app",
-    siteName: "Sosamala Voting",
+      "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumaraya and Kumari contestants.",
+    url: siteUrl,
+    siteName: siteConfig.name,
     images: [
       {
-        url: "https://vote-sosamala.vercel.app/ss1.png",
+        url: socialPreviewImageUrl,
         width: 1200,
         height: 630,
-        alt: "Sosamala Voting App",
+        alt: siteConfig.name,
       },
     ],
     locale: "en_US",
     type: "website",
   },
-  // Twitter card
   twitter: {
     card: "summary_large_image",
-    title: "Sosamala Voting App",
+    title: `${siteConfig.name} 2026`,
     description:
-      "Sosamala Voting is a secure, modern, and self-hostable online voting platform built for small-scale beauty contests and public competitions.",
-    images: ["https://vote-sosamala.vercel.app/ss1.png"],
+      "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumaraya and Kumari contestants.",
+    images: [socialPreviewImageUrl],
   },
 };
 
@@ -70,12 +79,23 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-mono", jetbrainsMono.variable)}>
+    <html
+      lang="en"
+      className={cn("font-mono", jetbrainsMono.variable)}
+      data-scroll-behavior="smooth"
+    >
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-gray-950 via-gray-900 to-black`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-[#24080f] text-amber-50 antialiased`}
       >
-        <TopNavbar />
-        <main>{children}</main>
+        <LoginModalProvider>
+          <div className="relative isolate flex min-h-dvh flex-col overflow-x-clip bg-[linear-gradient(160deg,#24080f_0%,#40101a_45%,#27080f_100%)]">
+            <AuruduBackdrop />
+            <HomeNavbar />
+            <main className="relative z-10 flex-1 pt-22">{children}</main>
+            <Footer />
+            <Toaster />
+          </div>
+        </LoginModalProvider>
       </body>
     </html>
   );

@@ -1,12 +1,12 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { Badge } from "@/components/ui/badge";
-import { LoginModal } from "@/components/auth/login-modal";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { LoginButton } from "@/components/auth/login-button";
+import { ContestantShareButton } from "@/components/public/contestant-share-button";
+import { FeedbackToast } from "@/components/public/feedback-toast";
+import { SpinningMandala } from "@/components/background/spinning-mandala";
+import { VoteSubmitButton } from "../../../components/votes/vote-submit-button";
 import {
   getContestantByCategoryAndSlugAction,
   getContestantVoteStatsAction,
@@ -14,6 +14,33 @@ import {
 import { voteForContestantAction } from "@/app/actions/public/vote-actions";
 import { isContestantCategory } from "@/lib/contestants";
 import { getAuthenticatedUser } from "@/lib/supabase/auth";
+import { siteConfig } from "@/config/site-config";
+
+const FALLBACK_CONTESTANT_IMAGE = "/avatar-fallback.png";
+
+function resolveContestantImageUrl(imageUrl: string | null | undefined) {
+  const normalizedImageUrl = imageUrl?.trim();
+
+  if (!normalizedImageUrl) {
+    return FALLBACK_CONTESTANT_IMAGE;
+  }
+
+  if (
+    normalizedImageUrl.startsWith("http://") ||
+    normalizedImageUrl.startsWith("https://")
+  ) {
+    return normalizedImageUrl;
+  }
+
+  if (
+    normalizedImageUrl.startsWith("/contestants/") ||
+    normalizedImageUrl.startsWith("/landing-page/")
+  ) {
+    return normalizedImageUrl;
+  }
+
+  return FALLBACK_CONTESTANT_IMAGE;
+}
 
 function buildContestantMetaDescription(input: {
   faculty: string;
@@ -24,6 +51,29 @@ function buildContestantMetaDescription(input: {
   const yearLabel = input.academicYear ? `, ${input.academicYear}` : "";
 
   return `${input.faculty}${yearLabel}. ${summary}`;
+}
+
+function getOrdinalYear(value: string | null): string {
+  if (!value) return "";
+  const year = Number.parseInt(value, 10);
+  if (Number.isNaN(year)) return value;
+  const suffix =
+    year % 100 >= 11 && year % 100 <= 13
+      ? "th"
+      : (["th", "st", "nd", "rd"][year % 10] ?? "th");
+  return `${year}${suffix}`;
+}
+
+function generateFirstPersonBio(contestant: {
+  name: string;
+  faculty: string;
+  academic_year: string | null;
+  category: string;
+}) {
+  const yearLabel = getOrdinalYear(contestant.academic_year);
+  const yearStr = yearLabel ? `a ${yearLabel}-year student` : "a student";
+
+  return `Ayubowan! I'm ${contestant.name}, ${yearStr} from the ${contestant.faculty}, and it’s that time of the year again. I’m competing for the Aurudu ${contestant.category === "male" ? "Kumara" : "Kumariya"} title at this year's Wasantha Muwadura. Whether we've worked together, crammed for exams, or just crossed paths on campus, I'd love your support. Cast your vote for me below, and let’s celebrate the New Year!`;
 }
 
 export async function generateMetadata({
@@ -66,7 +116,7 @@ export async function generateMetadata({
     academicYear: contestant.academic_year,
     bio: contestant.bio,
   });
-  const title = `${contestant.name} | Sosamala Voting`;
+  const title = `${contestant.name} | ${siteConfig.name} 2026`;
   const ogImagePath = `/${category}/${contestant.slug}/opengraph-image?v=${encodeURIComponent(contestant.updated_at)}`;
 
   return {
@@ -125,137 +175,110 @@ export default async function ContestantPage({
 
   const voteStats = await getContestantVoteStatsAction(category, contestant.id);
   const user = await getAuthenticatedUser();
+  const contestantImageUrl = resolveContestantImageUrl(contestant.image_url);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.14),transparent_30%),linear-gradient(180deg,#020617_0%,#020617_60%,#0f172a_100%)] px-4 py-10 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        {(queryParams.message || queryParams.error) && (
-          <div
-            className={`rounded-2xl border px-4 py-3 text-sm backdrop-blur ${
-              queryParams.error
-                ? "border-red-500/30 bg-red-500/10 text-red-200"
-                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
-            }`}
-          >
-            {queryParams.error ?? queryParams.message}
-          </div>
-        )}
-
-        <Button asChild variant="secondary" className="w-fit">
-          <Link href={`/${category}`}>Back to {category}</Link>
-        </Button>
-
-        <Card className="overflow-hidden border-white/10 bg-white/5 text-white shadow-2xl shadow-black/20 backdrop-blur">
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,420px)_1fr]">
-            <div className="relative min-h-105 bg-slate-900/80">
-              <Image
-                src={contestant.image_url}
-                alt={contestant.name}
-                width={840}
-                height={840}
-                sizes="(min-width: 1024px) 420px, 100vw"
-                loading="eager"
-                className="h-full w-full object-cover"
-              />
-            </div>
-
-            <CardContent className="space-y-6 p-6 sm:p-8">
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="bg-white/10 text-white">
-                    {contestant.category}
-                  </Badge>
-                  <Badge className="bg-emerald-500 text-white">
-                    {voteStats.voteCount} votes
-                  </Badge>
-                  <Badge className="bg-white/10 text-white">
-                    {voteStats.rank > 0 ? `#${voteStats.rank}` : "-"}
-                  </Badge>
-                </div>
-
-                <div className="space-y-2">
-                  <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                    {contestant.name}
-                  </h1>
-                  <p className="text-sm text-white/65 sm:text-base">
-                    {contestant.faculty}
-                  </p>
-                </div>
-              </div>
-
-              <p className="max-w-3xl text-base leading-7 text-white/75">
-                {contestant.bio}
-              </p>
-
-              {user ? (
-                <form
-                  action={voteForContestantAction}
-                  className="flex flex-wrap gap-3"
-                >
-                  <input
-                    type="hidden"
-                    name="contestantId"
-                    value={contestant.id}
-                  />
-                  <input
-                    type="hidden"
-                    name="contestantSlug"
-                    value={contestant.slug}
-                  />
-                  <input type="hidden" name="category" value={category} />
-                  <input
-                    type="hidden"
-                    name="returnTo"
-                    value={`/${category}/${contestant.slug}`}
-                  />
-                  <Button type="submit">Vote for {contestant.name}</Button>
-                </form>
-              ) : (
-                <LoginModal
-                  nextPath={`/${category}/${contestant.slug}`}
-                  triggerLabel="Vote to login"
-                  triggerSize="default"
+    <div className="vote-shell relative px-4 py-10 sm:px-6 lg:px-8">
+      <FeedbackToast error={queryParams.error} message={queryParams.message} />
+      <section className="relative z-10 container mx-auto max-w-5xl">
+        <div className="grid gap-3 lg:grid-cols-2 lg:items-stretch">
+          {/* Left: Image Panel */}
+          <div className="mx-auto w-full max-w-sm lg:mx-0 lg:max-w-none">
+            <div className="vote-panel aspect-square p-2 transition-all hover:bg-amber-50/10">
+              <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#2d0f15]/80">
+                <Image
+                  src={contestantImageUrl}
+                  alt={contestant.name}
+                  fill
+                  sizes="(max-width: 1024px) 384px, 540px"
+                  className="object-cover object-top"
+                  priority
                 />
-              )}
-
-              <div className="grid gap-4 rounded-3xl border border-white/10 bg-black/20 p-5 sm:grid-cols-2">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/45">
-                    Student ID
-                  </p>
-                  <p className="mt-2 text-sm text-white">
-                    {contestant.student_id}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/45">
-                    Academic year
-                  </p>
-                  <p className="mt-2 text-sm text-white">
-                    {contestant.academic_year ?? "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/45">
-                    Slug
-                  </p>
-                  <p className="mt-2 font-mono text-sm text-emerald-200">
-                    {contestant.slug}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/45">
-                    Public image
-                  </p>
-                  <p className="mt-2 font-mono text-sm text-emerald-200">
-                    {contestant.image_url}
-                  </p>
-                </div>
               </div>
-            </CardContent>
+            </div>
           </div>
-        </Card>
-      </div>
+
+          {/* Right: Details Panel */}
+          <article className="vote-panel-strong relative overflow-hidden p-5 sm:p-7 lg:aspect-square">
+            <SpinningMandala />
+            <div className="relative z-10 flex h-full flex-col space-y-6 lg:space-y-5">
+              <div className="flex flex-wrap items-center gap-3">
+                {voteStats.rank > 0 && (
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] backdrop-blur-xl ${
+                      voteStats.rank === 1
+                        ? "border-yellow-400/50 bg-yellow-400/20 text-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.3)]"
+                        : voteStats.rank === 2
+                          ? "border-slate-300/50 bg-slate-300/20 text-slate-200 shadow-[0_0_15px_rgba(203,213,225,0.2)]"
+                          : voteStats.rank === 3
+                            ? "border-amber-600/50 bg-amber-600/20 text-amber-400 shadow-[0_0_15px_rgba(217,119,6,0.2)]"
+                            : "border-amber-200/15 bg-amber-50/10 text-amber-50"
+                    }`}
+                  >
+                    Rank #{voteStats.rank}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#a16207]/40 bg-[#a16207]/20 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-amber-200 backdrop-blur-xl">
+                  {voteStats.voteCount} Votes
+                </span>
+              </div>
+
+              <div className="space-y-4 flex-1">
+                <h1 className="vote-heading text-balance text-2xl leading-tight text-amber-50 sm:text-4xl">
+                  {contestant.name}
+                </h1>
+                <p className="max-w-3xl text-sm leading-relaxed text-amber-100/80 sm:text-base">
+                  {generateFirstPersonBio(contestant)}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 items-start gap-3 pt-1 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <div className="w-full">
+                  {user ? (
+                    <form
+                      action={voteForContestantAction}
+                      className="flex flex-wrap gap-3"
+                    >
+                      <input
+                        type="hidden"
+                        name="contestantId"
+                        value={contestant.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="contestantSlug"
+                        value={contestant.slug}
+                      />
+                      <input type="hidden" name="category" value={category} />
+                      <input
+                        type="hidden"
+                        name="returnTo"
+                        value={`/${category}/${contestant.slug}`}
+                      />
+                      <VoteSubmitButton
+                        contestantName={contestant.name}
+                        className="h-12 w-full text-base font-semibold"
+                      />
+                    </form>
+                  ) : (
+                    <LoginButton
+                      nextPath={`/${category}/${contestant.slug}`}
+                      label="Login to vote"
+                      size="default"
+                      className="h-12 w-full text-base font-semibold border border-amber-200/20 bg-amber-50/10 text-amber-50 hover:bg-amber-50/20 backdrop-blur-xl transition-all"
+                    />
+                  )}
+                </div>
+                <ContestantShareButton
+                  name={contestant.name}
+                  path={`/${category}/${contestant.slug}`}
+                  className="h-12 w-full sm:w-auto sm:min-w-36"
+                />
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
     </div>
   );
 }
