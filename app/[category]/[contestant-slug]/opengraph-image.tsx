@@ -26,34 +26,6 @@ type ContestantOgData = {
 
 const siteUrl = siteConfig.url;
 const siteHost = new URL(siteUrl).host;
-const FALLBACK_CONTESTANT_IMAGE = new URL(
-  "/avatar-fallback.png",
-  siteUrl,
-).toString();
-
-function resolveContestantImageUrl(imageUrl: string | null | undefined) {
-  const normalizedImageUrl = imageUrl?.trim();
-
-  if (!normalizedImageUrl) {
-    return FALLBACK_CONTESTANT_IMAGE;
-  }
-
-  if (
-    normalizedImageUrl.startsWith("http://") ||
-    normalizedImageUrl.startsWith("https://")
-  ) {
-    return normalizedImageUrl;
-  }
-
-  if (
-    normalizedImageUrl.startsWith("/contestants/") ||
-    normalizedImageUrl.startsWith("/landing-page/")
-  ) {
-    return new URL(normalizedImageUrl, siteUrl).toString();
-  }
-
-  return FALLBACK_CONTESTANT_IMAGE;
-}
 
 function createPublicServerClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -150,7 +122,6 @@ export default async function OpenGraphImage({
     academicYear: contestant.academic_year,
     bio: contestant.bio,
   });
-  const contestantImageUrl = resolveContestantImageUrl(contestant.image_url);
 
   return new ImageResponse(
     <div
@@ -167,7 +138,7 @@ export default async function OpenGraphImage({
       }}
     >
       <img
-        src={contestantImageUrl}
+        src={contestant.image_url}
         alt={contestant.name}
         width={420}
         height={550}
