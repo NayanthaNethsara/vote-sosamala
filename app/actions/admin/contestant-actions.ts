@@ -79,6 +79,14 @@ export async function createContestantAction(formData: FormData) {
     true,
   );
 
+  console.log("Image file validation:", {
+    hasFile: !!imageFileValidation.file,
+    size: imageFileValidation.file?.size,
+    type: imageFileValidation.file?.type,
+    name: imageFileValidation.file?.name,
+    error: imageFileValidation.error,
+  });
+
   if (imageFileValidation.error || !imageFileValidation.file) {
     redirectWithMessage(
       "error",
@@ -96,7 +104,7 @@ export async function createContestantAction(formData: FormData) {
     );
     uploadedObjectPath = uploadedImage.objectPath;
 
-    const { error } = await supabase.from("contestants").insert({
+    const { error: dbError } = await supabase.from("contestants").insert({
       name: parsed.data.name,
       student_id: parsed.data.student_id,
       bio: parsed.data.bio,
@@ -108,20 +116,20 @@ export async function createContestantAction(formData: FormData) {
       image_url: uploadedImage.publicUrl,
     });
 
-    if (error) {
+    if (dbError) {
       await removeContestantImageByPath(
         storageClient,
         uploadedImage.objectPath,
       );
-      redirectWithMessage("error", getReadableDatabaseError(error));
+      redirectWithMessage("error", getReadableDatabaseError(dbError));
     }
-
-    revalidateTag(CONTESTANTS_CACHE_TAG, "max");
-    revalidatePath("/admin");
-    redirectWithMessage("message", "Contestant created.");
   } catch (error) {
     if (uploadedObjectPath) {
       await removeContestantImageByPath(storageClient, uploadedObjectPath);
+    }
+
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error;
     }
 
     redirectWithMessage(
@@ -131,6 +139,10 @@ export async function createContestantAction(formData: FormData) {
         : "Failed to upload contestant image.",
     );
   }
+
+  revalidateTag(CONTESTANTS_CACHE_TAG, "max");
+  revalidatePath("/admin");
+  redirectWithMessage("message", "Contestant created.");
 }
 
 export async function updateContestantAction(formData: FormData) {
@@ -187,44 +199,61 @@ export async function updateContestantAction(formData: FormData) {
   let nextImageUrl = existingContestant.image_url;
   let uploadedObjectPath: string | null = null;
 
-  if (imageFileValidation.file) {
-    const uploadedImage = await uploadContestantImage(
-      storageClient,
-      slug,
-      imageFileValidation.file,
-    );
+  try {
+    if (imageFileValidation.file) {
+      const uploadedImage = await uploadContestantImage(
+        storageClient,
+        slug,
+        imageFileValidation.file,
+      );
 
-    nextImageUrl = uploadedImage.publicUrl;
-    uploadedObjectPath = uploadedImage.objectPath;
-  }
+      nextImageUrl = uploadedImage.publicUrl;
+      uploadedObjectPath = uploadedImage.objectPath;
+    }
 
-  const { error } = await supabase
-    .from("contestants")
-    .update({
-      name: parsed.data.name,
-      student_id: parsed.data.student_id,
-      bio: parsed.data.bio,
-      faculty: parsed.data.faculty,
-      academic_year: parsed.data.academic_year || null,
-      category: parsed.data.category,
-      active: parsed.data.active === "true",
-      slug,
-      image_url: nextImageUrl,
-    })
-    .eq("id", parsed.data.id);
+    const { error: dbError } = await supabase
+      .from("contestants")
+      .update({
+        name: parsed.data.name,
+        student_id: parsed.data.student_id,
+        bio: parsed.data.bio,
+        faculty: parsed.data.faculty,
+        academic_year: parsed.data.academic_year || null,
+        category: parsed.data.category,
+        active: parsed.data.active === "true",
+        slug,
+        image_url: nextImageUrl,
+      })
+      .eq("id", parsed.data.id);
 
-  if (error) {
+    if (dbError) {
+      if (uploadedObjectPath) {
+        await removeContestantImageByPath(storageClient, uploadedObjectPath);
+      }
+
+      redirectWithMessage("error", getReadableDatabaseError(dbError));
+    }
+
+    if (uploadedObjectPath && existingContestant.image_url !== nextImageUrl) {
+      await removeContestantImageByUrl(
+        storageClient,
+        existingContestant.image_url,
+      );
+    }
+  } catch (error) {
     if (uploadedObjectPath) {
       await removeContestantImageByPath(storageClient, uploadedObjectPath);
     }
 
-    redirectWithMessage("error", getReadableDatabaseError(error));
-  }
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error;
+    }
 
-  if (uploadedObjectPath && existingContestant.image_url !== nextImageUrl) {
-    await removeContestantImageByUrl(
-      storageClient,
-      existingContestant.image_url,
+    redirectWithMessage(
+      "error",
+      error instanceof Error
+        ? error.message
+        : "Failed to upload contestant image.",
     );
   }
 

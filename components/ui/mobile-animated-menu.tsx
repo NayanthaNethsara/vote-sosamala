@@ -84,7 +84,10 @@ export const MobileAnimatedMenu = ({
       {isOpen && (
         <div
           ref={containerRef}
-          className={cn("fixed inset-0 z-50 overflow-hidden overscroll-none lg:hidden", className)}
+          className={cn(
+            "fixed inset-0 z-50 overflow-hidden overscroll-none lg:hidden",
+            className,
+          )}
         >
           {/* Overlay - Clickable to close */}
           <motion.div
