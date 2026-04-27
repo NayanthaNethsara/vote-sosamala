@@ -34,8 +34,12 @@ export function ContestantShareButton({
         });
         return;
       } catch (error) {
-        // Fallback to clipboard if share gets aborted or fails
-        console.error("Error sharing:", error);
+        if (error instanceof Error && error.name === "AbortError") {
+          // User canceled the native share dialog, just return quietly
+          return;
+        }
+        // Fallback to clipboard if share fails for other reasons (e.g. not supported for this context)
+        console.warn("Share API failed, falling back to clipboard:", error);
       }
     }
 
