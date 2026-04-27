@@ -14,7 +14,9 @@ function SpinningMandalaComponent() {
   };
 
   const clockwiseRotation = shouldReduceMotion ? undefined : { rotate: 360 };
-  const antiClockwiseRotation = shouldReduceMotion ? undefined : { rotate: -360 };
+  const antiClockwiseRotation = shouldReduceMotion
+    ? undefined
+    : { rotate: -360 };
 
   return (
     <div className="pointer-events-none absolute inset-0 z-0 select-none overflow-hidden rounded-[inherit]">
