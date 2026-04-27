@@ -220,7 +220,7 @@ export function SplashIntro() {
         aria-hidden
         animate={shouldReduceMotion ? undefined : { rotate: 360 }}
         transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute left-1/2 top-1/2 w-[70vmin] max-w-[640px] -translate-x-1/2 -translate-y-1/2 opacity-25 will-change-transform"
+        className="pointer-events-none absolute left-1/2 top-1/2 w-[100vmin] max-w-[640px] -translate-x-1/2 -translate-y-1/2 opacity-40 will-change-transform"
       >
         <Image
           src="/mandala/mandala-light-gold.svg"
@@ -299,7 +299,7 @@ export function SplashIntro() {
             cancels out the trailing letter-spacing gap so the text is
             optically centred rather than visually drifting left.
           */}
-          <h1 className="mt-6 font-mono text-[2.75rem] font-semibold uppercase leading-none tracking-[0.16em] text-amber-100 drop-shadow-[0_0_28px_rgba(215,169,79,0.3)] sm:text-6xl lg:text-7xl">
+          <h1 className="mt-6 font-mono text-[3rem] font-semibold uppercase leading-none tracking-[0.16em] text-amber-100 drop-shadow-[0_0_28px_rgba(215,169,79,0.3)] sm:text-7xl lg:text-8xl">
             <span className="inline-block -mr-[0.16em]">Ayubowan</span>
           </h1>
 
