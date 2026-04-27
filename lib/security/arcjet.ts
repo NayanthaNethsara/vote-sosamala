@@ -10,7 +10,7 @@ const defaultAj = arcjet({
   rules: [
     shield({ mode: "LIVE" }),
     detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE"] }),
-    tokenBucket({ mode: "LIVE", refillRate: 5, interval: 10, capacity: 10 }),
+    tokenBucket({ mode: "LIVE", refillRate: 60, interval: 60, capacity: 100 }),
   ],
 });
 
@@ -19,7 +19,7 @@ const authAj = arcjet({
   rules: [
     shield({ mode: "LIVE" }),
     detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE"] }),
-    tokenBucket({ mode: "LIVE", refillRate: 2, interval: 10, capacity: 4 }),
+    tokenBucket({ mode: "LIVE", refillRate: 15, interval: 60, capacity: 30 }),
   ],
 });
 
@@ -28,7 +28,7 @@ const voteAj = arcjet({
   rules: [
     shield({ mode: "LIVE" }),
     detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE"] }),
-    tokenBucket({ mode: "LIVE", refillRate: 3, interval: 10, capacity: 6 }),
+    tokenBucket({ mode: "LIVE", refillRate: 40, interval: 60, capacity: 80 }),
   ],
 });
 
@@ -37,7 +37,7 @@ const adminAj = arcjet({
   rules: [
     shield({ mode: "LIVE" }),
     detectBot({ mode: "LIVE", allow: ["CATEGORY:SEARCH_ENGINE"] }),
-    tokenBucket({ mode: "LIVE", refillRate: 2, interval: 10, capacity: 4 }),
+    tokenBucket({ mode: "LIVE", refillRate: 30, interval: 60, capacity: 60 }),
   ],
 });
 
