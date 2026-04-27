@@ -66,7 +66,6 @@ export async function generateMetadata({
   const description =
     contestant.bio?.trim() ||
     `Support ${contestant.name} in the ${category} category and cast your vote now.`;
-  const ogImageUrl = `${siteConfig.url}/${category}/${contestant.slug}/opengraph-image`;
 
   return {
     title,
@@ -78,7 +77,7 @@ export async function generateMetadata({
       type: "website",
       images: [
         {
-          url: ogImageUrl,
+          url: contestant.image_url,
           width: 1200,
           height: 630,
           alt: `${contestant.name}'s vote banner`,
@@ -89,7 +88,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: [ogImageUrl],
+      images: [contestant.image_url],
     },
   };
 }
