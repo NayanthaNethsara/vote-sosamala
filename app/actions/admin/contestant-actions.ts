@@ -5,8 +5,14 @@ import { redirect } from "next/navigation";
 
 import { CONTESTANTS_CACHE_TAG } from "@/lib/contestants";
 import { enforceServerActionRateLimit } from "@/lib/security/server-action-rate-limit";
+import {
+  removeContestantImageByPath,
+  removeContestantImageByUrl,
+  uploadContestantImage,
+  validateContestantImageFile,
+} from "@/lib/supabase/storage";
 import { requireAdminUser } from "@/lib/supabase/auth";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import {
   contestantCreateSchema,
   contestantDeleteSchema,
@@ -65,27 +71,66 @@ export async function createContestantAction(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const storageClient = createAdminClient();
   const slug = await generateUniqueContestantSlug(supabase, parsed.data.name);
 
-  const { error } = await supabase.from("contestants").insert({
-    name: parsed.data.name,
-    student_id: parsed.data.student_id,
-    bio: parsed.data.bio,
-    faculty: parsed.data.faculty,
-    academic_year: parsed.data.academic_year || null,
-    category: parsed.data.category,
-    active: parsed.data.active === "true",
-    slug,
-    image_url: `/${slug}.png`,
-  });
+  const imageFileValidation = validateContestantImageFile(
+    formData.get("image_file"),
+    true,
+  );
 
-  if (error) {
-    redirectWithMessage("error", getReadableDatabaseError(error));
+  if (imageFileValidation.error || !imageFileValidation.file) {
+    redirectWithMessage(
+      "error",
+      imageFileValidation.error ?? "Contestant image is required.",
+    );
   }
 
-  revalidateTag(CONTESTANTS_CACHE_TAG, "max");
-  revalidatePath("/admin");
-  redirectWithMessage("message", "Contestant created.");
+  let uploadedObjectPath: string | null = null;
+
+  try {
+    const uploadedImage = await uploadContestantImage(
+      storageClient,
+      slug,
+      imageFileValidation.file,
+    );
+    uploadedObjectPath = uploadedImage.objectPath;
+
+    const { error } = await supabase.from("contestants").insert({
+      name: parsed.data.name,
+      student_id: parsed.data.student_id,
+      bio: parsed.data.bio,
+      faculty: parsed.data.faculty,
+      academic_year: parsed.data.academic_year || null,
+      category: parsed.data.category,
+      active: parsed.data.active === "true",
+      slug,
+      image_url: uploadedImage.publicUrl,
+    });
+
+    if (error) {
+      await removeContestantImageByPath(
+        storageClient,
+        uploadedImage.objectPath,
+      );
+      redirectWithMessage("error", getReadableDatabaseError(error));
+    }
+
+    revalidateTag(CONTESTANTS_CACHE_TAG, "max");
+    revalidatePath("/admin");
+    redirectWithMessage("message", "Contestant created.");
+  } catch (error) {
+    if (uploadedObjectPath) {
+      await removeContestantImageByPath(storageClient, uploadedObjectPath);
+    }
+
+    redirectWithMessage(
+      "error",
+      error instanceof Error
+        ? error.message
+        : "Failed to upload contestant image.",
+    );
+  }
 }
 
 export async function updateContestantAction(formData: FormData) {
@@ -112,11 +157,46 @@ export async function updateContestantAction(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const storageClient = createAdminClient();
   const slug = await generateUniqueContestantSlug(
     supabase,
     parsed.data.name,
     parsed.data.id,
   );
+
+  const imageFileValidation = validateContestantImageFile(
+    formData.get("image_file"),
+    false,
+  );
+
+  if (imageFileValidation.error) {
+    redirectWithMessage("error", imageFileValidation.error);
+  }
+
+  const { data: existingContestant, error: existingContestantError } =
+    await supabase
+      .from("contestants")
+      .select("image_url")
+      .eq("id", parsed.data.id)
+      .maybeSingle();
+
+  if (existingContestantError || !existingContestant) {
+    redirectWithMessage("error", "Contestant not found.");
+  }
+
+  let nextImageUrl = existingContestant.image_url;
+  let uploadedObjectPath: string | null = null;
+
+  if (imageFileValidation.file) {
+    const uploadedImage = await uploadContestantImage(
+      storageClient,
+      slug,
+      imageFileValidation.file,
+    );
+
+    nextImageUrl = uploadedImage.publicUrl;
+    uploadedObjectPath = uploadedImage.objectPath;
+  }
 
   const { error } = await supabase
     .from("contestants")
@@ -129,12 +209,23 @@ export async function updateContestantAction(formData: FormData) {
       category: parsed.data.category,
       active: parsed.data.active === "true",
       slug,
-      image_url: `/${slug}.png`,
+      image_url: nextImageUrl,
     })
     .eq("id", parsed.data.id);
 
   if (error) {
+    if (uploadedObjectPath) {
+      await removeContestantImageByPath(storageClient, uploadedObjectPath);
+    }
+
     redirectWithMessage("error", getReadableDatabaseError(error));
+  }
+
+  if (uploadedObjectPath && existingContestant.image_url !== nextImageUrl) {
+    await removeContestantImageByUrl(
+      storageClient,
+      existingContestant.image_url,
+    );
   }
 
   revalidateTag(CONTESTANTS_CACHE_TAG, "max");
@@ -163,6 +254,18 @@ export async function deleteContestantAction(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const storageClient = createAdminClient();
+  const { data: existingContestant, error: existingContestantError } =
+    await supabase
+      .from("contestants")
+      .select("image_url")
+      .eq("id", parsed.data.id)
+      .maybeSingle();
+
+  if (existingContestantError || !existingContestant) {
+    redirectWithMessage("error", "Contestant not found.");
+  }
+
   const { error } = await supabase
     .from("contestants")
     .delete()
@@ -171,6 +274,8 @@ export async function deleteContestantAction(formData: FormData) {
   if (error) {
     redirectWithMessage("error", getReadableDatabaseError(error));
   }
+
+  await removeContestantImageByUrl(storageClient, existingContestant.image_url);
 
   revalidateTag(CONTESTANTS_CACHE_TAG, "max");
   revalidatePath("/admin");
