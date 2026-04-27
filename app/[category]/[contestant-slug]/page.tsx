@@ -14,23 +14,7 @@ import {
 import { voteForContestantAction } from "@/app/actions/public/vote-actions";
 import { isContestantCategory } from "@/lib/contestants";
 import { getAuthenticatedUser } from "@/lib/supabase/auth";
-
-function buildContestantMetaDescription(input: {
-  faculty: string;
-  academicYear: string | null;
-  bio: string | null;
-  name: string;
-  category: string;
-}) {
-  const summary =
-    input.bio?.trim() ||
-    `${input.name} is competing this season. View the profile and cast your vote now.`;
-  const yearLabel = input.academicYear ? `, ${input.academicYear}` : "";
-  const titleLabel = input.category === "male" ? "Aurudu Kumara" : "Aurudu Kumariya";
-  const cta = "Vote now and support your favorite contestant today.";
-
-  return `${input.name} is contesting for ${titleLabel} 2026 from ${input.faculty}${yearLabel}. ${summary} ${cta}`;
-}
+import { siteConfig } from "@/config/site-config";
 
 function getOrdinalYear(value: string | null): string {
   if (!value) return "";
@@ -65,13 +49,7 @@ export async function generateMetadata({
   const contestantSlug = routeParams["contestant-slug"];
 
   if (!isContestantCategory(category)) {
-    return {
-      title: "Contestant Not Found",
-      robots: {
-        index: false,
-        follow: false,
-      },
-    };
+    return {};
   }
 
   const contestant = await getContestantByCategoryAndSlugAction(
@@ -80,43 +58,29 @@ export async function generateMetadata({
   );
 
   if (!contestant) {
-    return {
-      title: "Contestant Not Found",
-      robots: {
-        index: false,
-        follow: false,
-      },
-    };
+    return {};
   }
 
-  const profilePath = `/${category}/${contestant.slug}`;
-  const description = buildContestantMetaDescription({
-    name: contestant.name,
-    faculty: contestant.faculty,
-    academicYear: contestant.academic_year,
-    bio: contestant.bio,
-    category,
-  });
-  const title = `${contestant.name} | Vote for Aurudu ${category === "male" ? "Kumara" : "Kumariya"} 2026`;
-  const ogImagePath = `/${category}/${contestant.slug}/opengraph-image?v=${encodeURIComponent(contestant.updated_at)}`;
+  const pageUrl = `${siteConfig.url}/${category}/${contestant.slug}`;
+  const title = `${contestant.name} - Vote Now!`;
+  const description =
+    contestant.bio?.trim() ||
+    `Support ${contestant.name} in the ${category} category and cast your vote now.`;
 
   return {
     title,
     description,
-    alternates: {
-      canonical: profilePath,
-    },
     openGraph: {
       title,
       description,
-      url: profilePath,
-      type: "profile",
+      url: pageUrl,
+      type: "website",
       images: [
         {
-          url: ogImagePath,
+          url: contestant.image_url,
           width: 1200,
           height: 630,
-          alt: contestant.name,
+          alt: `${contestant.name}'s vote banner`,
         },
       ],
     },
@@ -124,7 +88,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: [ogImagePath],
+      images: [contestant.image_url],
     },
   };
 }
