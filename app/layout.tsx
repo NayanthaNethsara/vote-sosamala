@@ -28,7 +28,6 @@ const geistMono = Geist_Mono({
 import { siteConfig } from "@/config/site-config";
 
 const siteUrl = siteConfig.url;
-const socialPreviewImageUrl = new URL("/ss1.png", siteUrl).toString();
 
 export const metadata: Metadata = {
   title: `${siteConfig.name} 2026`,
@@ -49,7 +48,7 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: socialPreviewImageUrl,
+        url: "/og.jpg",
         width: 1200,
         height: 630,
         alt: siteConfig.name,
@@ -63,7 +62,7 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} 2026`,
     description:
       "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumaraya and Kumari contestants.",
-    images: [socialPreviewImageUrl],
+    images: ["/og.jpg"],
   },
 };
 
