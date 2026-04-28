@@ -25,6 +25,7 @@ export function Footer() {
               </Link>
               <Link
                 href="/support"
+                prefetch={false}
                 className="transition-colors hover:text-amber-200"
                 title="Privacy Policy"
               >
@@ -33,6 +34,7 @@ export function Footer() {
               </Link>
               <Link
                 href="/support"
+                prefetch={false}
                 className="transition-colors hover:text-amber-200"
                 title="Support"
               >

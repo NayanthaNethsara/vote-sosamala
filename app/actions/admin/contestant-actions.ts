@@ -140,7 +140,6 @@ export async function createContestantAction(formData: FormData) {
     );
   }
 
-  revalidateTag(CONTESTANTS_CACHE_TAG, "max");
   revalidatePath("/admin");
   redirectWithMessage("message", "Contestant created.");
 }
@@ -257,7 +256,6 @@ export async function updateContestantAction(formData: FormData) {
     );
   }
 
-  revalidateTag(CONTESTANTS_CACHE_TAG, "max");
   revalidatePath("/admin");
   redirectWithMessage("message", "Contestant updated.");
 }
@@ -306,7 +304,6 @@ export async function deleteContestantAction(formData: FormData) {
 
   await removeContestantImageByUrl(storageClient, existingContestant.image_url);
 
-  revalidateTag(CONTESTANTS_CACHE_TAG, "max");
   revalidatePath("/admin");
   redirectWithMessage("message", "Contestant deleted.");
 }
@@ -330,7 +327,8 @@ export async function recalculateVoteCountsAction() {
     redirectWithMessage("error", "Failed to recalculate vote counts.");
   }
 
-  revalidateTag(CONTESTANTS_CACHE_TAG, "max");
   revalidatePath("/admin");
+  revalidatePath("/male");
+  revalidatePath("/female");
   redirectWithMessage("message", "Vote counts recalculated successfully.");
 }

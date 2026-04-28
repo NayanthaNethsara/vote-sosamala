@@ -21,7 +21,9 @@ export default function NotFound() {
             asChild
             className="bg-[#7f1d2d] text-amber-50 hover:bg-[#97233a]"
           >
-            <Link href="/">Go to home</Link>
+            <Link href="/" prefetch={false}>
+              Go to home
+            </Link>
           </Button>
         </div>
       </section>

@@ -65,6 +65,7 @@ export default function HomePage() {
               >
                 <Link
                   href={category.href}
+                  prefetch={false}
                   className="flex flex-col gap-4 p-6 sm:p-8"
                 >
                   <div className="flex items-start justify-between gap-4">

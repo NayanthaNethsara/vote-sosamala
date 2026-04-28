@@ -83,6 +83,7 @@ export default async function CategoryPage({
                 >
                   <Link
                     href={`/${category}/${contestant.slug}`}
+                    prefetch={false}
                     className="block h-full"
                   >
                     <ProtectedImage

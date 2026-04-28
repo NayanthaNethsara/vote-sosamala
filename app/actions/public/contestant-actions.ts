@@ -49,7 +49,7 @@ const getContestantsByCategoryCached = unstable_cache(
   },
   ["public-contestants-by-category"],
   {
-    revalidate: 3600,
+    revalidate: 86400,
     tags: [CONTESTANTS_CACHE_TAG],
   },
 );
@@ -73,7 +73,7 @@ const getContestantByCategoryAndSlugCached = unstable_cache(
   },
   ["public-contestant-by-category-and-slug"],
   {
-    revalidate: 3600,
+    revalidate: 86400,
     tags: [CONTESTANTS_CACHE_TAG],
   },
 );
