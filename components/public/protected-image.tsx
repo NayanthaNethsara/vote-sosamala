@@ -28,6 +28,7 @@ export function ProtectedImage({
         {...props}
         draggable={false}
         className={cn("select-none", className)}
+        unoptimized
       />
       {children}
     </div>
