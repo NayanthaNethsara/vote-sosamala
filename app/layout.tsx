@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: "/og.jpg",
+        url: "/og.png",
         width: 1200,
         height: 630,
         alt: siteConfig.name,
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} 2026`,
     description:
       "Wasantha Muwadora 2026 Voting Platform. Support your favorite Aurudu Kumaraya and Kumari contestants.",
-    images: ["/og.jpg"],
+    images: ["/og.png"],
   },
 };
 
