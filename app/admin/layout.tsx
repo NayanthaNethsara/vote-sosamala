@@ -31,7 +31,9 @@ export default async function AdminLayout({
               asChild
               className="border border-amber-200/20 bg-amber-100/10 text-amber-50 hover:bg-amber-100/20"
             >
-              <Link href="/">Back to site</Link>
+              <Link href="/" prefetch={false}>
+                Back to site
+              </Link>
             </Button>
           </div>
         </header>

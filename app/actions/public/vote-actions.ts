@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { CONTESTANTS_CACHE_TAG, isContestantCategory } from "@/lib/contestants";
+import { isContestantCategory } from "@/lib/contestants";
 import { isSafeRelativePath } from "@/lib/security/redirect";
 import { enforceServerActionRateLimit } from "@/lib/security/server-action-rate-limit";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
@@ -139,7 +139,7 @@ export async function voteForContestantAction(formData: FormData) {
     maxAge: 60 * 60 * 24 * 30,
   });
 
-  revalidateTag(CONTESTANTS_CACHE_TAG, "max");
+  revalidatePath(`/${category}`);
   redirect(
     buildRedirectUrl(safeReturnTo, "message", "Vote submitted successfully."),
   );

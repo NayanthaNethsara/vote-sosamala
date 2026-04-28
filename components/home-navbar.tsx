@@ -87,6 +87,7 @@ export function HomeNavbar() {
         <NavBody>
           <Link
             href="/"
+            prefetch={false}
             className="relative z-20 flex items-center space-x-3 px-4 py-2 text-base font-semibold text-rose-50 font-mono"
           >
             <span className="drop-shadow-[0_0_10px_rgba(128,0,32,0.45)]">
@@ -127,6 +128,7 @@ export function HomeNavbar() {
             <MobileNavHeader>
               <Link
                 href="/"
+                prefetch={false}
                 className="flex items-center space-x-2 px-3 py-1.5 text-base font-semibold text-rose-50 font-mono"
               >
                 <span className="drop-shadow-[0_0_8px_rgba(128,0,32,0.4)]">
