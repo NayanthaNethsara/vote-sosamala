@@ -1,32 +1,49 @@
 # Sosamala Voting
 
-A self-hostable, open source, secure voting system for small public beauty contests and similar events. Designed for easy deployment, privacy, and fairness, with per-category leaderboards, a user-friendly admin dashboard, and real-time updates.
+A self-hostable, open-source, secure voting platform for small public events.
 
-[**Live Demo →**](https://vote-sosamala.vercel.app/)
+This release is tuned for Aurudu-style events with category-based voting, Google auth, public contestant pages, and a simple admin dashboard.
+
+[**Live Demo →**](https://wasantha-muwadora-2026.vercel.app/)
 
 ## Screenshots
 
 <div align="center">
-  <img src="./public/ss1.png" alt="Home page and leaderboard" width="600"/><br>
-  <em>Home page and real-time leaderboard view</em>
+  <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-1.png" alt="Aurudu release home view" width="900"/><br>
+  <em>Landing and hero section</em>
 </div>
 
 <div align="center">
-  <img src="./public/ss2.png" alt="Voting page and contestant profile" width="600"/><br>
-  <em>Voting page and contestant profile</em>
+  <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-2.png" alt="Aurudu category overview" width="900"/><br>
+  <em>Category overview</em>
+</div>
+
+<div align="center">
+  <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-3.png" alt="Support and privacy screen" width="900"/><br>
+  <em>Rules, support, and privacy page</em>
+</div>
+
+<div align="center">
+  <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-4.png" alt="Contestant public profile" width="900"/><br>
+  <em>Public contestant profile with voting and sharing</em>
+</div>
+
+<div align="center">
+  <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-5.png" alt="Contestant leaderboard grid" width="900"/><br>
+  <em>Contestant grid and ranking view</em>
 </div>
 
 ---
 
-## Features
+## Core Features
 
-- One vote per email per category (privacy: voter email hashed)
-- Google login (OAuth, no passwords)
-- Public contestant pages (shareable links)
-- Admin dashboard for easy management
-- Supabase DB and Storage (public images, no cost surprises)
-- Rate limiting and bot detection (Arcjet)
-- All admin and vote security checked on the server
+- One vote per user per category
+- Google OAuth login via Supabase Auth
+- Public contestant pages with share links and OpenGraph previews
+- Admin dashboard for contestant management
+- Supabase PostgreSQL and Storage
+- Arcjet rate limiting and abuse protection
+- Secure vote flow through Supabase RPC and server actions
 
 ---
 
@@ -41,6 +58,18 @@ A self-hostable, open source, secure voting system for small public beauty conte
 
 ---
 
+## Quick Setup
+
+```bash
+pnpm install
+pnpm dev
+npx supabase db push
+```
+
+Detailed setup: [docs/SETUP.md](docs/SETUP.md)
+
+---
+
 ## Security Model
 
 - Voter emails **never stored as plain text** (SHA256 + salt)
@@ -48,30 +77,17 @@ A self-hostable, open source, secure voting system for small public beauty conte
 - All admin access limited by one configured email (in `.env`)
 - RLS for all sensitive DB tables and storage
 - API routes use Arcjet for rate limits and bot detection
-- No persistent login needed after voting (logout is optional)
+- No direct vote inserts from clients
 
 ---
 
-## Self-Hosting & Deployment
+## Documentation
 
-**You need:** [Supabase](https://supabase.com/) (free tier is enough), [Vercel](https://vercel.com/) or any Next.js host.
-
-1. **Create your Supabase project**
-2. Run [`schema.sql`](./schema.sql) and [`rls.sql`](./rls.sql) in the Supabase SQL editor
-3. Set up Supabase Storage bucket (for contestant images)
-4. Clone this repo and configure your `.env` (see `.env.example`)
-5. Deploy to Vercel (or run locally with `pnpm dev`)
-
-For detailed instructions, see [docs/SETUP.md](docs/SETUP.md) (coming soon!)
-
----
-
-## Customization
-
-- **Categories:** Add/remove categories in the database or admin dashboard
-- **Logo/branding:** Replace `/public/logo/logo.png`
-- **Admin email:** Edit the email in `rls.sql` and your environment variables
-- **Styling:** Tweak Tailwind styles in `/components`
+- [docs/SETUP.md](docs/SETUP.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/CUSTOMIZATION.md](docs/CUSTOMIZATION.md)
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- [RELEASE_NOTES.md](RELEASE_NOTES.md)
 
 ---
 
