@@ -10,27 +10,22 @@ This release is tuned for Aurudu-style events with category-based voting, Google
 
 <div align="center">
   <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-1.png" alt="Aurudu release home view" width="900"/><br>
-  <em>Landing and hero section</em>
 </div>
 
 <div align="center">
   <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-2.png" alt="Aurudu category overview" width="900"/><br>
-  <em>Category overview</em>
 </div>
 
 <div align="center">
   <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-3.png" alt="Support and privacy screen" width="900"/><br>
-  <em>Rules, support, and privacy page</em>
 </div>
 
 <div align="center">
   <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-4.png" alt="Contestant public profile" width="900"/><br>
-  <em>Public contestant profile with voting and sharing</em>
 </div>
 
 <div align="center">
   <img src="./public/archive/v1.2.0-aurudu-beta/v1.2.0-aurudu-beta-screenshot-5.png" alt="Contestant leaderboard grid" width="900"/><br>
-  <em>Contestant grid and ranking view</em>
 </div>
 
 ---
